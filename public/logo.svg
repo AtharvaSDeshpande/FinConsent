@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" fill="none">
+  <rect width="40" height="40" rx="8" fill="#0A192F"/>
+  <!-- Interlocking Shield & Compliance Trendline -->
+  <path d="M20 6L32 11V20C32 27.5 26.5 33.5 20 35C13.5 33.5 8 27.5 8 20V11L20 6Z" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Growth Trendline through Shield -->
+  <path d="M12 24L17 19L22 22L28 14" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Statutory Checkmark Accent -->
+  <circle cx="28" cy="14" r="2.5" fill="#10B981"/>
+</svg>
