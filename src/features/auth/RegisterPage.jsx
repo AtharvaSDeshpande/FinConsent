@@ -9,6 +9,10 @@ import Alert from '@mui/material/Alert';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
+import CircularProgress from '@mui/material/CircularProgress';
+import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
+import HowToRegOutlinedIcon from '@mui/icons-material/HowToRegOutlined';
+import Grid from '@mui/material/Grid';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Logo } from '../../components/brand/Logo.jsx';
 import { useAuth } from '../../security/AuthContext.jsx';
@@ -40,7 +44,7 @@ export const RegisterPage = () => {
     // SEBI Registration format validation: INA followed by 9 digits
     const sebiRegex = /^INA\d{9}$/i;
     if (!sebiRegex.test(formData.sebiRegNumber.trim())) {
-      setError('Invalid SEBI Registration Number. Must be in format INAXXXXXXXXX (e.g., INA000088921)');
+      setError('Invalid SEBI Registration Number. Must be in format INAXXXXXXXXX (e.g. INA000088921)');
       return;
     }
 
@@ -57,7 +61,16 @@ export const RegisterPage = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
-      const data = await res.json();
+
+      const contentType = res.headers.get('content-type') || '';
+      let data;
+      if (contentType.includes('application/json')) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        const cleanMsg = text.replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim().slice(0, 150);
+        throw new Error(cleanMsg || 'Server error occurred during registration');
+      }
 
       if (!res.ok || !data.success) {
         throw new Error(data.error || 'Registration failed');
@@ -72,105 +85,197 @@ export const RegisterPage = () => {
     }
   };
 
+  const inputStyles = {
+    '& .MuiOutlinedInput-root': {
+      bgcolor: 'rgba(15, 23, 42, 0.6)',
+      borderRadius: 2.5,
+      color: '#FFFFFF',
+      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.18)' },
+      '&:hover fieldset': { borderColor: 'rgba(99, 102, 241, 0.6)' },
+      '&.Mui-focused fieldset': { borderColor: '#6366F1' },
+    },
+    '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.65)' },
+    '& .MuiInputLabel-root.Mui-focused': { color: '#818CF8' },
+    '& .MuiFormHelperText-root': { color: 'rgba(255, 255, 255, 0.45)' },
+  };
+
   return (
-    <Box sx={{ maxWidth: 520, mx: 'auto', mt: { xs: 3, md: 6 }, px: 2 }}>
-      <Card elevation={3} sx={{ borderRadius: 3, border: 1, borderColor: 'divider' }}>
-        <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
-            <Logo size={40} />
-            <Typography variant="h5" component="h1" sx={{ mt: 2, fontWeight: 700 }}>
-              RIA Registration
+    <Box sx={{ width: '100%', maxWidth: 620, mx: 'auto' }}>
+      <Card
+        elevation={0}
+        sx={{
+          borderRadius: 4,
+          border: '1px solid rgba(255, 255, 255, 0.12)',
+          bgcolor: 'rgba(13, 27, 54, 0.95)',
+          backdropFilter: 'blur(16px)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 35px rgba(99, 102, 241, 0.15)',
+          color: '#F8FAFC',
+          overflow: 'hidden',
+        }}
+      >
+        <CardContent sx={{ p: { xs: 3, sm: 4.5 } }}>
+          {/* Header Brand */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3.5 }}>
+            <Box
+              sx={{
+                p: 1.2,
+                borderRadius: '50%',
+                bgcolor: 'rgba(99, 102, 241, 0.15)',
+                border: '1px solid rgba(99, 102, 241, 0.3)',
+                mb: 1.5,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Logo size={38} />
+            </Box>
+            <Typography variant="h5" component="h1" sx={{ fontWeight: 800, letterSpacing: '-0.02em', color: '#FFFFFF' }}>
+              Register RIA Practice
             </Typography>
-            <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 0.5 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                mt: 0.8,
+                color: 'rgba(255, 255, 255, 0.65)',
+                textAlign: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+              }}
+            >
+              <ShieldOutlinedIcon sx={{ fontSize: 14, color: '#38BDF8' }} />
               Onboard your Investment Advisory practice to FinConsent
             </Typography>
           </Box>
 
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          {error && (
+            <Alert
+              severity="error"
+              sx={{
+                mb: 2.5,
+                bgcolor: 'rgba(239, 68, 68, 0.15)',
+                color: '#FCA5A5',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: 2,
+              }}
+            >
+              {error}
+            </Alert>
+          )}
 
           <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <TextField
-              label="Full Name (Principal Officer / RIA)"
-              name="name"
-              required
-              fullWidth
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="e.g. Suresh Narayanan"
-            />
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+              <TextField
+                label="Full Name (Principal Officer)"
+                name="name"
+                required
+                fullWidth
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="e.g. Suresh Narayanan"
+                sx={inputStyles}
+              />
 
-            <TextField
-              label="Advisory Entity / Firm Name"
-              name="firmName"
-              required
-              fullWidth
-              value={formData.firmName}
-              onChange={handleChange}
-              placeholder="e.g. Prudent Wealth Advisory"
-            />
+              <TextField
+                label="Advisory Entity / Firm Name"
+                name="firmName"
+                required
+                fullWidth
+                value={formData.firmName}
+                onChange={handleChange}
+                placeholder="e.g. Prudent Wealth Advisory"
+                sx={inputStyles}
+              />
+            </Box>
 
-            <TextField
-              label="SEBI Registration Number (INAXXXXXXXXX)"
-              name="sebiRegNumber"
-              required
-              fullWidth
-              value={formData.sebiRegNumber}
-              onChange={handleChange}
-              placeholder="INA000088921"
-              helperText="12 characters starting with INA followed by 9 digits"
-              inputProps={{ style: { textTransform: 'uppercase' } }}
-            />
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+              <TextField
+                label="SEBI Reg Number"
+                name="sebiRegNumber"
+                required
+                fullWidth
+                value={formData.sebiRegNumber}
+                onChange={handleChange}
+                placeholder="INA000088921"
+                helperText="Format: INA followed by 9 digits"
+                inputProps={{ style: { textTransform: 'uppercase' } }}
+                sx={inputStyles}
+              />
 
-            <TextField
-              label="Work Email"
-              name="email"
-              type="email"
-              required
-              fullWidth
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="suresh@prudentwealth.in"
-            />
+              <TextField
+                label="Work Email"
+                name="email"
+                type="email"
+                required
+                fullWidth
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="suresh@prudentwealth.in"
+                sx={inputStyles}
+              />
+            </Box>
 
-            <TextField
-              label="Statutory Compliance Email"
-              name="complianceEmail"
-              type="email"
-              fullWidth
-              value={formData.complianceEmail}
-              onChange={handleChange}
-              placeholder="compliance@prudentwealth.in"
-              helperText="Receives quarterly audit dossiers and inspection copies"
-            />
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+              <TextField
+                label="Statutory Compliance Email"
+                name="complianceEmail"
+                type="email"
+                required
+                fullWidth
+                value={formData.complianceEmail}
+                onChange={handleChange}
+                placeholder="compliance@firm.in"
+                helperText="Receives quarterly audit dossiers"
+                sx={inputStyles}
+              />
 
-            <TextField
-              label="Password"
-              name="password"
-              type="password"
-              required
-              fullWidth
-              value={formData.password}
-              onChange={handleChange}
-            />
+              <TextField
+                label="Master Password"
+                name="password"
+                type="password"
+                required
+                fullWidth
+                value={formData.password}
+                onChange={handleChange}
+                helperText="Min 8 characters with numbers"
+                sx={inputStyles}
+              />
+            </Box>
 
             <FormControlLabel
               control={
                 <Checkbox
                   checked={agreeTerms}
                   onChange={(e) => setAgreeTerms(e.target.checked)}
-                  color="primary"
+                  sx={{
+                    color: 'rgba(255, 255, 255, 0.4)',
+                    '&.Mui-checked': { color: '#6366F1' },
+                  }}
                 />
               }
               label={
-                <Typography variant="caption" color="text.secondary">
-                  I confirm this advisory practice operates strictly under a non-discretionary mandate per SEBI (IA) Regulations, 2013 and agree to the{' '}
-                  <Link component={RouterLink} to="/legal/terms" target="_blank">
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                  I confirm this advisory practice operates strictly under a non-discretionary mandate per SEBI (IA)
+                  Regulations, 2013 and agree to the{' '}
+                  <Link
+                    component={RouterLink}
+                    to="/legal/terms"
+                    target="_blank"
+                    sx={{ color: '#60A5FA', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                  >
                     Terms of Service
                   </Link>{' '}
                   and{' '}
-                  <Link component={RouterLink} to="/legal/privacy" target="_blank">
+                  <Link
+                    component={RouterLink}
+                    to="/legal/privacy"
+                    target="_blank"
+                    sx={{ color: '#60A5FA', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                  >
                     DPDP Privacy Policy
-                  </Link>.
+                  </Link>
+                  .
                 </Typography>
               }
               sx={{ alignItems: 'flex-start', mt: 1 }}
@@ -182,16 +287,38 @@ export const RegisterPage = () => {
               size="large"
               fullWidth
               disabled={submitting}
-              sx={{ mt: 1 }}
+              startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <HowToRegOutlinedIcon />}
+              sx={{
+                mt: 1,
+                py: 1.3,
+                fontSize: '0.98rem',
+                fontWeight: 700,
+                borderRadius: 2.5,
+                background: 'linear-gradient(135deg, #4F46E5 0%, #2563EB 100%)',
+                boxShadow: '0 4px 14px 0 rgba(79, 70, 229, 0.39)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #4338CA 0%, #1D4ED8 100%)',
+                  boxShadow: '0 6px 20px rgba(79, 70, 229, 0.5)',
+                },
+              }}
             >
-              {submitting ? 'Registering RIA Account...' : 'Complete Registration'}
+              {submitting ? 'Registering RIA Account...' : 'Complete RIA Registration'}
             </Button>
           </Box>
 
           <Box sx={{ mt: 3, textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.65)' }}>
               Already registered?{' '}
-              <Link component={RouterLink} to="/login" fontWeight={600}>
+              <Link
+                component={RouterLink}
+                to="/login"
+                sx={{
+                  color: '#60A5FA',
+                  fontWeight: 700,
+                  textDecoration: 'none',
+                  '&:hover': { textDecoration: 'underline' },
+                }}
+              >
                 Sign In
               </Link>
             </Typography>
@@ -201,3 +328,5 @@ export const RegisterPage = () => {
     </Box>
   );
 };
+
+export default RegisterPage;

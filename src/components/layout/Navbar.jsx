@@ -11,6 +11,7 @@ import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
+import PaymentOutlinedIcon from '@mui/icons-material/PaymentOutlined';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Logo } from '../brand/Logo.jsx';
 import { useAuth } from '../../security/AuthContext.jsx';
