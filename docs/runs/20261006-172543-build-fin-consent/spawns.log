@@ -1,1 +1,6 @@
 {"ts":"2026-10-06T12:02:56.297Z","type":"a1-architect","description":"advisory start"}
+{"ts":"2026-10-06T12:03:27.655Z","type":"a2-designer","description":"advisory start"}
+{"ts":"2026-10-06T12:03:27.656Z","type":"a4-backend","description":"advisory start"}
+{"ts":"2026-10-06T12:03:27.656Z","type":"a5-data","description":"advisory start"}
+{"ts":"2026-10-06T12:03:27.657Z","type":"a6-auth","description":"advisory start"}
+{"ts":"2026-10-06T12:03:27.658Z","type":"a10-devops","description":"advisory start"}
