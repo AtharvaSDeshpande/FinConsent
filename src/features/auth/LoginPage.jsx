@@ -39,11 +39,12 @@ const GoogleGIcon = () => (
 );
 
 const DEMO_PERSONAS = [
+  { role: 'guest', label: 'Guest (Public)', email: 'guest@finconsent.in', badge: 'Public' },
   { role: 'ria', label: 'RIA (Free)', email: 'ria@example.in', badge: 'Standard' },
   { role: 'ria', label: 'RIA (Pro)', email: 'pro.ria@example.in', badge: 'Pro' },
   { role: 'compliance_officer', label: 'Compliance Officer', email: 'compliance@example.in', badge: 'Auditor' },
   { role: 'admin', label: 'Platform Admin', email: 'admin@example.in', badge: 'Superuser' },
-  { role: 'client', label: 'Advisory Client', email: 'client@example.in', badge: 'Client' },
+  { role: 'client', label: 'Advisory Client', email: 'client@example.in', badge: 'Investor' },
 ];
 
 export const LoginPage = () => {
@@ -53,7 +54,7 @@ export const LoginPage = () => {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [gisMounted, setGisMounted] = useState(false);
-  const { login, loginWithGoogle } = useAuth();
+  const { login, loginWithGoogle, resetToGuest } = useAuth();
   const navigate = useNavigate();
 
   const handleGoogleCredentialResponse = async (response) => {
@@ -147,6 +148,13 @@ export const LoginPage = () => {
   };
 
   const handleDemoFill = (demoEmail, role = 'ria') => {
+    if (role === 'guest') {
+      resetToGuest();
+      setSelectedRole('guest');
+      setEmail('');
+      setPassword('');
+      return;
+    }
     setEmail(demoEmail);
     setPassword('Password@123');
     setSelectedRole(role);

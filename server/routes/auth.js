@@ -207,4 +207,78 @@ router.put('/profile', requireAuth, (req, res) => {
   res.json({ success: true, user: userSafe });
 });
 
+// System Established Roles Metadata & Definitions
+router.get('/roles', (req, res) => {
+  res.json({
+    success: true,
+    roles: {
+      guest: {
+        id: 'guest',
+        name: 'Guest Visitor',
+        permissions: ['view_public', 'view_disclosures', 'preview_demo', 'switch_persona'],
+        description: 'Public visitor exploring FinConsent statutory advisory & consent workflows.',
+      },
+      ria: {
+        id: 'ria',
+        name: 'Registered Investment Adviser (RIA)',
+        permissions: [
+          'create_mandates',
+          'view_mandates',
+          'compose_requests',
+          'view_clients',
+          'manage_billing',
+          'view_dossier',
+        ],
+        description: 'SEBI-registered Investment Adviser drafting trade rebalance mandates per Regulation 19.',
+      },
+      compliance_officer: {
+        id: 'compliance_officer',
+        name: 'Compliance & Audit Officer',
+        permissions: [
+          'view_mandates',
+          'review_requests',
+          'approve_requests',
+          'view_clients',
+          'view_audit_trail',
+          'view_dossier',
+          'export_dossier',
+        ],
+        description: 'Statutory compliance authority scrutinizing trade mandates and SEBI audit dossiers.',
+      },
+      admin: {
+        id: 'admin',
+        name: 'Platform Super Admin',
+        permissions: ['*'],
+        description: 'Platform administrator with unconstrained access across all advisory practices and audit trails.',
+      },
+      client: {
+        id: 'client',
+        name: 'Advisory Client / Investor',
+        permissions: ['view_own_mandates', 'submit_consent', 'view_receipts', 'view_requests'],
+        description: 'Individual or corporate client reviewing rebalance proposals and submitting OTP consent.',
+      },
+    },
+    defaultGuestRole: 'guest',
+  });
+});
+
+// Guest Session Initialization Endpoint
+router.post('/guest-session', (req, res) => {
+  const guestUser = {
+    id: `guest_${Date.now()}`,
+    name: 'Guest Visitor',
+    email: 'guest@finconsent.in',
+    role: 'guest',
+    isGuest: true,
+    plan: 'guest',
+    permissions: ['view_public', 'view_disclosures', 'preview_demo', 'switch_persona'],
+  };
+  const token = signToken({ userId: guestUser.id, role: 'guest' });
+  res.json({
+    success: true,
+    token,
+    user: guestUser,
+  });
+});
+
 export default router;

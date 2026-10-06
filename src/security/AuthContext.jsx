@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { ROLES, GUEST_USER, ESTABLISHED_PERSONAS, getRoleDefinition } from './roles.js';
 
 const AuthContext = createContext(null);
 
@@ -6,13 +7,31 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     try {
       const stored = localStorage.getItem('finconsent_user');
-      return stored ? JSON.parse(stored) : null;
+      return stored ? JSON.parse(stored) : GUEST_USER;
     } catch {
-      return null;
+      return GUEST_USER;
     }
   });
+
   const [token, setToken] = useState(() => localStorage.getItem('finconsent_token') || null);
   const [loading, setLoading] = useState(false);
+
+  // Sync state if localStorage changes across tabs
+  useEffect(() => {
+    const handleStorageChange = () => {
+      try {
+        const stored = localStorage.getItem('finconsent_user');
+        const storedToken = localStorage.getItem('finconsent_token');
+        setUser(stored ? JSON.parse(stored) : GUEST_USER);
+        setToken(storedToken || null);
+      } catch {
+        setUser(GUEST_USER);
+        setToken(null);
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const login = (authToken, userData) => {
     localStorage.setItem('finconsent_token', authToken);
@@ -58,22 +77,64 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('finconsent_token');
     localStorage.removeItem('finconsent_user');
     setToken(null);
-    setUser(null);
+    setUser(GUEST_USER);
+  };
+
+  const resetToGuest = () => {
+    logout();
+  };
+
+  const switchPersona = async (target) => {
+    if (target === 'guest' || target === 'guest@finconsent.in') {
+      resetToGuest();
+      return GUEST_USER;
+    }
+
+    const persona = ESTABLISHED_PERSONAS.find(
+      (p) => p.email === target || p.role === target
+    );
+
+    if (!persona || !persona.password) {
+      resetToGuest();
+      return GUEST_USER;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: persona.email, password: persona.password }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        login(data.token, data.user);
+        return data.user;
+      }
+      throw new Error(data.error || 'Failed to authenticate persona');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const updateUser = (updates) => {
     setUser((prev) => {
       const updated = { ...prev, ...updates };
-      localStorage.setItem('finconsent_user', JSON.stringify(updated));
+      if (!updated.isGuest) {
+        localStorage.setItem('finconsent_user', JSON.stringify(updated));
+      }
       return updated;
     });
   };
 
-  const role = user?.role || 'ria';
+  const role = user?.role || 'guest';
+  const isGuest = role === 'guest' || Boolean(user?.isGuest);
+  const isAuthenticated = !isGuest && Boolean(token);
   const isRia = role === 'ria';
   const isComplianceOfficer = role === 'compliance_officer';
   const isAdmin = role === 'admin';
   const isClient = role === 'client';
+  const roleDef = getRoleDefinition(role);
 
   return (
     <AuthContext.Provider
@@ -81,6 +142,9 @@ export const AuthProvider = ({ children }) => {
         user,
         token,
         role,
+        roleDef,
+        isGuest,
+        isAuthenticated,
         isRia,
         isComplianceOfficer,
         isAdmin,
@@ -88,8 +152,12 @@ export const AuthProvider = ({ children }) => {
         login,
         loginWithGoogle,
         logout,
+        resetToGuest,
+        switchPersona,
         updateUser,
         loading,
+        roles: ROLES,
+        personas: ESTABLISHED_PERSONAS,
       }}
     >
       {children}
@@ -104,3 +172,5 @@ export const useAuth = () => {
   }
   return context;
 };
+
+export default AuthContext;

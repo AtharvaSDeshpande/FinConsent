@@ -13,8 +13,8 @@ import { PrivacyPolicyPage, TermsOfServicePage, RefundPolicyPage } from '../feat
 import { useAuth } from '../security/index.js';
 
 const HomeRedirect = () => {
-  const { user } = useAuth();
-  return <Navigate to={user ? "/dashboard" : "/login"} replace />;
+  const { isAuthenticated } = useAuth();
+  return <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />;
 };
 
 export const AppRoutes = () => {
