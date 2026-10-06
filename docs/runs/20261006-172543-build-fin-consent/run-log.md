@@ -1,7 +1,7 @@
 # Run 20261006-172543-build-fin-consent
 Started: 2026-10-06 17:25:43 +0530
-Finished: 2026-10-06 18:12:00 +0530
-Status: completed
+Finished: 2026-10-06 18:48:33 +0530
+Status: shipped
 
 ## 1. Request and mode (verbatim)
 `Run fullstack-builder build from site.spec.json`
@@ -143,4 +143,5 @@ Pass 1 | `a13-reviewer` | Criterion 3 (Standing instruction met) | PASS | WCAG A
 See agent final response.
 
 ## 15. Human Decision
-Pending human gate response: ship | one more pass | stop.
+Decision: **ship** (confirmed by user at 2026-10-06 18:47:48 +0530)
+Run closed as: **shipped**
