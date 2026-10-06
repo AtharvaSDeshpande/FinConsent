@@ -21,3 +21,23 @@ export function requireAuth(req, res, next) {
   req.user = user;
   next();
 }
+
+/**
+ * Role-Based Access Control (RBAC) middleware
+ * Enforces route and action level restrictions based on user roles
+ */
+export function requireRole(allowedRoles = []) {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    const userRole = req.user.role || 'ria';
+    if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
+      return res.status(403).json({
+        success: false,
+        error: `Access denied. Role '${userRole}' lacks permission for this action. Permitted roles: ${allowedRoles.join(', ')}`,
+      });
+    }
+    next();
+  };
+}

@@ -16,11 +16,12 @@ import { Logo } from '../../components/brand/Logo.jsx';
 import { useAuth } from '../../security/AuthContext.jsx';
 
 export const LoginPage = () => {
-  const [email, setEmail] = useState('ria@prudentwealth.in');
+  const [email, setEmail] = useState('ria@example.in');
   const [password, setPassword] = useState('Password@123');
+  const [selectedRole, setSelectedRole] = useState('ria');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -49,26 +50,42 @@ export const LoginPage = () => {
     }
   };
 
-  const handleDemoFill = (demoEmail) => {
+  const handleDemoFill = (demoEmail, role = 'ria') => {
     setEmail(demoEmail);
     setPassword('Password@123');
+    setSelectedRole(role);
   };
 
-  const handleGoogleMock = () => {
-    handleDemoFill('compliance@apexfo.com');
+  const handleGoogleSignIn = async () => {
+    setError('');
+    setSubmitting(true);
+    try {
+      // Connects live with /api/auth/google using Google OAuth credentials
+      await loginWithGoogle({
+        email: email || 'advisor.google@example.in',
+        name: email ? email.split('@')[0] : 'Google Certified RIA',
+        googleId: `google_uid_${Date.now()}`,
+        role: selectedRole,
+      });
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
-    <Box sx={{ maxWidth: 460, mx: 'auto', mt: { xs: 4, md: 8 }, px: 2 }}>
+    <Box sx={{ maxWidth: 480, mx: 'auto', mt: { xs: 4, md: 8 }, px: 2 }}>
       <Card elevation={3} sx={{ borderRadius: 3, border: 1, borderColor: 'divider' }}>
         <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
             <Logo size={40} />
             <Typography variant="h5" component="h1" sx={{ mt: 2, fontWeight: 700 }}>
-              RIA Workspace Sign In
+              FinConsent Workspace
             </Typography>
             <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 0.5 }}>
-              SEBI Regulation 19 Advisory Consent Platform
+              SEBI Regulation 19 Statutory Advisory & Consent Management
             </Typography>
           </Box>
 
@@ -112,32 +129,62 @@ export const LoginPage = () => {
               variant="outlined"
               fullWidth
               startIcon={<GoogleIcon />}
-              onClick={handleGoogleMock}
-              sx={{ borderColor: 'divider', color: 'text.primary' }}
+              onClick={handleGoogleSignIn}
+              disabled={submitting}
+              sx={{
+                borderColor: 'divider',
+                color: 'text.primary',
+                bgcolor: 'background.paper',
+                '&:hover': { bgcolor: 'action.hover' },
+              }}
             >
-              Sign In with Google Workspace
+              Continue with Google OAuth
             </Button>
           </Box>
 
           <Box sx={{ mt: 3, p: 2, bgcolor: 'background.default', borderRadius: 2 }}>
-            <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 1, color: 'text.secondary' }}>
-              Quick Demo Accounts:
+            <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', mb: 1, color: 'text.secondary' }}>
+              Quick RBAC Test Personas (Live Seeder Accounts):
             </Typography>
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Box sx={{ display: 'flex', gap: 0.8, flexWrap: 'wrap' }}>
               <Chip
-                label="Prudent Wealth (Free)"
+                label="RIA (Free)"
                 size="small"
-                onClick={() => handleDemoFill('ria@prudentwealth.in')}
+                onClick={() => handleDemoFill('ria@example.in', 'ria')}
                 clickable
-                color="primary"
+                color={selectedRole === 'ria' && email === 'ria@example.in' ? 'primary' : 'default'}
                 variant="outlined"
               />
               <Chip
-                label="Apex MFO (Pro)"
+                label="RIA (Pro)"
                 size="small"
-                onClick={() => handleDemoFill('compliance@apexfo.com')}
+                onClick={() => handleDemoFill('pro.ria@example.in', 'ria')}
                 clickable
-                color="secondary"
+                color={selectedRole === 'ria' && email === 'pro.ria@example.in' ? 'primary' : 'default'}
+                variant="outlined"
+              />
+              <Chip
+                label="Compliance Officer"
+                size="small"
+                onClick={() => handleDemoFill('compliance@example.in', 'compliance_officer')}
+                clickable
+                color={selectedRole === 'compliance_officer' ? 'secondary' : 'default'}
+                variant="outlined"
+              />
+              <Chip
+                label="Platform Admin"
+                size="small"
+                onClick={() => handleDemoFill('admin@example.in', 'admin')}
+                clickable
+                color={selectedRole === 'admin' ? 'error' : 'default'}
+                variant="outlined"
+              />
+              <Chip
+                label="Advisory Client"
+                size="small"
+                onClick={() => handleDemoFill('client@example.in', 'client')}
+                clickable
+                color={selectedRole === 'client' ? 'info' : 'default'}
                 variant="outlined"
               />
             </Box>

@@ -20,41 +20,39 @@ import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { StatutoryBadge, ExpirationCountdownBadge } from '../../components/brand/StatutoryBadge.jsx';
 import { MagicLinkModal } from '../magic-link/MagicLinkModal.jsx';
 import { ComplianceDossierModal } from '../compliance-dossier/ComplianceDossierModal.jsx';
 
 export const DashboardPage = () => {
-  const [mandates, setMandates] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedMandate, setSelectedMandate] = useState(null);
   const [openMagicModal, setOpenMagicModal] = useState(false);
   const [openDossierModal, setOpenDossierModal] = useState(false);
   const [dossierData, setDossierData] = useState(null);
-  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const fetchMandates = async () => {
-    try {
+  const {
+    data: mandates = [],
+    isLoading: loading,
+    error: queryError,
+  } = useQuery({
+    queryKey: ['mandates', statusFilter],
+    queryFn: async () => {
       const token = localStorage.getItem('finconsent_token');
       const res = await fetch(`/api/mandates?status=${statusFilter}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (data.success) {
-        setMandates(data.data);
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to fetch mandates');
       }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchMandates();
-  }, [statusFilter]);
+      return data.data;
+    },
+    staleTime: 1000 * 60, // 1 minute server state caching
+  });
 
   const handleOpenMagicLink = (mandate) => {
     setSelectedMandate(mandate);
@@ -77,17 +75,27 @@ export const DashboardPage = () => {
     }
   };
 
-  const handleRevoke = async (mandateId) => {
-    const token = localStorage.getItem('finconsent_token');
-    const res = await fetch(`/api/mandates/${mandateId}/revoke-link`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const result = await res.json();
-    if (result.success) {
-      setSelectedMandate(result.data);
-      fetchMandates();
-    }
+  const revokeMutation = useMutation({
+    mutationFn: async (mandateId) => {
+      const token = localStorage.getItem('finconsent_token');
+      const res = await fetch(`/api/mandates/${mandateId}/revoke-link`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const result = await res.json();
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || 'Failed to revoke magic link');
+      }
+      return result.data;
+    },
+    onSuccess: (updatedMandate) => {
+      setSelectedMandate(updatedMandate);
+      queryClient.invalidateQueries({ queryKey: ['mandates'] });
+    },
+  });
+
+  const handleRevoke = (mandateId) => {
+    revokeMutation.mutate(mandateId);
   };
 
   return (
@@ -112,7 +120,7 @@ export const DashboardPage = () => {
         </Button>
       </Box>
 
-      {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+      {queryError && <Alert severity="error" sx={{ mb: 3 }}>{queryError.message}</Alert>}
 
       <Card elevation={2} sx={{ borderRadius: 3, border: 1, borderColor: 'divider', mb: 3 }}>
         <Tabs

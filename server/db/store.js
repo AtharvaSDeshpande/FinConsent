@@ -6,8 +6,9 @@ class FinConsentStore {
     this.users = new Map();
     this.clients = new Map();
     this.mandates = new Map();
+    this.requests = new Map();
     this.auditLogs = [];
-    this.otps = new Map(); // token -> { otp, expiresAt, mobile }
+    this.otps = new Map(); // token -> { otp, expiresAt, destination, channel }
   }
 
   // User operations
@@ -16,6 +17,7 @@ class FinConsentStore {
     const user = {
       id,
       ...userData,
+      role: userData.role || 'ria', // 'ria' | 'compliance_officer' | 'admin' | 'client'
       plan: userData.plan || 'free',
       createdAt: userData.createdAt || new Date().toISOString(),
     };
@@ -27,8 +29,23 @@ class FinConsentStore {
     return Array.from(this.users.values()).find((u) => u.email.toLowerCase() === email.toLowerCase());
   }
 
+  findUserByGoogleId(googleId) {
+    return Array.from(this.users.values()).find((u) => u.googleId === googleId);
+  }
+
   findUserById(id) {
     return this.users.get(id);
+  }
+
+  findUsers(filter = {}) {
+    let list = Array.from(this.users.values());
+    if (filter.role) {
+      list = list.filter((u) => u.role === filter.role);
+    }
+    if (filter.plan) {
+      list = list.filter((u) => u.plan === filter.plan);
+    }
+    return list;
   }
 
   updateUser(id, updates) {
@@ -57,6 +74,10 @@ class FinConsentStore {
 
   findClientById(id) {
     return this.clients.get(id);
+  }
+
+  findClients() {
+    return Array.from(this.clients.values());
   }
 
   // Mandate operations
@@ -88,12 +109,21 @@ class FinConsentStore {
     return list;
   }
 
+  findAllMandates(statusFilter) {
+    let list = Array.from(this.mandates.values());
+    if (statusFilter && statusFilter !== 'all') {
+      list = list.filter((m) => m.status === statusFilter);
+    }
+    return list;
+  }
+
   findMandateById(id) {
     return this.mandates.get(id);
   }
 
   findMandateByToken(token) {
-    return Array.from(this.mandates.values()).find((m) => m.magicToken === token);
+    if (!token) return undefined;
+    return Array.from(this.mandates.values()).find((m) => m.magicToken === token && !m.isRevoked);
   }
 
   updateMandate(id, updates) {
@@ -106,7 +136,7 @@ class FinConsentStore {
 
   countActiveMandates(riaId) {
     return Array.from(this.mandates.values()).filter(
-      (m) => m.riaId === riaId && (m.status === 'in_review' || m.status === 'draft')
+      (m) => m.riaId === riaId && (m.status === 'in_review' || m.status === 'draft' || m.status === 'sent' || m.status === 'viewed')
     ).length;
   }
 
@@ -115,6 +145,43 @@ class FinConsentStore {
     return Array.from(this.mandates.values()).filter(
       (m) => m.riaId === riaId && m.createdAt && m.createdAt.startsWith(currentMonthPrefix)
     ).length;
+  }
+
+  // Request composer operations (Dedicated request composer UI)
+  createRequest(requestData) {
+    const id = requestData.id || `req_${crypto.randomUUID()}`;
+    const request = {
+      id,
+      ...requestData,
+      status: requestData.status || 'pending',
+      createdAt: requestData.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    this.requests.set(id, request);
+    return request;
+  }
+
+  findRequests(filter = {}) {
+    let list = Array.from(this.requests.values());
+    if (filter.userId && filter.role !== 'admin' && filter.role !== 'compliance_officer') {
+      list = list.filter((r) => r.userId === filter.userId || r.assignedTo === filter.userId);
+    }
+    if (filter.status) {
+      list = list.filter((r) => r.status === filter.status);
+    }
+    return list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }
+
+  findRequestById(id) {
+    return this.requests.get(id);
+  }
+
+  updateRequest(id, updates) {
+    const request = this.requests.get(id);
+    if (!request) return null;
+    const updated = { ...request, ...updates, updatedAt: new Date().toISOString() };
+    this.requests.set(id, updated);
+    return updated;
   }
 
   // Audit Log operations - strictly immutable, append-only
@@ -131,6 +198,7 @@ class FinConsentStore {
     const logEntry = Object.freeze({
       id,
       ...entry,
+      channel: entry.channel || 'EMAIL_IN_APP (SMS Disabled by Policy)',
       timestamp,
       timestampIST,
       prevHash,
@@ -146,11 +214,16 @@ class FinConsentStore {
     return this.auditLogs.filter((log) => log.mandateId === mandateId);
   }
 
-  // OTP management
-  setOtp(token, mobile, code, ttlSeconds = 300) {
+  getAllAuditLogs() {
+    return this.auditLogs;
+  }
+
+  // OTP management (SMS disabled across entire application - delivered via Email/In-App)
+  setOtp(token, destination, code, ttlSeconds = 300) {
     this.otps.set(token, {
       code,
-      mobile,
+      destination,
+      channel: 'EMAIL_IN_APP', // SMS is fully disabled
       expiresAt: Date.now() + ttlSeconds * 1000,
     });
   }
@@ -160,10 +233,10 @@ class FinConsentStore {
     if (!entry) return { valid: false, reason: 'OTP not found or expired' };
     if (Date.now() > entry.expiresAt) {
       this.otps.delete(token);
-      return { valid: false, reason: 'OTP expired. Please request a new code.' };
+      return { valid: false, reason: 'OTP expired. Please request a fresh authorization code.' };
     }
-    if (entry.code !== code && code !== '123456') { // 123456 test demo bypass
-      return { valid: false, reason: 'Invalid 6-digit OTP' };
+    if (entry.code !== code && code !== '123456') { // 123456 demo test bypass
+      return { valid: false, reason: 'Invalid 6-digit verification code' };
     }
     this.otps.delete(token);
     return { valid: true };

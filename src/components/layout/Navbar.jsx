@@ -10,18 +10,32 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
-import PaymentOutlinedIcon from '@mui/icons-material/PaymentOutlined';
+import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Logo } from '../brand/Logo.jsx';
 import { useAuth } from '../../security/AuthContext.jsx';
 
 export const Navbar = () => {
-  const { user, logout } = useAuth();
+  const { user, role, isClient, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const getRoleLabel = () => {
+    switch (role) {
+      case 'compliance_officer':
+        return 'COMPLIANCE OFFICER';
+      case 'admin':
+        return 'SUPER ADMIN';
+      case 'client':
+        return 'CLIENT';
+      case 'ria':
+      default:
+        return user?.plan === 'pro' ? 'PRO RIA' : 'RIA ADVISER';
+    }
   };
 
   return (
@@ -36,12 +50,19 @@ export const Navbar = () => {
               <Button component={RouterLink} to="/dashboard" startIcon={<DashboardOutlinedIcon />} color="inherit">
                 Dashboard
               </Button>
-              <Button component={RouterLink} to="/clients" startIcon={<PeopleAltOutlinedIcon />} color="inherit">
-                Clients
+              <Button component={RouterLink} to="/requests" startIcon={<AssignmentOutlinedIcon />} color="inherit">
+                Requests Hub
               </Button>
-              <Button component={RouterLink} to="/settings/billing" startIcon={<PaymentOutlinedIcon />} color="inherit">
-                Billing & Quota
-              </Button>
+              {!isClient && (
+                <Button component={RouterLink} to="/clients" startIcon={<PeopleAltOutlinedIcon />} color="inherit">
+                  Clients
+                </Button>
+              )}
+              {(role === 'ria' || role === 'admin') && (
+                <Button component={RouterLink} to="/settings/billing" startIcon={<PaymentOutlinedIcon />} color="inherit">
+                  Billing & Quota
+                </Button>
+              )}
             </Box>
           )}
         </Box>
@@ -50,10 +71,10 @@ export const Navbar = () => {
           {user ? (
             <>
               <Chip
-                label={user.plan === 'pro' ? 'PRO RIA' : 'FREE TIER (3/3 Mandates)'}
-                color={user.plan === 'pro' ? 'primary' : 'default'}
+                label={getRoleLabel()}
+                color={role === 'admin' ? 'secondary' : role === 'compliance_officer' ? 'info' : 'primary'}
                 size="small"
-                variant={user.plan === 'pro' ? 'filled' : 'outlined'}
+                variant={user.plan === 'pro' || role === 'admin' ? 'filled' : 'outlined'}
                 sx={{ fontWeight: 700, fontSize: '0.7rem' }}
               />
               <Button
@@ -64,7 +85,7 @@ export const Navbar = () => {
                 color="inherit"
                 sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
               >
-                {user.sebiRegNumber || 'Profile'}
+                {user.sebiRegNumber || user.name || 'Profile'}
               </Button>
               <IconButton onClick={handleLogout} color="inherit" title="Sign Out">
                 <LogoutIcon fontSize="small" />
@@ -73,7 +94,7 @@ export const Navbar = () => {
           ) : (
             <>
               <Button component={RouterLink} to="/login" variant="outlined" size="small">
-                RIA Sign In
+                Sign In
               </Button>
               <Button component={RouterLink} to="/register" variant="contained" size="small">
                 Get Started
@@ -85,3 +106,4 @@ export const Navbar = () => {
     </AppBar>
   );
 };
+

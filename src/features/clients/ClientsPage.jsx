@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -18,12 +18,11 @@ import DialogActions from '@mui/material/DialogActions';
 import Alert from '@mui/material/Alert';
 import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined';
 import CircularProgress from '@mui/material/CircularProgress';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export const ClientsPage = () => {
-  const [clients, setClients] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [openModal, setOpenModal] = useState(false);
-  const [error, setError] = useState('');
   const [modalError, setModalError] = useState('');
   const [newClient, setNewClient] = useState({
     name: '',
@@ -33,26 +32,72 @@ export const ClientsPage = () => {
     portfolioValue: '',
   });
 
-  const fetchClients = async () => {
-    try {
+  // TanStack Query for caching and server state
+  const {
+    data: clients = [],
+    isLoading: loading,
+    error: queryError,
+  } = useQuery({
+    queryKey: ['clients'],
+    queryFn: async () => {
       const token = localStorage.getItem('finconsent_token');
       const res = await fetch('/api/clients', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (data.success) {
-        setClients(data.data);
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to fetch clients');
       }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return data.data;
+    },
+    staleTime: 1000 * 60 * 3, // 3 minutes cache
+  });
 
-  useEffect(() => {
-    fetchClients();
-  }, []);
+  // TanStack Mutation with Optimistic UI Update
+  const createClientMutation = useMutation({
+    mutationFn: async (clientPayload) => {
+      const token = localStorage.getItem('finconsent_token');
+      const res = await fetch('/api/clients', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(clientPayload),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to create client');
+      }
+      return data.data;
+    },
+    onMutate: async (newClientData) => {
+      await queryClient.cancelQueries({ queryKey: ['clients'] });
+      const previousClients = queryClient.getQueryData(['clients']) || [];
+      const optimisticClient = {
+        id: `temp-${Date.now()}`,
+        ...newClientData,
+        portfolioValue: Number(newClientData.portfolioValue || 0),
+        isOptimistic: true,
+      };
+      queryClient.setQueryData(['clients'], [optimisticClient, ...previousClients]);
+      return { previousClients };
+    },
+    onError: (err, newClientData, context) => {
+      if (context?.previousClients) {
+        queryClient.setQueryData(['clients'], context.previousClients);
+      }
+      setModalError(err.message || 'Failed to create client');
+    },
+    onSuccess: () => {
+      setOpenModal(false);
+      setNewClient({ name: '', pan: '', mobile: '', email: '', portfolioValue: '' });
+      setModalError('');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+    },
+  });
 
   const handleCreateClient = async (e) => {
     e.preventDefault();
@@ -70,28 +115,7 @@ export const ClientsPage = () => {
       return;
     }
 
-    try {
-      const token = localStorage.getItem('finconsent_token');
-      const res = await fetch('/api/clients', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(newClient),
-      });
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to create client');
-      }
-
-      setOpenModal(false);
-      setNewClient({ name: '', pan: '', mobile: '', email: '', portfolioValue: '' });
-      fetchClients();
-    } catch (err) {
-      setModalError(err.message);
-    }
+    createClientMutation.mutate(newClient);
   };
 
   return (
@@ -115,7 +139,7 @@ export const ClientsPage = () => {
         </Button>
       </Box>
 
-      {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+      {queryError && <Alert severity="error" sx={{ mb: 3 }}>{queryError.message}</Alert>}
 
       <Card elevation={2} sx={{ borderRadius: 3, border: 1, borderColor: 'divider' }}>
         <TableContainer>

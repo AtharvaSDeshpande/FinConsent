@@ -3,11 +3,13 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { corsMiddleware } from './middleware/cors.js';
 import { runSeed } from './db/seed.js';
+import { connectDB } from './db/connection.js';
 import authRoutes from './routes/auth.js';
 import clientRoutes from './routes/clients.js';
 import mandateRoutes from './routes/mandates.js';
 import publicRoutes from './routes/public.js';
 import billingRoutes from './routes/billing.js';
+import requestRoutes from './routes/requests.js';
 
 dotenv.config();
 
@@ -25,6 +27,7 @@ app.use('/api/clients', clientRoutes);
 app.use('/api/mandates', mandateRoutes);
 app.use('/api/public', publicRoutes);
 app.use('/api/billing', billingRoutes);
+app.use('/api/requests', requestRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -34,11 +37,19 @@ app.get('/api/health', (req, res) => {
     version: '1.0.0',
     dataResidency: 'AWS Mumbai (ap-south-1)',
     compliance: 'SEBI (IA) Regulations, 2013 | DPDP Act 2023',
+    smsService: 'Disabled by policy (Email & In-App delivery only)',
+    database: process.env.MONGODB_URI ? 'MongoDB Atlas (AWS Mumbai)' : 'In-Memory Store',
+    googleOAuth: process.env.GOOGLE_CLIENT_ID ? 'Configured' : 'Simulated',
   });
 });
 
-// Seed data on server initialize
-runSeed().catch((err) => console.error('Error running seed:', err));
+// Initialize database connection & seed data
+async function initServer() {
+  await connectDB();
+  await runSeed();
+}
+
+initServer().catch((err) => console.error('[Server Init Error]:', err));
 
 // Start server if executed directly
 if (process.env.NODE_ENV !== 'test') {

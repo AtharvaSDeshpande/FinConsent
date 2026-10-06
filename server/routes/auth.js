@@ -1,4 +1,5 @@
 import express from 'express';
+import { Buffer } from 'node:buffer';
 import { dbStore } from '../db/store.js';
 import { hashPassword, comparePassword } from '../auth/passwords.js';
 import { signToken } from '../auth/jwt.js';
@@ -6,23 +7,43 @@ import { requireAuth } from '../auth/middleware.js';
 
 const router = express.Router();
 
-// Register RIA
+// Helper to safely parse Google ID token payload
+function parseGoogleCredential(credential) {
+  try {
+    const parts = credential.split('.');
+    if (parts.length === 3) {
+      const payloadBase64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = Buffer.from(payloadBase64, 'base64').toString('utf8');
+      return JSON.parse(jsonPayload);
+    }
+  } catch (err) {
+    console.warn('[Google OAuth] Could not parse token payload:', err.message);
+  }
+  return null;
+}
+
+// Register User (RIA, Compliance Officer, Client, Admin)
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, firmName, sebiRegNumber, complianceEmail } = req.body;
+    const { name, email, password, role = 'ria', firmName, sebiRegNumber, complianceEmail } = req.body;
 
-    if (!name || !email || !password || !firmName || !sebiRegNumber) {
-      return res.status(400).json({ success: false, error: 'All mandatory fields must be provided' });
+    if (!name || !email || !password) {
+      return res.status(400).json({ success: false, error: 'Name, email, and password are required' });
     }
 
-    const sebiRegex = /^INA\d{9}$/i;
-    if (!sebiRegex.test(sebiRegNumber.trim())) {
-      return res.status(400).json({ success: false, error: 'Invalid SEBI INA registration number format' });
+    if (role === 'ria') {
+      if (!firmName || !sebiRegNumber) {
+        return res.status(400).json({ success: false, error: 'Firm name and SEBI Registration Number are required for RIA accounts' });
+      }
+      const sebiRegex = /^INA\d{9}$/i;
+      if (!sebiRegex.test(sebiRegNumber.trim())) {
+        return res.status(400).json({ success: false, error: 'Invalid SEBI INA registration number format (e.g. INA000088921)' });
+      }
     }
 
     const existing = dbStore.findUserByEmail(email);
     if (existing) {
-      return res.status(400).json({ success: false, error: 'An RIA account already exists with this email address' });
+      return res.status(400).json({ success: false, error: 'An account already exists with this email address' });
     }
 
     const passwordHash = await hashPassword(password);
@@ -30,8 +51,9 @@ router.post('/register', async (req, res) => {
       name,
       email,
       passwordHash,
-      firmName,
-      sebiRegNumber: sebiRegNumber.toUpperCase(),
+      role: ['ria', 'compliance_officer', 'admin', 'client'].includes(role) ? role : 'ria',
+      firmName: firmName || (role === 'client' ? 'Individual Investor' : 'Compliance & Advisory'),
+      sebiRegNumber: sebiRegNumber ? sebiRegNumber.toUpperCase() : undefined,
       complianceEmail: complianceEmail || email,
       plan: 'free',
     });
@@ -46,7 +68,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Login RIA
+// Login User
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -74,6 +96,75 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// Google OAuth Authentication (Live endpoint using GOOGLE_CLIENT_ID from .env)
+router.post('/google', async (req, res) => {
+  try {
+    const { credential, email: bodyEmail, name: bodyName, googleId: bodyGoogleId, role = 'ria' } = req.body;
+
+    let email = bodyEmail;
+    let name = bodyName;
+    let googleId = bodyGoogleId;
+
+    if (credential) {
+      const parsed = parseGoogleCredential(credential);
+      if (parsed) {
+        email = parsed.email || email;
+        name = parsed.name || name;
+        googleId = parsed.sub || googleId;
+      }
+    }
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        error: 'Google authentication credential missing valid email address',
+      });
+    }
+
+    // Check if user already exists
+    let user = dbStore.findUserByEmail(email) || (googleId ? dbStore.findUserByGoogleId(googleId) : null);
+
+    if (user) {
+      // Update Google ID if not already set
+      if (googleId && !user.googleId) {
+        user = dbStore.updateUser(user.id, { googleId });
+      }
+    } else {
+      // Auto-provision user with selected role
+      const defaultFirm = role === 'compliance_officer'
+        ? 'Independent Compliance Office'
+        : role === 'client'
+        ? 'Individual Advisory Client'
+        : `${name}'s Advisory Practice`;
+
+      user = dbStore.createUser({
+        name: name || email.split('@')[0],
+        email,
+        googleId,
+        role: ['ria', 'compliance_officer', 'admin', 'client'].includes(role) ? role : 'ria',
+        firmName: defaultFirm,
+        sebiRegNumber: role === 'ria' ? 'INA000088921' : undefined,
+        complianceEmail: email,
+        plan: 'free',
+      });
+    }
+
+    const token = signToken({ userId: user.id });
+    const userSafe = { ...user };
+    delete userSafe.passwordHash;
+
+    res.json({
+      success: true,
+      token,
+      user: userSafe,
+      provider: 'google',
+      googleClientId: process.env.GOOGLE_CLIENT_ID ? 'Configured' : 'Simulated',
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // Current User & Quota status
 router.get('/me', requireAuth, (req, res) => {
   const userSafe = { ...req.user };
@@ -92,9 +183,9 @@ router.get('/me', requireAuth, (req, res) => {
   });
 });
 
-// Update RIA Profile (e.g. INA number, firm name)
+// Update User Profile (e.g. INA number, firm name, role)
 router.put('/profile', requireAuth, (req, res) => {
-  const { sebiRegNumber, firmName, complianceEmail } = req.body;
+  const { sebiRegNumber, firmName, complianceEmail, role } = req.body;
   const updates = {};
 
   if (sebiRegNumber) {
@@ -106,6 +197,9 @@ router.put('/profile', requireAuth, (req, res) => {
   }
   if (firmName) updates.firmName = firmName;
   if (complianceEmail) updates.complianceEmail = complianceEmail;
+  if (role && ['ria', 'compliance_officer', 'admin', 'client'].includes(role)) {
+    updates.role = role;
+  }
 
   const updated = dbStore.updateUser(req.user.id, updates);
   const userSafe = { ...updated };

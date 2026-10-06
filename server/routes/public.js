@@ -101,23 +101,29 @@ router.post('/mandates/:token/request-otp', (req, res) => {
   const client = dbStore.findClientById(mandate.clientId);
   const mobile = client ? client.mobile : '9999999999';
 
-  // Generate 6-digit cryptographic OTP
+  // Generate 6-digit cryptographic OTP (SMS disabled; delivered via In-App / Registered Email)
   const otp = Math.floor(100000 + crypto.randomInt(900000)).toString();
   dbStore.setOtp(req.params.token, mobile, otp, 300); // 5 mins TTL
 
   dbStore.createAuditLog({
     mandateId: mandate.id,
-    eventType: 'OTP_SENT',
+    eventType: 'OTP_GENERATED',
     ipAddress: req.ip || '127.0.0.1',
     userAgent: req.headers['user-agent'] || 'Mobile-Client',
-    metadata: { maskedMobile: `******${mobile.slice(-4)}`, channel: 'SMS' },
+    channel: 'EMAIL_IN_APP (SMS Disabled by Policy)',
+    metadata: {
+      maskedMobile: `******${mobile.slice(-4)}`,
+      channel: 'EMAIL_IN_APP (SMS Disabled by Policy)',
+      notice: 'All SMS communications disabled by policy. Verification delivered via secure In-App / Email.',
+    },
   });
 
   res.json({
     success: true,
-    message: `6-digit OTP dispatched to client registered mobile ******${mobile.slice(-4)}`,
+    message: 'SMS communication disabled by policy. 6-digit statutory verification OTP delivered via In-App Secure Display & Registered Email.',
+    channel: 'EMAIL_IN_APP',
     maskedMobile: `******${mobile.slice(-4)}`,
-    demoOtp: otp, // For ease of automated testing and review
+    demoOtp: otp, // For ease of automated testing and in-app display
   });
 });
 

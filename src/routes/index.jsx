@@ -5,6 +5,7 @@ import { ProtectedRoute } from '../security/index.js';
 import { LoginPage, RegisterPage } from '../features/auth/index.js';
 import { DashboardPage, MandateNewPage, MandateDetailPage } from '../features/mandate-builder/index.js';
 import { ClientsPage } from '../features/clients/index.js';
+import { RequestComposerPage } from '../features/requests/index.js';
 import { ProfilePage } from '../features/ria-profile/index.js';
 import { BillingPage } from '../features/billing-pro/index.js';
 import { ClientReviewPage, ClientReceiptPage } from '../features/client-review/index.js';
@@ -35,7 +36,7 @@ export const AppRoutes = () => {
         <Route path="/legal/terms" element={<TermsOfServicePage />} />
         <Route path="/legal/refund" element={<RefundPolicyPage />} />
 
-        {/* Authenticated RIA Workspace */}
+        {/* Authenticated Workspace with RBAC Role Enforcement */}
         <Route
           path="/dashboard"
           element={
@@ -45,9 +46,25 @@ export const AppRoutes = () => {
           }
         />
         <Route
-          path="/mandates/new"
+          path="/requests"
           element={
             <ProtectedRoute>
+              <RequestComposerPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/requests/new"
+          element={
+            <ProtectedRoute>
+              <RequestComposerPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mandates/new"
+          element={
+            <ProtectedRoute allowedRoles={['ria', 'admin']}>
               <MandateNewPage />
             </ProtectedRoute>
           }
@@ -55,7 +72,7 @@ export const AppRoutes = () => {
         <Route
           path="/mandates/:id"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['ria', 'compliance_officer', 'admin']}>
               <MandateDetailPage />
             </ProtectedRoute>
           }
@@ -63,7 +80,7 @@ export const AppRoutes = () => {
         <Route
           path="/clients"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['ria', 'admin', 'compliance_officer']}>
               <ClientsPage />
             </ProtectedRoute>
           }
@@ -79,7 +96,7 @@ export const AppRoutes = () => {
         <Route
           path="/settings/billing"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['ria', 'admin']}>
               <BillingPage />
             </ProtectedRoute>
           }

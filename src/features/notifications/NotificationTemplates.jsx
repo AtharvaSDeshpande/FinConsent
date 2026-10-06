@@ -9,17 +9,17 @@ export const NotificationTemplates = () => {
   const templates = [
     {
       name: 'Mandate Dispatched',
-      channel: 'Email & WhatsApp',
+      channel: 'Email & In-App Portal',
       sample: 'Dear Client, your trade rebalance proposal is ready for review with pre-computed capital gains tax. Authorize at: finconsent.in/m/{token}',
     },
     {
-      name: 'OTP Verification Request',
-      channel: 'SMS (DLT registered)',
-      sample: 'FinConsent: Your statutory trade authorization OTP is {otp}. Valid for 5 minutes. Do not share this OTP.',
+      name: 'Statutory Verification OTP',
+      channel: 'Email & In-App (SMS Disabled)',
+      sample: 'FinConsent: Your statutory trade authorization OTP is {otp}. Valid for 5 minutes. (Dispatched via secure email; SMS channel decommissioned).',
     },
     {
       name: 'Mandate Approved & Dossier Issued',
-      channel: 'Email',
+      channel: 'Email & In-App Dossier',
       sample: 'Trade mandate successfully approved. Certified SEBI Regulation 19 Compliance Dossier attached.',
     },
   ];
@@ -31,7 +31,7 @@ export const NotificationTemplates = () => {
           Automated Statutory Notification Templates
         </Typography>
         <Typography variant="body2" color="text.secondary" paragraph>
-          Dispatches via Resend Email & TRAI DLT-registered transactional SMS headers
+          Dispatches via Resend Email and secure In-App portal (SMS notifications permanently disabled by policy)
         </Typography>
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

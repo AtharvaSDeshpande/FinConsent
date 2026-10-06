@@ -1,7 +1,7 @@
 import express from 'express';
 import crypto from 'node:crypto';
 import { dbStore } from '../db/store.js';
-import { requireAuth } from '../auth/middleware.js';
+import { requireAuth, requireRole } from '../auth/middleware.js';
 
 const router = express.Router();
 router.use(requireAuth);
@@ -46,15 +46,18 @@ function computeTaxesAndDeadlines(stcgAmount, ltcgAmount) {
   return { stcg, ltcg, stcgTax, ltcgTax, cessAmount, taxPayable, advanceTaxQuarter, advanceTaxAlert };
 }
 
-// List mandates
+// List mandates (RBAC: RIA views own; Compliance Officer & Admin view all)
 router.get('/', (req, res) => {
   const { status } = req.query;
-  const mandates = dbStore.findMandatesByRiaId(req.user.id, status);
+  const isSuperUser = req.user.role === 'compliance_officer' || req.user.role === 'admin';
+  const mandates = isSuperUser
+    ? dbStore.findAllMandates(status)
+    : dbStore.findMandatesByRiaId(req.user.id, status);
   res.json({ success: true, data: mandates });
 });
 
-// Create mandate (with Free-tier 3 active mandates quota check!)
-router.post('/', (req, res) => {
+// Create mandate (RBAC: Restricted to RIA and Admin)
+router.post('/', requireRole(['ria', 'admin']), (req, res) => {
   const {
     clientId,
     title,
@@ -144,9 +147,9 @@ router.get('/:id', (req, res) => {
 });
 
 // Dispatch mandate
-router.post('/:id/dispatch', (req, res) => {
+router.post('/:id/dispatch', requireRole(['ria', 'admin']), (req, res) => {
   const mandate = dbStore.findMandateById(req.params.id);
-  if (!mandate || mandate.riaId !== req.user.id) {
+  if (!mandate || (mandate.riaId !== req.user.id && req.user.role !== 'admin')) {
     return res.status(404).json({ success: false, error: 'Mandate not found' });
   }
 
@@ -157,6 +160,7 @@ router.post('/:id/dispatch', (req, res) => {
     eventType: 'DISPATCHED',
     ipAddress: req.ip || '127.0.0.1',
     userAgent: req.headers['user-agent'] || 'API-Client',
+    channel: 'WHATSAPP_EMAIL (SMS Disabled)',
     metadata: { magicToken: updated.magicToken, clientPhone: 'Registered Mobile' },
   });
 
@@ -164,15 +168,15 @@ router.post('/:id/dispatch', (req, res) => {
 });
 
 // Revoke & Regenerate Link (immediately invalidates prior token)
-router.post('/:id/revoke-link', (req, res) => {
+router.post('/:id/revoke-link', requireRole(['ria', 'admin']), (req, res) => {
   const mandate = dbStore.findMandateById(req.params.id);
-  if (!mandate || mandate.riaId !== req.user.id) {
+  if (!mandate || (mandate.riaId !== req.user.id && req.user.role !== 'admin')) {
     return res.status(404).json({ success: false, error: 'Mandate not found' });
   }
 
   const oldToken = mandate.magicToken;
   const newToken = crypto.randomBytes(32).toString('hex');
-  const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+  const tokenExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
 
   const updated = dbStore.updateMandate(mandate.id, {
     magicToken: newToken,
@@ -184,17 +188,23 @@ router.post('/:id/revoke-link', (req, res) => {
     eventType: 'LINK_REVOKED',
     ipAddress: req.ip || '127.0.0.1',
     userAgent: req.headers['user-agent'] || 'API-Client',
-    metadata: { oldTokenHash: crypto.createHash('sha256').update(oldToken).digest('hex'), newTokenIssued: true },
+    channel: 'SYSTEM_API',
+    metadata: { oldTokenHash: crypto.createHash('sha256').update(oldToken || '').digest('hex'), newTokenIssued: true },
   });
 
   res.json({ success: true, data: updated });
 });
 
-// SEBI Regulation 19 Compliance Dossier
-router.get('/:id/dossier', (req, res) => {
+// SEBI Regulation 19 Compliance Dossier (RBAC: RIA, Compliance Officer, Admin)
+router.get('/:id/dossier', requireRole(['ria', 'compliance_officer', 'admin']), (req, res) => {
   const mandate = dbStore.findMandateById(req.params.id);
-  if (!mandate || mandate.riaId !== req.user.id) {
+  if (!mandate) {
     return res.status(404).json({ success: false, error: 'Mandate not found' });
+  }
+
+  const isAuthorized = mandate.riaId === req.user.id || req.user.role === 'compliance_officer' || req.user.role === 'admin';
+  if (!isAuthorized) {
+    return res.status(403).json({ success: false, error: 'Unauthorized to access this compliance dossier' });
   }
 
   const client = dbStore.findClientById(mandate.clientId);

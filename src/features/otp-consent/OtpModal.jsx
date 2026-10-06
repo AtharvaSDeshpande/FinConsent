@@ -148,8 +148,11 @@ export const OtpModal = ({ open, onClose, token, mandate, maskedMobile, onVerifi
 
           {!otpSent ? (
             <Box sx={{ textAlign: 'center', py: 2 }}>
+              <Alert severity="info" sx={{ mb: 2, textAlign: 'left', fontSize: '0.82rem' }}>
+                <strong>SMS Channel Disabled:</strong> Pursuant to compliance policy, cellular SMS delivery is decommissioned. Your 6-digit trade authorization OTP is securely dispatched via registered email and displayed instantly below.
+              </Alert>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Click below to dispatch an SMS OTP to your registered phone number <strong>{maskedMobile}</strong>.
+                Click below to generate and dispatch your statutory authorization OTP.
               </Typography>
               <Button
                 variant="contained"
@@ -157,7 +160,7 @@ export const OtpModal = ({ open, onClose, token, mandate, maskedMobile, onVerifi
                 disabled={loading || !agreeGains || !agreeConsent}
                 startIcon={<LockOutlinedIcon />}
               >
-                {loading ? 'Dispatching OTP...' : 'Dispatch 6-Digit Mobile OTP'}
+                {loading ? 'Dispatching OTP...' : 'Generate Trade Authorization OTP'}
               </Button>
             </Box>
           ) : (
@@ -177,7 +180,7 @@ export const OtpModal = ({ open, onClose, token, mandate, maskedMobile, onVerifi
                     fontFamily: 'JetBrains Mono',
                   },
                 }}
-                helperText={`Dispatched to ${maskedMobile}${demoOtpHint ? ` (Demo Code: ${demoOtpHint})` : ''}`}
+                helperText={`Dispatched via Email / In-App Portal${demoOtpHint ? ` (Instant OTP: ${demoOtpHint})` : ''}`}
               />
 
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -186,10 +189,10 @@ export const OtpModal = ({ open, onClose, token, mandate, maskedMobile, onVerifi
                   onClick={handleRequestOtp}
                   disabled={resendTimer > 0 || loading}
                 >
-                  {resendTimer > 0 ? `Resend OTP in ${resendTimer}s` : 'Resend SMS OTP'}
+                  {resendTimer > 0 ? `Resend OTP in ${resendTimer}s` : 'Resend OTP'}
                 </Button>
                 <Typography variant="caption" color="text.secondary">
-                  Valid for 5 minutes
+                  Valid for 5 minutes • SMS Disabled
                 </Typography>
               </Box>
             </Box>

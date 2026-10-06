@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 const AuthContext = createContext(null);
 
@@ -21,6 +21,25 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
   };
 
+  const loginWithGoogle = async (payload) => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Google authentication failed');
+      }
+      login(data.token, data.user);
+      return data;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('finconsent_token');
     localStorage.removeItem('finconsent_user');
@@ -36,8 +55,29 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
+  const role = user?.role || 'ria';
+  const isRia = role === 'ria';
+  const isComplianceOfficer = role === 'compliance_officer';
+  const isAdmin = role === 'admin';
+  const isClient = role === 'client';
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, updateUser, loading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        role,
+        isRia,
+        isComplianceOfficer,
+        isAdmin,
+        isClient,
+        login,
+        loginWithGoogle,
+        logout,
+        updateUser,
+        loading,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
