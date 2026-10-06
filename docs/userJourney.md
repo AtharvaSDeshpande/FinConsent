@@ -1,230 +1,437 @@
-# FinConsent — End-to-End User Journey Specifications
+# FinConsent — End-to-End User Journey & Process Flow Architecture
 
-This document defines the comprehensive user journeys, interaction lifecycles, and state transitions for each persona interacting with the FinConsent statutory trade authorization platform.
+This document defines the comprehensive user journeys, operational lifecycles, and statutory compliance workflows for **all 5 distinct roles** within the FinConsent platform:
+
+1. **`guest`** — Public Visitor / Evaluator
+2. **`ria`** — SEBI Registered Investment Adviser (Free & Pro Tiers)
+3. **`compliance_officer`** — Compliance & Audit Officer / Regulatory Inspector
+4. **`admin`** — Platform Super Administrator
+5. **`client`** — Advisory Investor / Client (Zero-Login Magic Link & Authenticated Portal)
 
 ---
 
-## 1. Persona Overview
+## 1. Role Taxonomy & Authorization Matrix
 
-| Role ID | Persona Name | Primary Context | Core Motivation | Device & Channel |
+| Role ID | Role Title | Primary Interface | Authentication Mode | Core Capabilities & Permissions |
 |---|---|---|---|---|
-| **`sebi-ria`** | SEBI Registered Investment Adviser | Wealth advisory office / desktop | Deliver fiduciary advice, eliminate execution slippage, ensure 100% audit-proof compliance under SEBI Regulation 19. | Desktop / Laptop (Chrome, Edge) |
-| **`hni-client`** | High-Net-Worth Advisory Client | Mobile smartphone / on-the-go | Quickly understand asset shifts and capital gains tax impact without legalistic jargon, authorize trade in <60 seconds without login. | Mobile Smartphone (iOS Safari, Android Chrome, WhatsApp) |
-| **`compliance-auditor`** | Compliance Officer / SEBI Auditor | Compliance inspection / audit | Verify chain-of-custody, Section 65B electronic evidence, SHA-256 tamper-evidence, and AWS Mumbai data residency. | Desktop Web Portal / PDF Export |
+| **`guest`** | Public Visitor / Evaluator | Public Web Portal | Zero Login (Implicit Session) | • Explore statutory disclosures (SEBI, DPDP, Refund)<br>• Test-drive any persona via 1-click Role Switcher<br>• Access interactive role gates on protected routes<br>• Register RIA practice or sign in with credentials |
+| **`ria`** | Registered Investment Adviser | Desktop Advisory Center | Email/Password or Google OAuth | • Draft trade rebalancing mandates (`/mandates/new`)<br>• Real-time Budget 2024 tax engine & Advance Tax alerts<br>• Compose advisory & compliance requests (`/requests`)<br>• Manage client roster (`/clients`) & billing quota<br>• Generate 256-bit magic links & WhatsApp dispatches<br>• Live lifecycle tracking & emergency link revocation<br>• Inspect Section 65B dossiers & audit records |
+| **`compliance_officer`** | Compliance & Audit Officer | Statutory Audit Hub | Email/Password or Google OAuth | • Scrutinize & adjudicate advisory requests (`/requests`)<br>• Provide statutory response notes on rebalance items<br>• Audit mandate histories & client portfolios<br>• Verify SHA-256 immutable audit trail hash chaining<br>• Validate Section 65B electronic evidence admissibility<br>• Export signed SEBI Regulation 19 Compliance Dossiers |
+| **`admin`** | Platform Super Admin | Operations Command Center | Email/Password or Google OAuth | • Universal cross-tenant visibility across all RIA practices<br>• User administration, quota overrides, & plan upgrades<br>• System-wide dispute resolution & audit logs review<br>• Monitor platform health & MongoDB Atlas sync state |
+| **`client`** | Advisory Client / Investor | Mobile Smartphone (360px) & Client Web Portal | Zero-Login Magic Link (`/m/:token`) OR Authenticated Login | • Receive WhatsApp/Email notification with 48h cutoff<br>• Review asset allocation shift & trade execution basket<br>• Inspect pre-computed STCG/LTCG tax transparency<br>• Authorize trades via Mobile OTP verification<br>• Atomic token revocation upon successful consent<br>• Download tamper-evident Regulation 19 receipts<br>• Access personal request ledger when authenticated |
 
 ---
 
-## 2. High-Level Architectural Flow Diagram
+## 2. Global Multi-Party Interaction Architecture
 
 ```mermaid
 sequenceDiagram
     autonumber
+    actor Guest as Public Guest
     actor RIA as SEBI RIA (Adviser)
     participant Platform as FinConsent Engine
-    actor Client as HNI Client
-    participant Audit as Immutable Audit Store (SHA-256)
+    actor Client as Advisory Client
+    actor Officer as Compliance Officer
+    actor Admin as Super Admin
+    participant Audit as SHA-256 Audit Chain
 
-    RIA->>Platform: 1. Configure Rebalancing Mandate (Asset Shift + Baskets)
-    Platform->>Platform: 2. Compute Budget 2024 Tax (STCG 20%, LTCG 12.5%, Advance Tax)
-    Platform->>Platform: 3. Verify Monthly Mandate Quota (Free <= 3 / Pro Unlimited)
-    RIA->>Platform: 4. Dispatch Mandate (Set 48-Hour Cutoff)
-    Platform->>Audit: 5. Log MANDATE_CREATED with Timestamp (IST) & Payload Hash
-    Platform->>RIA: 6. Issue 256-Bit Cryptographic Magic Link & WhatsApp Template
-    RIA->>Client: 7. Deliver Magic Link via WhatsApp / Email
-    Client->>Platform: 8. Open /m/:token (Zero Login, Mobile 360px View)
-    Platform->>Platform: 9. Transition Mandate Status: Sent -> Viewed
-    Platform->>Audit: 10. Log MANDATE_VIEWED (Client IP, User-Agent)
-    Client->>Platform: 11. Request 6-Digit Mobile OTP
-    Platform->>Client: 12. Deliver SMS OTP to Registered Mobile (******9881)
-    Client->>Platform: 13. Submit OTP + Statutory Declarations Acceptance
-    Platform->>Platform: 14. Verify OTP & Revoke Magic Token Immediately
-    Platform->>Platform: 15. Lock Mandate Status: Consented & Approved
-    Platform->>Audit: 16. Append SHA-256 Chained Hash & OTP Verification ID
-    Platform->>Client: 17. Render Regulation 19 Compliance Receipt
-    Platform->>RIA: 18. Update Dashboard Live Status to "Consented"
+    Note over Guest,Platform: Guest Discovery & Test-Driving
+    Guest->>Platform: 1. Explore Landing Page & Disclosures (Role: GUEST)
+    Guest->>Platform: 2. 1-Click Role Switcher -> Test-Drive as RIA or Register
+
+    Note over RIA,Audit: Mandate Formulation & Request Composition
+    RIA->>Platform: 3. Authenticate via Google OAuth / Credentials
+    RIA->>Platform: 4. Compose Advisory Request (TanStack Query Optimistic Cache)
+    RIA->>Platform: 5. Draft Rebalance Mandate (Asset Shift + Tax Computation)
+    Platform->>Platform: 6. Check Monthly Quota (Free <= 3 / Pro Unlimited)
+    RIA->>Platform: 7. Dispatch Mandate with 48h Market Cutoff
+    Platform->>Audit: 8. Append MANDATE_CREATED with Timestamp (IST) & Payload Hash
+    Platform->>RIA: 9. Issue 256-Bit Cryptographic Token & WhatsApp Template
+
+    Note over Client,Audit: Zero-Login Client Review & Consent
+    RIA->>Client: 10. Deliver Magic Link via WhatsApp / Email
+    Client->>Platform: 11. Open /m/:token on Mobile Device (360px Viewport)
+    Platform->>Audit: 12. Log MANDATE_VIEWED (Client IP, User-Agent)
+    Client->>Platform: 13. Request OTP & Accept Statutory Declarations
+    Platform->>Client: 14. Deliver OTP (Email / In-App Notification)
+    Client->>Platform: 15. Submit 6-Digit OTP Verification
+    Platform->>Platform: 16. Verify OTP & Atomically Revoke Magic Token
+    Platform->>Audit: 17. Append CONSENT_GRANTED with SHA-256 Hash Chain
+    Platform->>Client: 18. Issue Regulation 19 Compliance Receipt
+
+    Note over Officer,Admin: Compliance Scrutiny & Admin Oversight
+    Officer->>Platform: 19. Scrutinize Request in Requests Hub & Sign-off
+    Officer->>Platform: 20. Export Regulation 19 Compliance Dossier Certificate
+    Admin->>Platform: 21. Cross-Tenant System Audit & Health Verification
 ```
 
 ---
 
-## 3. Detailed Journey Walkthrough: SEBI Registered Investment Adviser (`sebi-ria`)
+## 3. Deep-Dive Process Flow: Role 1 — Guest Visitor (`guest`)
 
-### Step 1: Authentication & Workspace Setup
-1. **Access Portal:** RIA visits `/auth` and logs in using registered email/password (bcrypt hashed) or Google OAuth.
-2. **SEBI Profile Verification:** 
-   - Navigates to `/settings/profile`.
-   - Inputs official SEBI Registration Number (format: `INAXXXXXXXXXX`, e.g., `INA000019284`).
-   - Configures RIA firm brand name (e.g., *Shikhar Capital Advisors*) and compliance officer email.
-   - Confirms AWS Mumbai (`ap-south-1`) data residency status badge.
+```
+   ┌─────────────────────────────────────────────────────────────┐
+   │                    GUEST PROCESS FLOW                       │
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 1. Public Discovery & Statutory Exploration                 │
+   │    • Lands on platform (implicit role: 'guest')             │
+   │    • Reviews SEBI IA Reg 2013 & DPDP Act 2023 Disclosures   │
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 2. Interactive Role Switcher in Navigation                  │
+   │    • Navbar explicitly indicates "ROLE: GUEST"              │
+   │    • Dropdown offers 1-click test drives across 5 personas  │
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 3. Protected Route Role-Gate Interception                   │
+   │    • Guest attempts visiting /dashboard or /mandates/new    │
+   │    • ProtectedRoute displays friendly Role Authentication   │
+   │    • Options: 1-Click Test Drive as RIA / Sign In / Register│
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 4. Practice Registration or Google Authentication           │
+   │    • Navigates to /register                                 │
+   │    • Enters Principal Officer name, Firm Name, & Email      │
+   │    • Validates SEBI Registration format: INAXXXXXXXXX       │
+   │    • Submits form -> Auto-logged in with role: 'ria'        │
+   └─────────────────────────────────────────────────────────────┘
+```
 
-### Step 2: Client Management
-1. **Directory Inspection:** Visits `/clients` to view active non-discretionary advisory mandates.
-2. **Client Onboarding:** 
-   - Clicks **"Add New Advisory Client"**.
-   - Enters client legal name (*Vikram Joshi*), PAN (*ABCDE1234F*), mobile (*+91 98201 99881*), email, and estimated portfolio consideration (*₹75,00,000*).
-   - Validates Indian PAN structure and 10-digit mobile number.
+### Detailed Steps:
+1. **Implicit Guest Session Establishment:**
+   - Any unauthenticated visitor is automatically assigned the `guest` role (`isGuest: true`, `user.name = "Guest Visitor"`).
+   - `useAuth()` ensures no null-reference crashes; Navbar displays `ROLE: GUEST`.
+2. **Statutory Disclosures Review:**
+   - Accesses `/legal/privacy` (DPDP Act 2023 compliance, data retention in AWS Mumbai `ap-south-1`).
+   - Accesses `/legal/terms` (SEBI non-discretionary mandate principles per Regulation 19).
+   - Accesses `/legal/refund` (statutory subscription terms).
+3. **Role-Gate Experience on Protected Routes:**
+   - If a guest attempts to visit `/dashboard`, `/mandates/new`, or `/clients`, `ProtectedRoute.jsx` intercepts the transition and renders an interactive **Role Authentication Required** dialog.
+   - The dialog displays permitted roles (e.g., `RIA`, `ADMIN`) and provides an immediate **"1-Click Test Drive as RIA"** button that automatically logs into a seeded test persona.
+4. **RIA Firm Registration (`/register`):**
+   - Guest fills out the registration form: Full Name, Advisory Firm Name, Work Email, Compliance Email, Password, and SEBI Registration Number.
+   - Enforces regex validation: `^INA\d{9}$` (e.g., `INA000088921`).
+   - Accepts statutory non-discretionary declaration checkbox.
+   - On submission, backend creates account, generates JWT token, and redirects to `/dashboard`.
 
-### Step 3: Rebalance Mandate Formulation
-1. **Initiate Mandate:** From Dashboard (`/dashboard`), clicks **"Draft Rebalance Mandate"** (`/mandates/new`).
-2. **Select Target Client:** Selects client profile from pre-populated dropdown.
-3. **Asset Allocation Shift:** 
-   - Specifies current allocation sliders (e.g., Equity 75%, Debt 15%, Gold 5%, Cash 5%).
-   - Adjusts proposed target allocation (e.g., Equity 60%, Debt 25%, Gold 10%, Cash 5%).
-4. **Trade Basket Configuration:** 
-   - Defines sell basket securities with unit quantities, execution prices, and holding classification (STCG vs. LTCG).
-5. **Real-Time Tax Computation:** 
-   - Live tax engine computes:
+---
+
+## 4. Deep-Dive Process Flow: Role 2 — SEBI Registered Investment Adviser (`ria`)
+
+```
+   ┌─────────────────────────────────────────────────────────────┐
+   │                      RIA PROCESS FLOW                       │
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 1. Authentication & Profile Verification                    │
+   │    • Sign in via Credentials or Google OAuth                │
+   │    • Set INA number, firm branding, compliance contact      │
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 2. Client Roster Management (/clients)                      │
+   │    • Add advisory clients (PAN, mobile, consideration)      │
+   │    • TanStack Query caching & optimistic UI updates         │
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 3. Advisory Requests Hub (/requests)                        │
+   │    • Compose rebalance proposals & asset allocation ratios  │
+   │    • Set priorities: standard, high, urgent                 │
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 4. Rebalance Mandate Formulation (/mandates/new)            │
+   │    • Select client & configure asset shift sliders          │
+   │    • Budget 2024 Tax Engine: STCG 20%, LTCG 12.5%           │
+   │    • Section 234B/234C Advance Tax quarterly alerts         │
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 5. Quota Verification & Magic Link Generation               │
+   │    • Free plan: <= 3 active mandates; Pro: unlimited        │
+   │    • Generate 256-bit cryptographically secure token        │
+   │    • Dispatch via WhatsApp template or transactional email  │
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 6. Real-Time Mandate Monitoring & Audit Inspection          │
+   │    • Track states: Draft -> Sent -> Viewed -> Consented     │
+   │    • 48-Hour countdown badge; emergency link revocation     │
+   │    • Download Section 65B Regulation 19 Compliance Dossier  │
+   └─────────────────────────────────────────────────────────────┘
+```
+
+### Detailed Steps:
+1. **Authentication:**
+   - RIA logs in at `/login` using email/password or the unified Google OAuth button.
+2. **Profile & SEBI Compliance Configuration (`/settings/profile`):**
+   - Inputs official SEBI INA registration number and firm name.
+   - Confirms territorial data residency badge (AWS Mumbai `ap-south-1`).
+3. **Client Roster Management (`/clients`):**
+   - Manages advisory clients with optimistic UI caching via TanStack Query.
+   - Enforces PAN syntax (`[A-Z]{5}[0-9]{4}[A-Z]`) and 10-digit mobile number formatting.
+4. **Advisory Requests Hub (`/requests`):**
+   - Composes trade rebalance advisory requests with proposed asset ratios (Equity, Debt, Gold, Cash summing to 100%).
+   - Selects priority (`standard`, `high`, `urgent`) and tracks live status (`pending`, `in_review`, `approved`, `completed`).
+5. **Mandate Formulation & Real-Time Tax Calculations (`/mandates/new`):**
+   - Selects target client and defines current vs. proposed asset allocation.
+   - Real-time tax engine calculates:
      * Equity STCG @ 20% under Section 111A.
-     * Equity LTCG @ 12.5% beyond ₹1,25,000 statutory exemption under Section 112A.
+     * Equity LTCG @ 12.5% beyond ₹1,25,000 exemption under Section 112A.
      * 4% Health and Education Cess.
-     * Section 234B/234C Advance Tax quarterly deadline alert (15 June, 15 September, 15 December, or 15 March) if gross gain > ₹1,00,000.
-6. **Set Cutoff Expiration:** Specifies market execution cutoff (defaults to 48 hours to prevent execution slippage).
-
-### Step 4: Quota Check & Pro Upgrade Prompt (Free-Tier Edge Case)
-1. **Quota Evaluation:** 
-   - If RIA is on Free Tier and has published 3 mandates within the current calendar month, the system intercepts the creation.
-2. **In-App Error Modal:**
-   - Displays **"Free Tier Monthly Mandate Quota Exceeded"** modal.
-   - Explains statutory record-keeping constraints.
-   - Offers two immediate paths:
-     * **"Upgrade with Razorpay"**: Navigates to `/billing` to trigger Pro plan checkout (₹4,999/yr + GST).
-     * **"Upgrade via WhatsApp"**: Launches pre-filled WhatsApp concierge message.
-
-### Step 5: Magic Link Generation & Multi-Channel Dispatch
-1. **Dispatch Mandate:** RIA clicks **"Create & Generate Magic Link"**.
-2. **Cryptographic Link Creation:** 
-   - System generates a 256-bit cryptographically secure pseudorandom token (`crypto.randomBytes(32).toString('hex')`).
-   - Associates token with 48-hour expiration timestamp.
-3. **Dispatch Modal Options:**
-   - **One-Click Link Copy:** Copies `https://finconsent.in/m/{token}` to clipboard.
-   - **Direct WhatsApp Dispatch:** Generates formatted WhatsApp URI with advisory summary, estimated tax liability in ₹ Lakhs, and 48-hour expiry notice.
-   - **Transactional Email Dispatch:** Triggers Resend transactional email notification to client.
-
-### Step 6: Live Mandate Control & Auditing
-1. **Dashboard Monitoring:** 
-   - Monitors mandate status in real-time across 5 lifecycle stages:
-     * **`Draft`**: Advisory proposal prepared, not yet dispatched.
-     * **`Sent`**: Magic link issued and delivered to client.
-     * **`Viewed`**: Client opened proposal on mobile device.
-     * **`Consented`**: Client successfully completed Mobile OTP verification.
-     * **`Expired`**: 48-hour window lapsed without consent.
-2. **Expiration Countdown:** 
-   - Live badge shows remaining time (e.g., `47h 12m left (48h window)`).
-3. **Emergency Revocation:** RIA can click **"Revoke Link"** to immediately invalidate the token and stop client authorization if market volatility changes execution terms.
-4. **Dossier Download:** Once consented, RIA clicks **"Dossier"** to review the SEBI Regulation 19 Compliance Certificate with timestamp (IST), client IP, User-Agent, and SHA-256 integrity hash.
+     * Section 234B/234C Advance Tax quarterly alerts if gain > ₹1,00,000.
+   - Sets 48-hour market execution cutoff.
+6. **Quota Check & Magic Link Generation:**
+   - Free plan limits RIAs to 3 active mandates. If exceeded, displays Pro upgrade modal with Razorpay checkout (`/settings/billing`).
+   - Generates a 256-bit cryptographic magic link (`/m/:token`).
+   - Dispatches link via pre-formatted WhatsApp template or transactional email.
+7. **Live Mandate Lifecycle Tracking & Emergency Controls (`/dashboard`):**
+   - Monitors live lifecycle badge (`Draft`, `Sent`, `Viewed`, `Consented`, `Expired`).
+   - Watches 48-hour countdown timer.
+   - In case of market volatility, clicks **"Revoke Link"** to immediately invalidate the token.
+   - Clicks **"Compliance Dossier"** to view and print the Regulation 19 certificate with SHA-256 hash chaining.
 
 ---
 
-## 4. Detailed Journey Walkthrough: High-Net-Worth Advisory Client (`hni-client`)
-
-### Step 1: Receiving the Mandate Notification
-1. **Channel Delivery:** Client receives a WhatsApp message or SMS from their adviser:
-   > *"Namaste Vikram, your SEBI RIA Shikhar Capital Advisors has prepared your Q3 Portfolio Rebalancing Mandate with ₹1,07,250 pre-computed tax impact. Review and authorize within 48 hours: https://finconsent.in/m/a9f48... (No login required)"*
-2. **One-Tap Access:** Client taps the link on their smartphone (iOS Safari / Android Chrome).
-
-### Step 2: Zero-Login Mobile Inspection (360px Viewport)
-1. **Instant Loading:** Proposal loads in <1.2 seconds over 4G mobile connection with zero login friction.
-2. **RIA Credential Header:** Displays adviser's firm name, logo, and SEBI Registration Number (`INA000019284`) alongside client masked PAN (`AB*****4F`).
-3. **Visual Asset Reallocation Comparison:**
-   - Progress bar comparisons show current allocation (75% Equity / 15% Debt) vs. proposed allocation (60% Equity / 25% Debt).
-4. **Trade Execution Basket:**
-   - Clearly lists securities to sell, number of units, and sale consideration in Indian numbering format (`₹12,50,000`).
-5. **Tax Transparency Banner:**
-   - Highlights estimated capital gains tax breakdown (STCG 20%, LTCG 12.5%).
-   - If net gain > ₹1,00,000, displays **Advance Tax Alert Banner** reminding client to account for the tax liability before the upcoming quarterly installment deadline (preventing penal interest under Section 234B/234C).
-
-### Step 3: Statutory Acceptance & Mobile OTP Verification
-1. **Initiate Sign-off:** Client taps **"Authorize Rebalance with Mobile OTP"** (touch target >= 48px).
-2. **Statutory Consent Declaration:**
-   - Modal presents mandatory checkboxes:
-     * Informed consent under Regulation 19 of SEBI (Investment Advisers) Regulations, 2013.
-     * Acknowledgment of estimated capital gains tax obligation.
-3. **OTP Dispatch:** Client clicks **"Request 6-Digit OTP"**.
-   - FinConsent dispatches 6-digit cryptographic OTP to registered mobile (`******9881`).
-   - Modal displays 5-minute countdown timer and masked phone indicator.
-4. **Submit Authorization:** 
-   - Client enters 6-digit code.
-   - Client clicks **"Confirm & Grant Trade Consent"**.
-
-### Step 4: Token Revocation & Compliance Receipt
-1. **Immediate Revocation:** The 256-bit magic link token is immediately revoked in the database upon submission. Any subsequent attempt to open the link renders a secure "Mandate Link Revoked / Already Consented" screen.
-2. **Instant Receipt Page (`/m/:token/receipt`):**
-   - Displays green verification seal: **"Trade Consent Successfully Granted"**.
-   - Displays **SEBI Regulation 19 Statutory Receipt ID** and cryptographic SHA-256 hash.
-   - Confirms statutory 5-year retention in AWS Mumbai (`ap-south-1`).
-   - Provides **"Print / Download Compliance Receipt"** button.
-
----
-
-## 5. Detailed Journey Walkthrough: Compliance Officer / SEBI Auditor (`compliance-auditor`)
-
-### Step 1: Inspection Initiation
-1. **Auditor Context:** During an inspection under SEBI (Investment Advisers) Regulations, 2013, the compliance team or visiting SEBI inspection officer requires proof of prior informed consent for non-discretionary trades executed in FY 2026-27.
-2. **Accessing Audit Records:** Compliance officer navigates to `/mandates/:id` in the FinConsent workspace.
-
-### Step 2: Audit Trail Verification
-1. **Timeline Inspection:** 
-   - Inspects the chronological, append-only audit trail (`AuditTrailTimeline.jsx`).
-   - Verifies each immutable event record:
-     * `MANDATE_CREATED`: Proposal drafted with specific trade values and tax calculations.
-     * `MANDATE_DISPATCHED`: 256-bit magic token generated with 48-hour expiration.
-     * `MANDATE_OPENED`: Timestamp (IST), client IP address, and client User-Agent recorded upon magic link view.
-     * `OTP_SENT`: SMS dispatch record with masked mobile destination.
-     * `CONSENT_GRANTED`: Verification timestamp (IST), client OTP verification ID, declarations accepted, and cryptographic SHA-256 payload hash.
-2. **Hash Chaining Validation:**
-   - Confirms that each audit log entry is linked to the previous entry via SHA-256 cryptographic hashing (`prevHash -> payloadHash`), preventing retroactive manipulation or deletion of historical records.
-
-### Step 3: SEBI Regulation 19 Dossier Export
-1. **Generate Certificate:** Clicks **"Compliance Dossier"** (`ComplianceDossierModal.jsx`).
-2. **Examine Statutory Certificate:**
-   - Header: *SEBI Regulation 19 Trade Consent Certificate*.
-   - Section 65B Electronic Evidence statement (under Indian Information Technology Act, 2000).
-   - Full mandate trade breakdown and tax obligation schedule.
-   - Verification metadata: Client PAN, Mobile, IP Address, Browser User-Agent, and exact IST timestamp.
-   - SHA-256 Certificate Fingerprint.
-   - AWS Mumbai (`ap-south-1`) territorial data residency certification.
-3. **Export:** Prints or saves clean PDF for submission to the SEBI inspection binder.
-
----
-
-## 6. Lifecycle State Machine
+## 5. Deep-Dive Process Flow: Role 3 — Compliance & Audit Officer (`compliance_officer`)
 
 ```
-              ┌──────────────────────────────────────────────┐
-              │                                              │
-              ▼                                              │
-         ┌─────────┐   RIA Dispatches Link    ┌──────────┐   │
-         │  DRAFT  │ ───────────────────────> │   SENT   │   │
-         └─────────┘                          └──────────┘   │
-              │                                    │         │
-              │                                    │ Client  │ Revoke &
-              │                                    │ Opens   │ Regenerate
-              │                                    ▼ Link    │
-              │                               ┌──────────┐   │
-              │                               │  VIEWED  │ ──┘
-              │                               └──────────┘
-              │                                    │
-              │                                    │ OTP Verified &
-              │ 48 Hours                           │ Declarations Accepted
-              │ Elapsed                            ▼
-              │                               ┌───────────┐
-              └─────────────────────────────> │ CONSENTED │ (Token Revoked, Locked)
-                                              └───────────┘
-                                                   │
-                                                   ▼
-                                              ┌───────────┐
-                                              │  EXPIRED  │ (Lapsed before OTP)
-                                              └───────────┘
+   ┌─────────────────────────────────────────────────────────────┐
+   │               COMPLIANCE OFFICER PROCESS FLOW               │
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 1. Auditor Authentication                                   │
+   │    • Sign in with officer credentials                       │
+   │    • Context switches to statutory scrutiny role            │
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 2. Advisory Requests Scrutiny (/requests)                   │
+   │    • Filter requests by "Pending" or "In Review"            │
+   │    • Inspect asset allocation shifts & advisory rationale   │
+   │    • Submit formal approval/review with statutory notes     │
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 3. Client & Mandate Historical Registry Audit               │
+   │    • Inspect all practice mandates and trade baskets        │
+   │    • Verify client PAN masking and consent status           │
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 4. Tamper-Evident Audit Trail Analysis (/mandates/:id)       │
+   │    • Verify chronological append-only audit timeline        │
+   │    • Validate SHA-256 cryptographic hash chaining           │
+   │    • Confirm Section 65B Electronic Evidence admissibility  │
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 5. Regulation 19 Compliance Dossier Certificate Export      │
+   │    • Open Compliance Dossier Modal                          │
+   │    • Validate Client PAN, IP address, User-Agent, & IST     │
+   │    • Print or export official PDF certificate for SEBI bind │
+   └─────────────────────────────────────────────────────────────┘
+```
+
+### Detailed Steps:
+1. **Auditor Authentication:**
+   - Logs in with compliance credentials (`compliance@example.in`) or via Role Switcher.
+2. **Advisory Requests Scrutiny (`/requests`):**
+   - Reviews requests submitted by advisers.
+   - Enforces Regulation 19 risk profile tolerances.
+   - Updates status to `approved`, `in_review`, or `rejected` with mandatory audit response notes.
+3. **Audit Trail Verification (`/mandates/:id`):**
+   - Reviews the immutable audit log: `MANDATE_CREATED` -> `MANDATE_DISPATCHED` -> `MANDATE_OPENED` -> `OTP_SENT` -> `CONSENT_GRANTED`.
+   - Confirms SHA-256 hash chaining (`prevHash -> payloadHash`), guaranteeing that no records have been altered or deleted.
+4. **Dossier Generation & Legal Certification:**
+   - Opens **Compliance Dossier** modal.
+   - Verifies the Indian Information Technology Act Section 65B Electronic Evidence statement.
+   - Confirms AWS Mumbai territorial data residency.
+   - Exports the digitally fingerprinted certificate for statutory filing.
+
+---
+
+## 6. Deep-Dive Process Flow: Role 4 — Platform Super Admin (`admin`)
+
+```
+   ┌─────────────────────────────────────────────────────────────┐
+   │                 SUPER ADMIN PROCESS FLOW                    │
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 1. Administrative Authentication                            │
+   │    • Sign in with superuser credentials                     │
+   │    • Unconstrained RBAC access across all endpoints         │
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 2. Cross-Tenant System Observability                        │
+   │    • View all mandates, requests, and clients across RIAs   │
+   │    • Track platform-wide volume, active plans, and usage    │
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 3. User Governance & Quota Overrides                        │
+   │    • Manage adviser accounts, plans (Free -> Pro), and quota│
+   │    • Resolve user role disputes or configuration errors     │
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 4. Dispute Resolution & Override Adjudication               │
+   │    • Resolve blocked mandates or emergency escalations      │
+   │    • Full write & update permissions on requests & mandates │
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 5. Infrastructure & Compliance Health Monitoring            │
+   │    • Verify /api/health endpoint status                     │
+   │    • Inspect MongoDB Atlas (AWS Mumbai) synchronization     │
+   │    • Validate SMS deprecation policy adherence              │
+   └─────────────────────────────────────────────────────────────┘
+```
+
+### Detailed Steps:
+1. **Superuser Entry:**
+   - Authenticates as Platform Admin (`admin@example.in`).
+   - Receives unconstrained access across all routes and API actions.
+2. **Cross-Tenant Oversight:**
+   - Oversees all RIA advisory practices, mandates, and client interactions.
+   - Inspects live database statistics (1,000+ users, 200+ clients, 350+ mandates).
+3. **Plan Governance & Quota Overrides:**
+   - Upgrades RIA accounts from Free to Pro.
+   - Overrides monthly mandate limits during peak market rebalancing windows.
+4. **Infrastructure & Compliance Verification:**
+   - Monitors `/api/health` to ensure live database connectivity, Google OAuth readiness, and adherence to the SMS-disabled policy.
+
+---
+
+## 7. Deep-Dive Process Flow: Role 5 — Advisory Client / Investor (`client`)
+
+Clients can interact through two distinct pathways: **Path A (Zero-Login Magic Link)** and **Path B (Authenticated Portal)**.
+
+### Path A: Zero-Login Cryptographic Magic Link (`/m/:token`) — Primary Client Experience
+
+```
+   ┌─────────────────────────────────────────────────────────────┐
+   │              CLIENT PATH A (ZERO-LOGIN MAGIC LINK)          │
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 1. Notification Reception                                   │
+   │    • Receives WhatsApp or Email with 48-hour cutoff notice  │
+   │    • Taps 256-bit magic link (e.g. /m/a9f48...)             │
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 2. Mobile Review (360px Viewport, <1.2s Load)               │
+   │    • Zero login required                                    │
+   │    • Displays RIA firm name, SEBI INA number, masked PAN    │
+   │    • Compares Current vs. Proposed Asset Allocation         │
+   │    • Inspects trade sell baskets with sale values           │
+   │    • Reviews pre-computed STCG 20% & LTCG 12.5% tax impact │
+   │    • Advance Tax quarterly alert banner if gain > ₹1 Lakh   │
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 3. Statutory Consent & Mobile OTP Verification              │
+   │    • Taps "Authorize Rebalance with Mobile OTP"             │
+   │    • Accepts mandatory SEBI Regulation 19 declarations      │
+   │    • Requests 6-digit OTP (delivered via email/in-app)      │
+   │    • Enters 6-digit code with 5-minute countdown            │
+   └─────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 4. Atomic Revocation & Tamper-Proof Compliance Receipt      │
+   │    • Backend verifies OTP and IMMEDIATELY revokes token     │
+   │    • Prevents replay attacks or double-consents             │
+   │    • Redirects to /m/:token/receipt                         │
+   │    • Displays SHA-256 fingerprint & Section 65B receipt     │
+   │    • Download or print receipt for personal records         │
+   └─────────────────────────────────────────────────────────────┘
+```
+
+### Path B: Authenticated Client Portal (`/dashboard`, `/requests`)
+
+1. **Authentication:** Client signs in at `/login` using registered credentials or Google OAuth.
+2. **Dashboard Overview:** Views personal rebalancing history, active proposals, and consented mandates.
+3. **Advisory Requests Participation (`/requests`):** Inspects requests initiated by their adviser and tracks compliance approval status.
+4. **Historical Receipts Access:** Accesses historical Section 65B compliance certificates for past rebalance transactions.
+
+---
+
+## 8. Mandate Lifecycle State Machine
+
+```
+               ┌────────────────────────────────────────────────────────┐
+               │                                                        │
+               ▼                                                        │
+          ┌─────────┐       RIA Dispatches Link      ┌──────────┐       │
+          │  DRAFT  │ ─────────────────────────────> │   SENT   │       │
+          └─────────┘                                └──────────┘       │
+               │                                          │             │
+               │                                          │ Client      │ Emergency
+               │                                          │ Opens Link  │ Revoke
+               │                                          ▼             │
+               │                                     ┌──────────┐       │
+               │                                     │  VIEWED  │ ──────┘
+               │                                     └──────────┘
+               │                                          │
+               │                                          │ OTP Verified &
+               │ 48-Hour                                  │ Declarations Accepted
+               │ Cutoff                                   ▼
+               │ Elapsed                             ┌───────────┐
+               └───────────────────────────────────> │ CONSENTED │ (Token Revoked, Locked)
+                                                     └───────────┘
+                                                          │
+                                                          ▼
+                                                     ┌───────────┐
+                                                     │  EXPIRED  │ (Lapsed without Consent)
+                                                     └───────────┘
 ```
 
 ---
 
-## 7. Edge Cases & Resilience Patterns
+## 9. Comprehensive Edge Cases & Resilience Patterns
 
-| Edge Case | User Experience | System Handling |
-|---|---|---|
-| **Free-Tier 4th Mandate Attempt** | RIA receives in-app Dialog modal explaining monthly quota limit. | Blocked at API level (`403 Forbidden` with `quotaExceeded: true`); WhatsApp & Razorpay checkout buttons provided. |
-| **Market Volatility Pre-Consent** | RIA clicks "Revoke Link" on dashboard. | Magic token set to `null` and flagged `isRevoked: true`; audit entry `LINK_REVOKED` appended; client viewing link sees 410 Expired message. |
-| **Client Opens Expired Link (>48h)** | Client sees red statutory shield warning indicating proposal cutoff window has lapsed. | Server returns `410 Gone`; blocks OTP requests; instructs client to contact RIA for updated rebalancing mandate. |
-| **Tampered Magic Token URL** | Client sees `404 Not Found` error. | Server rejects invalid 256-bit token; returns zero financial or PII data. |
-| **Multiple OTP Retries** | Client receives error "Invalid 6-digit OTP". | OTP expires after 300 seconds; brute-force protection rejects invalid entries. |
-| **Immediate Link Re-use Post-Consent** | Client or third party clicks magic link again after authorization. | Server immediately returns 404/410 because token was deleted upon consent verification; prevents double-authorization. |
+| Edge Case | Involved Role | User Experience | System Handling & Defense |
+|---|---|---|---|
+| **Free Plan Quota Exceeded (4th Mandate)** | `ria` | In-app dialog modal explaining 3-mandate monthly quota. | Intercepted at API level (`403 Forbidden` with `quotaExceeded: true`); provides 1-click Razorpay checkout and WhatsApp concierge. |
+| **Market Volatility Pre-Consent** | `ria` | RIA clicks "Revoke Link" on dashboard. | Magic token set to `null` and marked `isRevoked: true`; audit entry `LINK_REVOKED` logged; client viewing link receives `410 Expired`. |
+| **Client Opens Expired Link (>48h)** | `client` | Red statutory warning indicating cutoff window has lapsed. | Server returns `410 Gone`; blocks OTP requests; instructs client to contact adviser for revised terms. |
+| **Tampered / Invalid Magic Token URL** | `guest`, `client` | Client sees clean error screen indicating link not found. | Server rejects invalid token; returns zero PII or financial data. |
+| **Link Re-use Post-Consent** | `client` | Client or third party opens magic link again after authorization. | Server returns `410 Gone` because token was atomically deleted upon OTP verification; prevents double-consent. |
+| **Guest Attempts Privileged Route** | `guest` | Interactive Role-Gate dialog modal displayed on screen. | `ProtectedRoute.jsx` intercepts navigation; offers 1-click test drive as permitted role or redirect to login. |
+| **Role Restriction Breach (e.g. Client creating Mandate)** | `client` | Screen displays "Access Restricted by Role (RBAC)". | Server enforces `requireRole(['ria', 'admin'])` and returns `403 Forbidden`. |
+| **SMS Service Outage / Deprecation** | `client` | OTP received via registered email / in-app notification. | SMS completely deprecated by architectural policy; transactional emails handle OTP delivery reliably. |
