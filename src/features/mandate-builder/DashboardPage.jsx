@@ -20,7 +20,7 @@ import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { StatutoryBadge } from '../../components/brand/StatutoryBadge.jsx';
+import { StatutoryBadge, ExpirationCountdownBadge } from '../../components/brand/StatutoryBadge.jsx';
 import { MagicLinkModal } from '../magic-link/MagicLinkModal.jsx';
 import { ComplianceDossierModal } from '../compliance-dossier/ComplianceDossierModal.jsx';
 
@@ -119,11 +119,14 @@ export const DashboardPage = () => {
           value={statusFilter}
           onChange={(e, val) => setStatusFilter(val)}
           sx={{ px: 2, borderBottom: 1, borderColor: 'divider' }}
+          variant="scrollable"
+          scrollButtons="auto"
         >
           <Tab label="All Mandates" value="all" sx={{ fontWeight: 600 }} />
-          <Tab label="Pending OTP (In Review)" value="in_review" sx={{ fontWeight: 600 }} />
-          <Tab label="Approved & Locked" value="approved" sx={{ fontWeight: 600 }} />
-          <Tab label="Drafts" value="draft" sx={{ fontWeight: 600 }} />
+          <Tab label="Draft" value="draft" sx={{ fontWeight: 600 }} />
+          <Tab label="Sent" value="sent" sx={{ fontWeight: 600 }} />
+          <Tab label="Viewed" value="viewed" sx={{ fontWeight: 600 }} />
+          <Tab label="Consented" value="consented" sx={{ fontWeight: 600 }} />
           <Tab label="Expired" value="expired" sx={{ fontWeight: 600 }} />
         </Tabs>
 
@@ -132,9 +135,9 @@ export const DashboardPage = () => {
             <TableHead sx={{ bgcolor: 'background.default' }}>
               <TableRow>
                 <TableCell sx={{ fontWeight: 700 }}>Mandate Title</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Live Status</TableCell>
                 <TableCell sx={{ fontWeight: 700 }} align="right">Pre-computed Tax (₹)</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Cutoff Deadline</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>48-Hour Cutoff & Countdown</TableCell>
                 <TableCell sx={{ fontWeight: 700 }} align="center">Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -175,12 +178,20 @@ export const DashboardPage = () => {
                       ₹{(mandate.taxPayable || 0).toLocaleString('en-IN')}
                     </TableCell>
                     <TableCell sx={{ fontSize: '0.82rem' }}>
-                      {mandate.cutoffTimestamp
-                        ? new Date(mandate.cutoffTimestamp).toLocaleString('en-IN', {
-                            dateStyle: 'medium',
-                            timeStyle: 'short',
-                          })
-                        : '—'}
+                      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 0.5 }}>
+                        <span>
+                          {mandate.cutoffTimestamp
+                            ? new Date(mandate.cutoffTimestamp).toLocaleString('en-IN', {
+                                dateStyle: 'medium',
+                                timeStyle: 'short',
+                              })
+                            : '—'}
+                        </span>
+                        <ExpirationCountdownBadge
+                          cutoffTimestamp={mandate.cutoffTimestamp}
+                          status={mandate.status}
+                        />
+                      </Box>
                     </TableCell>
                     <TableCell align="center">
                       <Box sx={{ display: 'inline-flex', gap: 1 }}>

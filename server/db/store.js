@@ -63,13 +63,15 @@ class FinConsentStore {
   createMandate(mandateData) {
     const id = mandateData.id || `man_${crypto.randomUUID()}`;
     const magicToken = mandateData.magicToken || crypto.randomBytes(32).toString('hex');
-    const tokenExpiresAt = mandateData.tokenExpiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    const tokenExpiresAt = mandateData.tokenExpiresAt || new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+    const cutoffTimestamp = mandateData.cutoffTimestamp || new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
 
     const mandate = {
       id,
       ...mandateData,
       magicToken,
       tokenExpiresAt,
+      cutoffTimestamp,
       status: mandateData.status || 'draft',
       createdAt: mandateData.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -108,20 +110,29 @@ class FinConsentStore {
     ).length;
   }
 
+  countMonthlyMandates(riaId) {
+    const currentMonthPrefix = new Date().toISOString().slice(0, 7);
+    return Array.from(this.mandates.values()).filter(
+      (m) => m.riaId === riaId && m.createdAt && m.createdAt.startsWith(currentMonthPrefix)
+    ).length;
+  }
+
   // Audit Log operations - strictly immutable, append-only
   createAuditLog(entry) {
     const id = `aud_${crypto.randomUUID()}`;
     const timestamp = new Date().toISOString();
+    const timestampIST = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
     
     // Hash chaining with previous log entry
     const prevHash = this.auditLogs.length > 0 ? this.auditLogs[this.auditLogs.length - 1].payloadHash : 'GENESIS';
-    const rawPayload = JSON.stringify({ ...entry, prevHash, timestamp });
+    const rawPayload = JSON.stringify({ ...entry, prevHash, timestamp, timestampIST });
     const payloadHash = crypto.createHash('sha256').update(rawPayload).digest('hex');
 
     const logEntry = Object.freeze({
       id,
       ...entry,
       timestamp,
+      timestampIST,
       prevHash,
       payloadHash,
       immutable: true,

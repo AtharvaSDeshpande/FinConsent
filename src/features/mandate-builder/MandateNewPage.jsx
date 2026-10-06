@@ -11,6 +11,12 @@ import Grid from '@mui/material/Grid';
 import Alert from '@mui/material/Alert';
 import Slider from '@mui/material/Slider';
 import Divider from '@mui/material/Divider';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
@@ -22,7 +28,7 @@ export const MandateNewPage = () => {
   const [title, setTitle] = useState('');
   const [stcgAmount, setStcgAmount] = useState(60000);
   const [ltcgAmount, setLtcgAmount] = useState(120000);
-  const [cutoffHours, setCutoffHours] = useState(24);
+  const [cutoffHours, setCutoffHours] = useState(48);
   const [allocations, setAllocations] = useState({
     equity: 60,
     debt: 25,
@@ -31,6 +37,8 @@ export const MandateNewPage = () => {
   });
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [quotaModalOpen, setQuotaModalOpen] = useState(false);
+  const [quotaPrompt, setQuotaPrompt] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -83,7 +91,7 @@ export const MandateNewPage = () => {
           proposedAllocation: allocations,
           stcgAmount: Number(stcgAmount) || 0,
           ltcgAmount: Number(ltcgAmount) || 0,
-          cutoffHours: Number(cutoffHours) || 24,
+          cutoffHours: Number(cutoffHours) || 48,
           sellBasket: [
             {
               securityName: 'Equities Profit Booking Basket',
@@ -97,8 +105,15 @@ export const MandateNewPage = () => {
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        if (res.status === 403 && data.quotaExceeded) {
-          throw new Error(data.error);
+        if (data.quotaExceeded) {
+          setQuotaPrompt(data.upgradePrompt || {
+            title: 'Free Tier Monthly Mandate Quota Exceeded',
+            message: 'You have utilized all 3 trade mandates allowed in the Free Tier this calendar month.',
+            whatsappUpgradeUrl: 'https://wa.me/919876543210?text=Hi%2C%20I%20want%20to%20upgrade%20to%20FinConsent%20Pro',
+            billingUrl: '/billing',
+          });
+          setQuotaModalOpen(true);
+          return;
         }
         throw new Error(data.error || 'Failed to create mandate');
       }
@@ -287,6 +302,64 @@ export const MandateNewPage = () => {
           </Grid>
         </Grid>
       </Box>
+
+      {/* Free Tier Quota Exceeded Modal with WhatsApp Prompt (Criterion 1) */}
+      <Dialog
+        open={quotaModalOpen}
+        onClose={() => setQuotaModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 3, p: 1 } }}
+      >
+        <DialogTitle sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <WorkspacePremiumIcon color="warning" />
+          {quotaPrompt?.title || 'Monthly Mandate Quota Exceeded'}
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body1" paragraph>
+            {quotaPrompt?.message ||
+              'You have reached the monthly limit of 3 trade mandates on the Free Plan. Upgrade to Pro RIA to unlock unlimited statutory trade authorizations.'}
+          </Typography>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            Under SEBI regulations, client consent records must be maintained systematically. Pro RIA tier unlocks unlimited mandates, audit exports, and automated WhatsApp delivery.
+          </Alert>
+          <Box sx={{ p: 2, bgcolor: 'background.default', borderRadius: 2, border: 1, borderColor: 'divider' }}>
+            <Typography variant="subtitle2" fontWeight={700}>
+              FinConsent Pro Plan — ₹4,999 / year
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              • Unlimited monthly trade mandates & magic links<br />
+              • WhatsApp Direct Dispatch integration<br />
+              • SEBI Regulation 19 audit dossier PDF generation<br />
+              • Custom RIA firm logo & advisory disclosures
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, gap: 1 }}>
+          <Button onClick={() => setQuotaModalOpen(false)} color="inherit">
+            Dismiss
+          </Button>
+          <Button
+            variant="outlined"
+            color="success"
+            startIcon={<WhatsAppIcon />}
+            href={quotaPrompt?.whatsappUpgradeUrl || 'https://wa.me/919876543210'}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Upgrade via WhatsApp
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<WorkspacePremiumIcon />}
+            component={RouterLink}
+            to="/billing"
+          >
+            Upgrade with Razorpay
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

@@ -76,20 +76,26 @@ router.post('/', (req, res) => {
     return res.status(404).json({ success: false, error: 'Selected client not found' });
   }
 
-  // Quota enforcement: Free tier allows maximum 3 active mandates (draft or in_review)
+  // Quota enforcement: Free tier allows maximum 3 mandates per calendar month
   if (req.user.plan !== 'pro') {
-    const activeCount = dbStore.countActiveMandates(req.user.id);
-    if (activeCount >= 3) {
+    const monthlyCount = dbStore.countMonthlyMandates(req.user.id);
+    if (monthlyCount >= 3) {
       return res.status(403).json({
         success: false,
-        error: 'Free tier quota limit reached (maximum 3 active mandates). Upgrade to Pro RIA to dispatch unlimited mandates or archive existing ones.',
+        error: 'Free tier quota limit reached (maximum 3 mandates per calendar month). Upgrade to Pro RIA to dispatch unlimited mandates.',
         quotaExceeded: true,
+        upgradePrompt: {
+          title: 'Free Tier Monthly Mandate Quota Exceeded',
+          message: 'You have reached the monthly statutory limit of 3 trade mandates. Upgrade to FinConsent Pro (₹4,999/yr) for unlimited client authorizations, automated WhatsApp reminders, and SEBI-ready audit exports.',
+          whatsappUpgradeUrl: `https://wa.me/919876543210?text=${encodeURIComponent('Hi FinConsent team, I want to upgrade to the Pro Tier (₹4,999/yr) to publish unlimited trade mandates.')}`,
+          billingUrl: '/billing',
+        },
       });
     }
   }
 
   const taxCalcs = computeTaxesAndDeadlines(stcgAmount, ltcgAmount);
-  const cutoffTimestamp = new Date(Date.now() + (Number(cutoffHours) || 24) * 60 * 60 * 1000).toISOString();
+  const cutoffTimestamp = new Date(Date.now() + (Number(cutoffHours) || 48) * 60 * 60 * 1000).toISOString();
   const magicToken = crypto.randomBytes(32).toString('hex');
 
   const mandate = dbStore.createMandate({

@@ -16,3 +16,5 @@
 {"ts":"2026-10-06T12:12:45.276Z","type":"a3-billing-pro","description":"advisory start"}
 {"ts":"2026-10-06T12:12:45.276Z","type":"a3-notifications","description":"advisory start"}
 {"ts":"2026-10-06T12:12:45.277Z","type":"a3-legal-compliance","description":"advisory start"}
+{"ts":"2026-10-06T12:23:42.480Z","type":"a12-qa","description":"advisory start"}
+{"ts":"2026-10-06T12:23:42.481Z","type":"a13-reviewer","description":"advisory start"}

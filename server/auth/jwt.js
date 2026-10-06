@@ -9,7 +9,7 @@ export function signToken(payload, expiresIn = '7d') {
 export function verifyToken(token) {
   try {
     return jwt.verify(token, JWT_SECRET);
-  } catch (err) {
+  } catch {
     return null;
   }
 }

@@ -11,6 +11,7 @@ import Grid from '@mui/material/Grid';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Alert from '@mui/material/Alert';
@@ -99,12 +100,22 @@ export const ClientReviewPage = () => {
   }
 
   const { mandate, client, ria } = data;
-  const isApproved = mandate.status === 'approved';
+  const isApproved = mandate.status === 'approved' || mandate.status === 'consented';
+  const netCapitalGain = (Number(mandate.stcgAmount) || 0) + (Number(mandate.ltcgAmount) || 0);
 
   return (
-    <Container maxWidth="md" sx={{ py: { xs: 2, md: 4 } }}>
+    <Container
+      maxWidth="md"
+      sx={{
+        py: { xs: 2, md: 4 },
+        px: { xs: 1.5, sm: 3 },
+        width: '100%',
+        maxWidth: { xs: '100%', sm: '600px', md: '900px' },
+        boxSizing: 'border-box',
+      }}
+    >
       {/* Top Banner & RIA Header */}
-      <Card elevation={1} sx={{ p: { xs: 2.5, md: 3 }, mb: 3, borderRadius: 3, bgcolor: 'background.paper', border: 1, borderColor: 'divider' }}>
+      <Card elevation={1} sx={{ p: { xs: 2, md: 3 }, mb: 3, borderRadius: 3, bgcolor: 'background.paper', border: 1, borderColor: 'divider' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
           <Logo size={36} />
           <StatutoryBadge status={mandate.status} />
@@ -123,8 +134,12 @@ export const ClientReviewPage = () => {
         </Box>
       </Card>
 
-      {/* Advance Tax Section 234B/234C alert */}
-      <AdvanceTaxAlertBanner installment={mandate.advanceTaxQuarter} totalTax={mandate.taxPayable} />
+      {/* Advance Tax Section 234B/234C alert (triggers when net capital gain > ₹1,00,000) */}
+      <AdvanceTaxAlertBanner
+        installment={mandate.advanceTaxQuarter}
+        totalTax={mandate.taxPayable}
+        netGain={netCapitalGain}
+      />
 
       {/* Asset Allocation Shift Comparison */}
       <Card elevation={2} sx={{ mb: 3, borderRadius: 3, border: 1, borderColor: 'divider' }}>

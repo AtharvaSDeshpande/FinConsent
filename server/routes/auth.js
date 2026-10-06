@@ -37,7 +37,8 @@ router.post('/register', async (req, res) => {
     });
 
     const token = signToken({ userId: user.id });
-    const { passwordHash: _, ...userSafe } = user;
+    const userSafe = { ...user };
+    delete userSafe.passwordHash;
 
     res.status(201).json({ success: true, token, user: userSafe });
   } catch (err) {
@@ -64,7 +65,8 @@ router.post('/login', async (req, res) => {
     }
 
     const token = signToken({ userId: user.id });
-    const { passwordHash: _, ...userSafe } = user;
+    const userSafe = { ...user };
+    delete userSafe.passwordHash;
 
     res.json({ success: true, token, user: userSafe });
   } catch (err) {
@@ -74,7 +76,8 @@ router.post('/login', async (req, res) => {
 
 // Current User & Quota status
 router.get('/me', requireAuth, (req, res) => {
-  const { passwordHash: _, ...userSafe } = req.user;
+  const userSafe = { ...req.user };
+  delete userSafe.passwordHash;
   const activeMandates = dbStore.countActiveMandates(req.user.id);
   const quotaLimit = req.user.plan === 'pro' ? Infinity : 3;
 
@@ -105,7 +108,8 @@ router.put('/profile', requireAuth, (req, res) => {
   if (complianceEmail) updates.complianceEmail = complianceEmail;
 
   const updated = dbStore.updateUser(req.user.id, updates);
-  const { passwordHash: _, ...userSafe } = updated;
+  const userSafe = { ...updated };
+  delete userSafe.passwordHash;
   res.json({ success: true, user: userSafe });
 });
 

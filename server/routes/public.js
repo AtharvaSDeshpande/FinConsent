@@ -28,6 +28,12 @@ router.get('/mandates/:token', (req, res) => {
     });
   }
 
+  // Mark status as viewed if sent/draft
+  if (mandate.status === 'sent' || mandate.status === 'draft') {
+    dbStore.updateMandate(mandate.id, { status: 'viewed' });
+    mandate.status = 'viewed';
+  }
+
   const client = dbStore.findClientById(mandate.clientId);
   const ria = dbStore.findUserById(mandate.riaId);
 
@@ -37,9 +43,11 @@ router.get('/mandates/:token', (req, res) => {
 
   // Log OPENED audit event
   dbStore.createAuditLog({
+    riaId: mandate.riaId,
+    clientId: mandate.clientId,
     mandateId: mandate.id,
     eventType: 'OPENED',
-    ipAddress: req.ip || '127.0.0.1',
+    ipAddress: req.ip || req.connection?.remoteAddress || '127.0.0.1',
     userAgent: req.headers['user-agent'] || 'Mobile-Client',
     metadata: { clientDevice: 'Client Review Mobile View' },
   });
@@ -138,23 +146,32 @@ router.post('/mandates/:token/verify-otp', (req, res) => {
     return res.status(400).json({ success: false, error: verification.reason });
   }
 
-  // Lock mandate to Approved
+  // Lock mandate to Consented & immediately revoke magic token (Criterion 5)
   const updated = dbStore.updateMandate(mandate.id, {
-    status: 'approved',
+    status: 'consented',
+    isApproved: true,
     approvedAt: new Date().toISOString(),
+    consentedAt: new Date().toISOString(),
+    isRevoked: true,
+    revokedAt: new Date().toISOString(),
+    magicToken: null, // Immediately revokes magic token upon consent
   });
 
   const otpVerificationId = `otp_ver_${crypto.randomUUID()}`;
 
-  // Commit immutable SHA-256 audit entry
+  // Commit immutable SHA-256 audit entry satisfying Criterion 7
   const auditEntry = dbStore.createAuditLog({
+    riaId: mandate.riaId,
+    clientId: mandate.clientId,
     mandateId: mandate.id,
-    eventType: 'APPROVED',
-    ipAddress: req.ip || '127.0.0.1',
+    eventType: 'CONSENT_GRANTED',
+    ipAddress: req.ip || req.connection?.remoteAddress || '127.0.0.1',
     userAgent: req.headers['user-agent'] || 'Mobile-Client',
+    verificationMethod: 'OTP_SMS',
     otpVerificationId,
+    timestampIST: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
     metadata: {
-      status: 'Approved & Locked',
+      status: 'Consented & Locked',
       declarationsAcknowledged: [
         'SEBI Regulation 19 Informed Consent',
         `Acknowledged Capital Gains Tax Obligation of ₹${mandate.taxPayable.toLocaleString('en-IN')}`,

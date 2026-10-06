@@ -59,7 +59,8 @@ router.post('/webhook', (req, res) => {
 // Upgrade RIA to Pro directly for pilot/testing
 router.post('/upgrade-test', requireAuth, (req, res) => {
   const updated = dbStore.updateUser(req.user.id, { plan: 'pro' });
-  const { passwordHash: _, ...userSafe } = updated;
+  const userSafe = { ...updated };
+  delete userSafe.passwordHash;
   res.json({ success: true, user: userSafe });
 });
 
