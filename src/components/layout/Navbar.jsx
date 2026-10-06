@@ -99,18 +99,33 @@ export const Navbar = () => {
             <Logo size={32} />
           </RouterLink>
 
-          {/* Authenticated Nav items */}
+          {/* Authenticated Nav items tailored to role */}
           {!isGuest && (
             <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
-              <Button component={RouterLink} to="/dashboard" startIcon={<DashboardOutlinedIcon />} color="inherit">
-                Dashboard
+              <Button
+                component={RouterLink}
+                to="/dashboard"
+                startIcon={<DashboardOutlinedIcon />}
+                color="inherit"
+              >
+                {role === 'client' ? 'My Authorizations' : role === 'compliance_officer' ? 'Audit Center' : 'Mandates Hub'}
               </Button>
-              <Button component={RouterLink} to="/requests" startIcon={<AssignmentOutlinedIcon />} color="inherit">
-                Requests Hub
+              <Button
+                component={RouterLink}
+                to="/requests"
+                startIcon={<AssignmentOutlinedIcon />}
+                color="inherit"
+              >
+                {role === 'client' ? 'My Requests' : role === 'compliance_officer' ? 'Requests Scrutiny' : 'Requests Hub'}
               </Button>
               {(isRia || isAdmin || role === 'compliance_officer') && (
-                <Button component={RouterLink} to="/clients" startIcon={<PeopleAltOutlinedIcon />} color="inherit">
-                  Clients
+                <Button
+                  component={RouterLink}
+                  to="/clients"
+                  startIcon={<PeopleAltOutlinedIcon />}
+                  color="inherit"
+                >
+                  {role === 'compliance_officer' ? 'Audit Registry' : 'Clients'}
                 </Button>
               )}
               {(isRia || isAdmin) && (
@@ -227,7 +242,7 @@ export const Navbar = () => {
                 color="inherit"
                 sx={{ display: { xs: 'none', sm: 'inline-flex' }, fontWeight: 600 }}
               >
-                {user.sebiRegNumber || user.name || 'Profile'}
+                {role === 'client' ? (user.name || 'Client Account') : role === 'compliance_officer' ? (user.name || 'Compliance Officer') : (user.sebiRegNumber || user.name || 'RIA Profile')}
               </Button>
               <IconButton onClick={handleLogout} color="inherit" title="Sign Out to Guest">
                 <LogoutIcon fontSize="small" />

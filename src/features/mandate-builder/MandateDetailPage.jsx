@@ -132,7 +132,14 @@ export const MandateDetailPage = () => {
           </Box>
 
           <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-            {mandate.status === 'draft' ? (
+            {role === 'compliance_officer' ? (
+              <Chip
+                label="Compliance Audit Mode (Read-Only)"
+                color="info"
+                variant="outlined"
+                sx={{ fontWeight: 700 }}
+              />
+            ) : mandate.status === 'draft' ? (
               <Button
                 variant="contained"
                 startIcon={<SendOutlinedIcon />}
@@ -165,7 +172,7 @@ export const MandateDetailPage = () => {
 
       <Grid container spacing={3}>
         {/* Tax Breakdown */}
-        <Grid item xs={12} md={5}>
+        <Grid size={{ xs: 12, md: 5 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <TaxBreakdownCard
               stcgAmount={mandate.stcgAmount}
@@ -194,7 +201,7 @@ export const MandateDetailPage = () => {
         </Grid>
 
         {/* Audit Trail Timeline */}
-        <Grid item xs={12} md={7}>
+        <Grid size={{ xs: 12, md: 7 }}>
           <AuditTrailTimeline logs={mandate.auditLogs || []} />
         </Grid>
       </Grid>

@@ -183,11 +183,14 @@ router.get('/me', requireAuth, (req, res) => {
   });
 });
 
-// Update User Profile (e.g. INA number, firm name, role)
+// Update User Profile (e.g. INA number, firm name, role, name, mobile)
 router.put('/profile', requireAuth, (req, res) => {
-  const { sebiRegNumber, firmName, complianceEmail, role } = req.body;
+  const { sebiRegNumber, firmName, complianceEmail, role, name, mobile, pan } = req.body;
   const updates = {};
 
+  if (name) updates.name = name;
+  if (mobile) updates.mobile = mobile;
+  if (pan) updates.pan = pan;
   if (sebiRegNumber) {
     const sebiRegex = /^INA\d{9}$/i;
     if (!sebiRegex.test(sebiRegNumber.trim())) {

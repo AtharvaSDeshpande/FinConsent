@@ -89,7 +89,7 @@ export const BillingPage = () => {
 
       <Grid container spacing={3}>
         {/* Quota Usage Meter */}
-        <Grid item xs={12} md={5}>
+        <Grid size={{ xs: 12, md: 5 }}>
           <Card elevation={2} sx={{ borderRadius: 3, border: 1, borderColor: 'divider', height: '100%' }}>
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h6" fontWeight={700} gutterBottom>
@@ -129,7 +129,7 @@ export const BillingPage = () => {
         </Grid>
 
         {/* Pro Plan Card */}
-        <Grid item xs={12} md={7}>
+        <Grid size={{ xs: 12, md: 7 }}>
           <Card
             elevation={3}
             sx={{

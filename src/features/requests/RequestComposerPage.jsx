@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -9,7 +9,6 @@ import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
-import Slider from '@mui/material/Slider';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import Table from '@mui/material/Table';
@@ -26,8 +25,10 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import SendIcon from '@mui/icons-material/Send';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import TuneIcon from '@mui/icons-material/Tune';
+import ShuffleIcon from '@mui/icons-material/Shuffle';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../security/AuthContext.jsx';
 
@@ -55,7 +56,7 @@ const STATUS_COLORS = {
 };
 
 export const RequestComposerPage = () => {
-  const { user, role, isComplianceOfficer, isAdmin } = useAuth();
+  const { user, role, isComplianceOfficer, isClient, isRia, isAdmin } = useAuth();
   const queryClient = useQueryClient();
 
   // Filter tab state
@@ -68,7 +69,7 @@ export const RequestComposerPage = () => {
   // Form State
   const [formData, setFormData] = useState({
     title: '',
-    category: 'Portfolio Rebalance Advisory',
+    category: isClient ? 'Portfolio Rebalance Advisory' : 'Portfolio Rebalance Advisory',
     clientId: '',
     priority: 'standard',
     description: '',
@@ -78,8 +79,8 @@ export const RequestComposerPage = () => {
     proposedCashRatio: 5,
   });
 
-  // Fetch clients for dropdown
-  const { data: clientsData } = useQuery({
+  // Fetch clients for dropdown & automated assignment
+  const { data: clientsData = [] } = useQuery({
     queryKey: ['clients'],
     queryFn: async () => {
       const token = localStorage.getItem('finconsent_token');
@@ -92,7 +93,24 @@ export const RequestComposerPage = () => {
     staleTime: 1000 * 60 * 5,
   });
 
-  const clients = clientsData || [];
+  const clients = clientsData;
+
+  // Automated client assignment for RIA / Admin
+  const handleAutoAssignClient = () => {
+    if (clients.length === 0) return;
+    const picked = clients[Math.floor(Math.random() * clients.length)];
+    setFormData((prev) => ({
+      ...prev,
+      clientId: picked.id,
+      title: prev.title || `Q1 FY27 Rebalance Proposal — ${picked.name}`,
+    }));
+  };
+
+  useEffect(() => {
+    if (clients.length > 0 && !formData.clientId && (isRia || isAdmin)) {
+      handleAutoAssignClient();
+    }
+  }, [clients]);
 
   // Fetch requests using TanStack Query
   const {
@@ -113,10 +131,10 @@ export const RequestComposerPage = () => {
       }
       return json.data;
     },
-    staleTime: 1000 * 30, // 30 seconds cache
+    staleTime: 1000 * 30,
   });
 
-  // TanStack Mutation with Optimistic UI Update for composing request
+  // TanStack Mutation with Optimistic UI Update
   const composeMutation = useMutation({
     mutationFn: async (newRequestPayload) => {
       const token = localStorage.getItem('finconsent_token');
@@ -135,41 +153,32 @@ export const RequestComposerPage = () => {
       return json.data;
     },
     onMutate: async (newRequestPayload) => {
-      // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: ['requests'] });
-
-      // Snapshot previous value
       const previousRequests = queryClient.getQueryData(['requests', statusFilter]) || [];
-
-      // Selected client name
       const matchedClient = clients.find((c) => c.id === newRequestPayload.clientId);
 
-      // Optimistic record
       const optimisticRequest = {
         id: `temp-${Date.now()}`,
         ...newRequestPayload,
-        clientName: matchedClient?.name || 'General Client',
-        userName: user?.name || 'Adviser',
+        clientName: matchedClient?.name || (isClient ? user?.name : 'General Advisory Client'),
+        userName: user?.name || 'Authorized User',
         userRole: user?.role || 'ria',
-        userFirm: user?.firmName || 'Wealth Partners',
         status: 'pending',
         createdAt: new Date().toISOString(),
         isOptimistic: true,
       };
 
-      // Optimistically update query cache
       queryClient.setQueryData(['requests', statusFilter], [optimisticRequest, ...previousRequests]);
-
       return { previousRequests };
     },
-    onError: (err, newRequestPayload, context) => {
+    onError: (err, newRequest, context) => {
       if (context?.previousRequests) {
         queryClient.setQueryData(['requests', statusFilter], context.previousRequests);
       }
-      setFormError(err.message || 'Error submitting request');
+      setFormError(err.message || 'Failed to create request');
     },
     onSuccess: () => {
-      setFormSuccess('Advisory request successfully submitted and logged into statutory audit queue.');
+      setFormSuccess('Request successfully created and logged to audit trail.');
       setFormData({
         title: '',
         category: 'Portfolio Rebalance Advisory',
@@ -226,207 +235,272 @@ export const RequestComposerPage = () => {
       setFormError('Please enter a request title and descriptive explanation.');
       return;
     }
-    if (totalAllocation !== 100) {
+    if (!isClient && totalAllocation !== 100) {
       setFormError(`Proposed asset allocation must equal 100% (Current: ${totalAllocation}%).`);
       return;
     }
     composeMutation.mutate(formData);
   };
 
+  const assignedClientObj = clients.find((c) => c.id === formData.clientId);
+
   return (
-    <Container maxWidth="xl" sx={{ py: 2 }}>
+    <Container maxWidth="xl" sx={{ py: 3 }}>
       {/* Page Header */}
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
+      <Box sx={{ mb: 3.5, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
-            <Typography variant="h4" component="h1" fontWeight={700}>
-              Advisory & Compliance Request Hub
+            <Typography variant="h4" component="h1" fontWeight={800} letterSpacing="-0.02em">
+              {isComplianceOfficer
+                ? 'Statutory Scrutiny & Requests Queue'
+                : isClient
+                ? 'My Advisory Inquiries & Proposals'
+                : 'Advisory & Compliance Request Hub'}
             </Typography>
             <Chip
-              label={`ROLE: ${role?.toUpperCase() || 'RIA'}`}
-              color="primary"
+              label={`ROLE: ${role?.toUpperCase() || 'GUEST'}`}
+              color={role === 'admin' ? 'secondary' : role === 'compliance_officer' ? 'info' : role === 'client' ? 'success' : 'primary'}
               size="small"
-              sx={{ fontWeight: 700 }}
+              sx={{ fontWeight: 800 }}
             />
           </Box>
           <Typography variant="body2" color="text.secondary">
-            Compose and dispatch trade rebalancing requests, regulatory queries, and asset allocation adjustments with TanStack Query optimistic caching.
+            {isComplianceOfficer
+              ? 'Review advisory rationale, verify Regulation 19 asset allocation tolerances, and submit statutory sign-offs'
+              : isClient
+              ? 'View rebalancing proposals from your investment adviser or submit statutory advisory questions'
+              : 'Compose and dispatch trade rebalancing requests, regulatory queries, and asset allocation adjustments'}
           </Typography>
         </Box>
       </Box>
 
-      {/* Main Grid: Request Composer Form (Left/Top) & Requests Explorer (Right/Bottom) */}
+      {/* Main Grid: Form / Scrutiny Panel (Left) & Requests Ledger (Right) */}
       <Grid container spacing={3}>
-        {/* COMPOSER FORM */}
-        <Grid item xs={12} lg={5}>
-          <Card elevation={2} sx={{ borderRadius: 3, border: 1, borderColor: 'divider', position: 'sticky', top: 88 }}>
-            <CardContent sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <TuneIcon color="primary" />
-                <Typography variant="h6" fontWeight={700}>
-                  Compose New Request
-                </Typography>
-              </Box>
-
-              {formSuccess && (
-                <Alert severity="success" sx={{ mb: 2 }}>
-                  {formSuccess}
+        {/* LEFT PANEL: Role-tailored action card */}
+        <Grid size={{ xs: 12, lg: 5 }}>
+          {isComplianceOfficer ? (
+            // Compliance Officer Scrutiny Mode Card
+            <Card elevation={2} sx={{ borderRadius: 3, border: 1, borderColor: 'info.light', position: 'sticky', top: 88 }}>
+              <CardContent sx={{ p: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <FactCheckOutlinedIcon color="info" />
+                  <Typography variant="h6" fontWeight={700}>
+                    Compliance Officer Scrutiny Panel
+                  </Typography>
+                </Box>
+                <Alert severity="info" sx={{ mb: 2.5, borderRadius: 2 }}>
+                  Select any pending request from the ledger on the right to examine trade justification, verify asset drift tolerances under Regulation 19, and submit statutory sign-off notes.
                 </Alert>
-              )}
-              {formError && (
-                <Alert severity="error" sx={{ mb: 2 }}>
-                  {formError}
-                </Alert>
-              )}
-
-              <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <TextField
-                  label="Request Title / Objective"
-                  required
-                  fullWidth
-                  size="small"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="e.g. Q1 FY27 Aggressive Equity Rebalance Authorization"
-                />
-
-                <Grid container spacing={1.5}>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      select
-                      label="Category"
-                      fullWidth
-                      size="small"
-                      value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    >
-                      {REQUEST_CATEGORIES.map((cat) => (
-                        <MenuItem key={cat} value={cat}>
-                          {cat}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      select
-                      label="Priority"
-                      fullWidth
-                      size="small"
-                      value={formData.priority}
-                      onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                    >
-                      <MenuItem value="standard">Standard Priority</MenuItem>
-                      <MenuItem value="high">High Priority</MenuItem>
-                      <MenuItem value="urgent">Urgent / Immediate</MenuItem>
-                    </TextField>
-                  </Grid>
-                </Grid>
-
-                <TextField
-                  select
-                  label="Target Advisory Client (Optional)"
-                  fullWidth
-                  size="small"
-                  value={formData.clientId}
-                  onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
-                  helperText={clients.length === 0 ? 'No clients found. You can add clients from the Clients tab.' : 'Select an onboarding client'}
-                >
-                  <MenuItem value="">-- General / Multi-Client Strategy --</MenuItem>
-                  {clients.map((c) => (
-                    <MenuItem key={c.id} value={c.id}>
-                      {c.name} ({c.pan})
-                    </MenuItem>
-                  ))}
-                </TextField>
-
-                {/* Proposed Asset Allocation Breakdown */}
                 <Box sx={{ p: 2, bgcolor: 'background.default', borderRadius: 2, border: 1, borderColor: 'divider' }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                    <Typography variant="caption" fontWeight={700} color="text.secondary">
-                      PROPOSED ASSET ALLOCATION TARGETS
+                  <Typography variant="caption" fontWeight={700} color="text.secondary" display="block">
+                    AUDIT CHECKS IN SCOPE:
+                  </Typography>
+                  <Typography variant="body2" sx={{ mt: 0.5, color: 'text.secondary' }}>
+                    • Fiduciary suitability analysis (Section 15)<br />
+                    • Non-discretionary prior client consent mandate (Reg 19)<br />
+                    • SHA-256 cryptographic audit chaining integrity<br />
+                    • Advance Tax Section 234B/234C compliance alert
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          ) : (
+            // Request Composer Form for RIA, Admin, or Client
+            <Card elevation={2} sx={{ borderRadius: 3, border: 1, borderColor: 'divider', position: 'sticky', top: 88 }}>
+              <CardContent sx={{ p: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <TuneIcon color="primary" />
+                    <Typography variant="h6" fontWeight={700}>
+                      {isClient ? 'Submit Advisory Inquiry' : 'Compose Advisory Request'}
                     </Typography>
-                    <Chip
-                      label={`Sum: ${totalAllocation}%`}
-                      color={totalAllocation === 100 ? 'success' : 'error'}
-                      size="small"
-                      sx={{ fontWeight: 700, height: 20, fontSize: '0.72rem' }}
-                    />
                   </Box>
-
-                  <Grid container spacing={1}>
-                    <Grid item xs={6} sm={3}>
-                      <Typography variant="caption" color="text.secondary">Equity %</Typography>
-                      <TextField
-                        type="number"
-                        size="small"
-                        fullWidth
-                        value={formData.proposedEquityRatio}
-                        onChange={(e) => setFormData({ ...formData, proposedEquityRatio: Number(e.target.value) })}
-                      />
-                    </Grid>
-                    <Grid item xs={6} sm={3}>
-                      <Typography variant="caption" color="text.secondary">Debt %</Typography>
-                      <TextField
-                        type="number"
-                        size="small"
-                        fullWidth
-                        value={formData.proposedDebtRatio}
-                        onChange={(e) => setFormData({ ...formData, proposedDebtRatio: Number(e.target.value) })}
-                      />
-                    </Grid>
-                    <Grid item xs={6} sm={3}>
-                      <Typography variant="caption" color="text.secondary">Gold %</Typography>
-                      <TextField
-                        type="number"
-                        size="small"
-                        fullWidth
-                        value={formData.proposedGoldRatio}
-                        onChange={(e) => setFormData({ ...formData, proposedGoldRatio: Number(e.target.value) })}
-                      />
-                    </Grid>
-                    <Grid item xs={6} sm={3}>
-                      <Typography variant="caption" color="text.secondary">Cash %</Typography>
-                      <TextField
-                        type="number"
-                        size="small"
-                        fullWidth
-                        value={formData.proposedCashRatio}
-                        onChange={(e) => setFormData({ ...formData, proposedCashRatio: Number(e.target.value) })}
-                      />
-                    </Grid>
-                  </Grid>
+                  {!isClient && clients.length > 0 && (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<ShuffleIcon />}
+                      onClick={handleAutoAssignClient}
+                      sx={{ textTransform: 'none', borderRadius: 2, fontSize: '0.75rem' }}
+                    >
+                      Auto-Assign Client
+                    </Button>
+                  )}
                 </Box>
 
-                <TextField
-                  label="Advisory Rationale / Description"
-                  required
-                  fullWidth
-                  multiline
-                  rows={4}
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Provide statutory justification, rebalance thesis, or client mandate requirements..."
-                />
+                {formSuccess && <Alert severity="success" sx={{ mb: 2 }}>{formSuccess}</Alert>}
+                {formError && <Alert severity="error" sx={{ mb: 2 }}>{formError}</Alert>}
 
-                <Button
-                  type="submit"
-                  variant="contained"
-                  startIcon={composeMutation.isPending ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
-                  disabled={composeMutation.isPending}
-                  size="large"
-                  sx={{ mt: 1, py: 1.2, fontWeight: 700 }}
-                >
-                  {composeMutation.isPending ? 'Submitting & Optimistically Caching...' : 'Submit Advisory Request'}
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
+                <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <TextField
+                    label="Request Title / Objective"
+                    required
+                    fullWidth
+                    size="small"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    placeholder={isClient ? 'e.g. Query regarding Q1 Tax Harvesting Strategy' : 'e.g. Q1 FY27 Aggressive Equity Rebalance Authorization'}
+                  />
+
+                  <Grid container spacing={1.5}>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <TextField
+                        select
+                        label="Category"
+                        fullWidth
+                        size="small"
+                        value={formData.category}
+                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      >
+                        {REQUEST_CATEGORIES.map((cat) => (
+                          <MenuItem key={cat} value={cat}>
+                            {cat}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Grid>
+
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <TextField
+                        select
+                        label="Priority"
+                        fullWidth
+                        size="small"
+                        value={formData.priority}
+                        onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                      >
+                        <MenuItem value="standard">Standard Priority</MenuItem>
+                        <MenuItem value="high">High Priority</MenuItem>
+                        <MenuItem value="urgent">Urgent / Immediate</MenuItem>
+                      </TextField>
+                    </Grid>
+                  </Grid>
+
+                  {!isClient && (
+                    <>
+                      {/* Client Assignment with automated feedback */}
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                        <TextField
+                          select
+                          label="Target Advisory Client"
+                          fullWidth
+                          size="small"
+                          value={formData.clientId}
+                          onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
+                        >
+                          <MenuItem value="">-- General Multi-Client Advisory --</MenuItem>
+                          {clients.map((c) => (
+                            <MenuItem key={c.id} value={c.id}>
+                              {c.name} (PAN: {c.pan}) — ₹{(c.portfolioValue || 0).toLocaleString('en-IN')}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+
+                        {assignedClientObj && (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, px: 1, py: 0.5, bgcolor: 'background.default', borderRadius: 1.5 }}>
+                            <CheckCircleOutlineIcon color="primary" sx={{ fontSize: 16 }} />
+                            <Typography variant="caption" color="text.secondary">
+                              Assigned to <strong>{assignedClientObj.name}</strong> (PAN: {assignedClientObj.pan})
+                            </Typography>
+                          </Box>
+                        )}
+                      </Box>
+
+                      {/* Proposed Asset Allocation Breakdown (Only for Advisers) */}
+                      <Box sx={{ p: 2, bgcolor: 'background.default', borderRadius: 2, border: 1, borderColor: 'divider' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                          <Typography variant="caption" fontWeight={700} color="text.secondary">
+                            PROPOSED ASSET ALLOCATION TARGETS
+                          </Typography>
+                          <Chip
+                            label={`Sum: ${totalAllocation}%`}
+                            color={totalAllocation === 100 ? 'success' : 'error'}
+                            size="small"
+                            sx={{ fontWeight: 700, height: 20, fontSize: '0.72rem' }}
+                          />
+                        </Box>
+
+                        <Grid container spacing={1}>
+                          <Grid size={{ xs: 6, sm: 3 }}>
+                            <Typography variant="caption" color="text.secondary">Equity %</Typography>
+                            <TextField
+                              type="number"
+                              size="small"
+                              fullWidth
+                              value={formData.proposedEquityRatio}
+                              onChange={(e) => setFormData({ ...formData, proposedEquityRatio: Number(e.target.value) })}
+                            />
+                          </Grid>
+                          <Grid size={{ xs: 6, sm: 3 }}>
+                            <Typography variant="caption" color="text.secondary">Debt %</Typography>
+                            <TextField
+                              type="number"
+                              size="small"
+                              fullWidth
+                              value={formData.proposedDebtRatio}
+                              onChange={(e) => setFormData({ ...formData, proposedDebtRatio: Number(e.target.value) })}
+                            />
+                          </Grid>
+                          <Grid size={{ xs: 6, sm: 3 }}>
+                            <Typography variant="caption" color="text.secondary">Gold %</Typography>
+                            <TextField
+                              type="number"
+                              size="small"
+                              fullWidth
+                              value={formData.proposedGoldRatio}
+                              onChange={(e) => setFormData({ ...formData, proposedGoldRatio: Number(e.target.value) })}
+                            />
+                          </Grid>
+                          <Grid size={{ xs: 6, sm: 3 }}>
+                            <Typography variant="caption" color="text.secondary">Cash %</Typography>
+                            <TextField
+                              type="number"
+                              size="small"
+                              fullWidth
+                              value={formData.proposedCashRatio}
+                              onChange={(e) => setFormData({ ...formData, proposedCashRatio: Number(e.target.value) })}
+                            />
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    </>
+                  )}
+
+                  <TextField
+                    label={isClient ? 'Query / Explanation' : 'Advisory Rationale / Description'}
+                    required
+                    fullWidth
+                    multiline
+                    rows={4}
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder={isClient ? 'State your question or clarification regarding your portfolio...' : 'Provide statutory justification, rebalance thesis, or client mandate requirements...'}
+                  />
+
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    startIcon={composeMutation.isPending ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
+                    disabled={composeMutation.isPending}
+                    size="large"
+                    sx={{
+                      mt: 1,
+                      py: 1.2,
+                      fontWeight: 700,
+                      borderRadius: 2.5,
+                      background: 'linear-gradient(135deg, #4F46E5 0%, #2563EB 100%)',
+                    }}
+                  >
+                    {composeMutation.isPending ? 'Submitting...' : isClient ? 'Submit Inquiry' : 'Submit Advisory Request'}
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          )}
         </Grid>
 
-        {/* FEED / TABLE OF REQUESTS */}
-        <Grid item xs={12} lg={7}>
+        {/* RIGHT PANEL: LIVE REQUESTS LEDGER */}
+        <Grid size={{ xs: 12, lg: 7 }}>
           <Card elevation={2} sx={{ borderRadius: 3, border: 1, borderColor: 'divider' }}>
             <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
               <Typography variant="h6" fontWeight={700}>
@@ -474,7 +548,7 @@ export const RequestComposerPage = () => {
                   ) : requests.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.secondary' }}>
-                        No requests found in this ledger filter. Compose a request on the left.
+                        No requests found in this ledger view.
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -533,8 +607,9 @@ export const RequestComposerPage = () => {
                             size="small"
                             variant="outlined"
                             onClick={() => setSelectedRequest(req)}
+                            sx={{ borderRadius: 2, textTransform: 'none' }}
                           >
-                            Details
+                            {isComplianceOfficer ? 'Scrutinize' : 'Details'}
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -547,7 +622,7 @@ export const RequestComposerPage = () => {
         </Grid>
       </Grid>
 
-      {/* DETAIL & ACTION MODAL */}
+      {/* DETAIL & AUDIT ACTION MODAL */}
       {selectedRequest && (
         <Dialog open={Boolean(selectedRequest)} onClose={() => setSelectedRequest(null)} maxWidth="md" fullWidth>
           <DialogTitle sx={{ fontWeight: 700 }}>
@@ -571,7 +646,7 @@ export const RequestComposerPage = () => {
             </Box>
 
             {selectedRequest.responseNotes && (
-              <Box sx={{ p: 2, bgcolor: 'info.lighter', borderRadius: 2, border: 1, borderColor: 'info.light' }}>
+              <Box sx={{ p: 2, bgcolor: 'rgba(56, 189, 248, 0.08)', borderRadius: 2, border: 1, borderColor: 'info.light' }}>
                 <Typography variant="caption" fontWeight={700} color="info.dark" display="block">
                   COMPLIANCE / RIA RESPONSE NOTES:
                 </Typography>
@@ -582,7 +657,7 @@ export const RequestComposerPage = () => {
             )}
 
             {/* Compliance / Admin Actions */}
-            {(isComplianceOfficer || isAdmin || role === 'ria') && (
+            {(isComplianceOfficer || isAdmin || isRia) && (
               <Box sx={{ mt: 1 }}>
                 <Typography variant="subtitle2" fontWeight={700} gutterBottom>
                   Update Request Status & Statutory Notes
@@ -652,3 +727,5 @@ export const RequestComposerPage = () => {
     </Container>
   );
 };
+
+export default RequestComposerPage;

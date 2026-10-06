@@ -149,7 +149,7 @@ export const ClientReviewPage = () => {
           </Typography>
 
           <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <Box sx={{ p: 2, bgcolor: 'background.default', borderRadius: 2 }}>
                 <Typography variant="caption" fontWeight={700} color="text.secondary">
                   CURRENT ALLOCATION
@@ -173,7 +173,7 @@ export const ClientReviewPage = () => {
               </Box>
             </Grid>
 
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <Box sx={{ p: 2, bgcolor: 'rgba(5, 150, 105, 0.05)', border: 1, borderColor: 'success.light', borderRadius: 2 }}>
                 <Typography variant="caption" fontWeight={700} color="success.dark">
                   PROPOSED ALLOCATION (TARGET)

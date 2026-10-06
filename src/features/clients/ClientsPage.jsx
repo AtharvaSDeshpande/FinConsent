@@ -18,7 +18,9 @@ import DialogActions from '@mui/material/DialogActions';
 import Alert from '@mui/material/Alert';
 import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined';
 import CircularProgress from '@mui/material/CircularProgress';
+import Chip from '@mui/material/Chip';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '../../security/AuthContext.jsx';
 
 export const ClientsPage = () => {
   const queryClient = useQueryClient();
@@ -118,25 +120,41 @@ export const ClientsPage = () => {
     createClientMutation.mutate(newClient);
   };
 
+  const { isRia, isAdmin, isComplianceOfficer } = useAuth();
+
   return (
-    <Container maxWidth="lg">
+    <Container maxWidth="lg" sx={{ py: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography variant="h4" component="h1" fontWeight={700}>
-            Advisory Client Directory
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Manage client profiles, verified PAN records, and registered mobile numbers for OTP sign-offs
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
+            <Typography variant="h4" component="h1" fontWeight={800} letterSpacing="-0.02em">
+              Advisory Client Directory
+            </Typography>
+            {isComplianceOfficer && (
+              <Chip label="AUDIT REGISTRY (READ-ONLY)" size="small" color="info" sx={{ fontWeight: 700 }} />
+            )}
+          </Box>
+          <Typography variant="body2" color="text.secondary">
+            {isComplianceOfficer
+              ? 'Verify client profiles, PAN verification status, and registered contact credentials for statutory audit'
+              : 'Manage client profiles, verified PAN records, and registered mobile numbers for OTP sign-offs'}
           </Typography>
         </Box>
 
-        <Button
-          variant="contained"
-          startIcon={<PersonAddAltOutlinedIcon />}
-          onClick={() => setOpenModal(true)}
-        >
-          Add Advisory Client
-        </Button>
+        {(isRia || isAdmin) && (
+          <Button
+            variant="contained"
+            startIcon={<PersonAddAltOutlinedIcon />}
+            onClick={() => setOpenModal(true)}
+            sx={{
+              fontWeight: 700,
+              borderRadius: 2.5,
+              background: 'linear-gradient(135deg, #4F46E5 0%, #2563EB 100%)',
+            }}
+          >
+            Add Advisory Client
+          </Button>
+        )}
       </Box>
 
       {queryError && <Alert severity="error" sx={{ mb: 3 }}>{queryError.message}</Alert>}
