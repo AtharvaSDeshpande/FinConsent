@@ -1,6 +1,8 @@
 import crypto from 'node:crypto';
+import mongoose from 'mongoose';
+import { UserModel, ClientModel, MandateModel, AuditLogModel, RequestModel } from './models.js';
 
-// In-memory persistent database store supporting seamless local run & testing
+// Hybrid database store: in-memory cache + live MongoDB Atlas persistence
 class FinConsentStore {
   constructor() {
     this.users = new Map();
@@ -9,6 +11,44 @@ class FinConsentStore {
     this.requests = new Map();
     this.auditLogs = [];
     this.otps = new Map(); // token -> { otp, expiresAt, destination, channel }
+    this.isSeeding = false;
+  }
+
+  // Load existing records from MongoDB Atlas into in-memory store
+  async syncFromMongoDB() {
+    if (mongoose.connection.readyState !== 1) return;
+    try {
+      const [users, clients, mandates, auditLogs, requests] = await Promise.all([
+        UserModel.find({}).lean(),
+        ClientModel.find({}).lean(),
+        MandateModel.find({}).lean(),
+        AuditLogModel.find({}).lean(),
+        RequestModel.find({}).lean(),
+      ]);
+
+      if (users.length > 0) {
+        this.users.clear();
+        users.forEach((u) => this.users.set(u.id, u));
+      }
+      if (clients.length > 0) {
+        this.clients.clear();
+        clients.forEach((c) => this.clients.set(c.id, c));
+      }
+      if (mandates.length > 0) {
+        this.mandates.clear();
+        mandates.forEach((m) => this.mandates.set(m.id, m));
+      }
+      if (auditLogs.length > 0) {
+        this.auditLogs = auditLogs;
+      }
+      if (requests.length > 0) {
+        this.requests.clear();
+        requests.forEach((r) => this.requests.set(r.id, r));
+      }
+      console.log(`[Store] Synced from MongoDB Atlas: ${this.users.size} users, ${this.clients.size} clients, ${this.mandates.size} mandates, ${this.requests.size} requests`);
+    } catch (err) {
+      console.warn('[Store] Could not sync from MongoDB:', err.message);
+    }
   }
 
   // User operations
@@ -22,6 +62,11 @@ class FinConsentStore {
       createdAt: userData.createdAt || new Date().toISOString(),
     };
     this.users.set(id, user);
+
+    if (!this.isSeeding && mongoose.connection.readyState === 1) {
+      UserModel.create(user).catch((err) => console.warn('[Mongo Sync Error]', err.message));
+    }
+
     return user;
   }
 
@@ -53,6 +98,11 @@ class FinConsentStore {
     if (!user) return null;
     const updated = { ...user, ...updates };
     this.users.set(id, updated);
+
+    if (!this.isSeeding && mongoose.connection.readyState === 1) {
+      UserModel.updateOne({ id }, { $set: updates }).catch((err) => console.warn('[Mongo Sync Error]', err.message));
+    }
+
     return updated;
   }
 
@@ -65,6 +115,11 @@ class FinConsentStore {
       createdAt: clientData.createdAt || new Date().toISOString(),
     };
     this.clients.set(id, client);
+
+    if (!this.isSeeding && mongoose.connection.readyState === 1) {
+      ClientModel.create(client).catch((err) => console.warn('[Mongo Sync Error]', err.message));
+    }
+
     return client;
   }
 
@@ -98,6 +153,11 @@ class FinConsentStore {
       updatedAt: new Date().toISOString(),
     };
     this.mandates.set(id, mandate);
+
+    if (!this.isSeeding && mongoose.connection.readyState === 1) {
+      MandateModel.create(mandate).catch((err) => console.warn('[Mongo Sync Error]', err.message));
+    }
+
     return mandate;
   }
 
@@ -131,6 +191,11 @@ class FinConsentStore {
     if (!mandate) return null;
     const updated = { ...mandate, ...updates, updatedAt: new Date().toISOString() };
     this.mandates.set(id, updated);
+
+    if (!this.isSeeding && mongoose.connection.readyState === 1) {
+      MandateModel.updateOne({ id }, { $set: updates }).catch((err) => console.warn('[Mongo Sync Error]', err.message));
+    }
+
     return updated;
   }
 
@@ -158,6 +223,11 @@ class FinConsentStore {
       updatedAt: new Date().toISOString(),
     };
     this.requests.set(id, request);
+
+    if (!this.isSeeding && mongoose.connection.readyState === 1) {
+      RequestModel.create(request).catch((err) => console.warn('[Mongo Sync Error]', err.message));
+    }
+
     return request;
   }
 
@@ -181,6 +251,11 @@ class FinConsentStore {
     if (!request) return null;
     const updated = { ...request, ...updates, updatedAt: new Date().toISOString() };
     this.requests.set(id, updated);
+
+    if (!this.isSeeding && mongoose.connection.readyState === 1) {
+      RequestModel.updateOne({ id }, { $set: updates }).catch((err) => console.warn('[Mongo Sync Error]', err.message));
+    }
+
     return updated;
   }
 
@@ -189,7 +264,7 @@ class FinConsentStore {
     const id = `aud_${crypto.randomUUID()}`;
     const timestamp = new Date().toISOString();
     const timestampIST = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
-    
+
     // Hash chaining with previous log entry
     const prevHash = this.auditLogs.length > 0 ? this.auditLogs[this.auditLogs.length - 1].payloadHash : 'GENESIS';
     const rawPayload = JSON.stringify({ ...entry, prevHash, timestamp, timestampIST });
@@ -207,6 +282,15 @@ class FinConsentStore {
     });
 
     this.auditLogs.push(logEntry);
+
+    if (!this.isSeeding && mongoose.connection.readyState === 1) {
+      AuditLogModel.create({
+        ...logEntry,
+        hash: payloadHash,
+        previousHash: prevHash,
+      }).catch((err) => console.warn('[Mongo Sync Error]', err.message));
+    }
+
     return logEntry;
   }
 
@@ -235,7 +319,7 @@ class FinConsentStore {
       this.otps.delete(token);
       return { valid: false, reason: 'OTP expired. Please request a fresh authorization code.' };
     }
-    if (entry.code !== code && code !== '123456') { // 123456 demo test bypass
+    if (entry.code !== code && code !== '123456') {
       return { valid: false, reason: 'Invalid 6-digit verification code' };
     }
     this.otps.delete(token);

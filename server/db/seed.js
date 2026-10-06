@@ -1,12 +1,23 @@
 import { dbStore } from './store.js';
+import { connectDB } from './connection.js';
+import { UserModel, ClientModel, MandateModel, AuditLogModel, RequestModel } from './models.js';
+import mongoose from 'mongoose';
 
 // Realistic Indian WealthTech and SEBI Advisory Seeder
 export async function runSeed() {
   console.log('[Seed] Initiating realistic platform database seeder...');
   const startTime = Date.now();
 
+  // Ensure DB connection is initialized if MONGODB_URI is configured
+  if (process.env.MONGODB_URI && mongoose.connection.readyState !== 1) {
+    await connectDB();
+  }
+
   // Deterministic bcrypt hash for 'Password@123'
   const defaultPasswordHash = '$2a$10$20gor5UMRbxD0N2.5fuZ1OAk5eTmWZCa6Aj2b5AKHVOfVU8SoIwwa';
+
+  // Set seeding flag to prevent individual concurrent inserts
+  dbStore.isSeeding = true;
 
   // Clear existing state before fresh seed
   dbStore.users.clear();
@@ -382,12 +393,57 @@ export async function runSeed() {
   }
 
   const durationMs = Date.now() - startTime;
-  console.log(`[Seed] Completed successfully in ${durationMs}ms:`);
+  console.log(`[Seed] In-memory store prepared in ${durationMs}ms:`);
   console.log(`  - Users: ${dbStore.users.size} (RIAs, Compliance Officers, Admins, Clients)`);
   console.log(`  - Clients: ${dbStore.clients.size}`);
   console.log(`  - Mandates: ${dbStore.mandates.size} across Draft, Sent, Viewed, Consented, Expired`);
   console.log(`  - Audit Trail Records: ${dbStore.auditLogs.length} with SHA-256 hash chaining`);
   console.log(`  - Advisory Requests: ${dbStore.requests.size}`);
+
+  // Synchronize documents into live MongoDB Atlas cluster
+  if (mongoose.connection.readyState === 1) {
+    console.log('[Seed] Synchronizing and inserting documents into live MongoDB Atlas collections...');
+    try {
+      await Promise.all([
+        UserModel.deleteMany({}),
+        ClientModel.deleteMany({}),
+        MandateModel.deleteMany({}),
+        AuditLogModel.deleteMany({}),
+        RequestModel.deleteMany({}),
+      ]);
+
+      const usersList = Array.from(dbStore.users.values());
+      const clientsList = Array.from(dbStore.clients.values());
+      const mandatesList = Array.from(dbStore.mandates.values());
+      const auditLogsList = dbStore.auditLogs;
+      const requestsList = Array.from(dbStore.requests.values());
+
+      await UserModel.insertMany(usersList, { ordered: false });
+      await ClientModel.insertMany(clientsList, { ordered: false });
+      await MandateModel.insertMany(mandatesList, { ordered: false });
+      await AuditLogModel.insertMany(auditLogsList, { ordered: false });
+      await RequestModel.insertMany(requestsList, { ordered: false });
+
+      const [mUsers, mClients, mMandates, mAudit, mRequests] = await Promise.all([
+        UserModel.countDocuments(),
+        ClientModel.countDocuments(),
+        MandateModel.countDocuments(),
+        AuditLogModel.countDocuments(),
+        RequestModel.countDocuments(),
+      ]);
+
+      console.log(`[Seed] Live MongoDB Atlas cluster synchronized & verified:`);
+      console.log(`  - MongoDB 'users' collection: ${mUsers} documents`);
+      console.log(`  - MongoDB 'clients' collection: ${mClients} documents`);
+      console.log(`  - MongoDB 'mandates' collection: ${mMandates} documents`);
+      console.log(`  - MongoDB 'auditlogs' collection: ${mAudit} documents`);
+      console.log(`  - MongoDB 'requests' collection: ${mRequests} documents`);
+    } catch (mongoErr) {
+      console.error('[Seed] MongoDB Atlas insertion error:', mongoErr.message);
+    }
+  }
+
+  dbStore.isSeeding = false;
 
   return {
     ria1,
@@ -402,9 +458,16 @@ export async function runSeed() {
 }
 
 if (process.argv[1] && process.argv[1].endsWith('seed.js')) {
-  runSeed().catch((err) => {
-    console.error('[Seed Error]:', err);
-    process.exit(1);
-  });
+  runSeed()
+    .then(async () => {
+      if (mongoose.connection.readyState === 1) {
+        await mongoose.disconnect();
+      }
+      process.exit(0);
+    })
+    .catch((err) => {
+      console.error('[Seed Error]:', err);
+      process.exit(1);
+    });
 }
 

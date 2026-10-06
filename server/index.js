@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import { corsMiddleware } from './middleware/cors.js';
 import { runSeed } from './db/seed.js';
 import { connectDB } from './db/connection.js';
+import { dbStore } from './db/store.js';
+import { UserModel } from './db/models.js';
 import authRoutes from './routes/auth.js';
 import clientRoutes from './routes/clients.js';
 import mandateRoutes from './routes/mandates.js';
@@ -45,8 +47,19 @@ app.get('/api/health', (req, res) => {
 
 // Initialize database connection & seed data
 async function initServer() {
-  await connectDB();
-  await runSeed();
+  const connected = await connectDB();
+  if (connected) {
+    const userCount = await UserModel.countDocuments().catch(() => 0);
+    if (userCount >= 1000) {
+      console.log(`[DB] Live MongoDB Atlas cluster already populated (${userCount} users). Syncing in-memory store.`);
+      await dbStore.syncFromMongoDB();
+    } else {
+      console.log(`[DB] Live MongoDB Atlas cluster needs seeding (${userCount} users). Running seeder.`);
+      await runSeed();
+    }
+  } else {
+    await runSeed();
+  }
 }
 
 initServer().catch((err) => console.error('[Server Init Error]:', err));
