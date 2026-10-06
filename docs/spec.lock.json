@@ -1,0 +1,1028 @@
+{
+  "spec_version": "1.1",
+  "meta": {
+    "created_by": "fullstack-builder bootstrap",
+    "created_on": "2026-10-06",
+    "client": {
+      "name": "SEBI RIA Compliance & WealthTech Team",
+      "decision_maker_role": "Principal Officer / Tech Lead"
+    },
+    "interview_mode": "quick",
+    "source_documents": [
+      "siteDetails.txt"
+    ]
+  },
+  "project": {
+    "name": "FinConsent",
+    "slug": "fin-consent",
+    "type": "portal",
+    "tagline": "Statutory Trade Authorization & Tax-Impact Consent for SEBI RIAs",
+    "summary": "A mobile-first statutory trade authorization and tax-impact consent platform for SEBI-Registered Investment Advisers (RIAs) in India. Dispatches interactive rebalancing proposals with pre-computed STCG/LTCG capital gains and Advance Tax alerts, capturing legally binding, tamper-evident consent via zero-login mobile magic links authenticated by Mobile OTP."
+  },
+  "business": {
+    "problem": "Under SEBI Regulation 19, Indian RIAs operate under non-discretionary mandates requiring prior informed client consent and 5-year audit trails. Today, consent is fragmented across WhatsApp/email/phone, clients suffer unanticipated capital gains tax shocks and Section 234B/234C penal interest, and unwieldy 20-page PDFs cause review delays and execution slippage.",
+    "why_now": "SEBI digital compliance inspections have tightened, the restructured Indian capital gains regime (STCG 20%, LTCG 12.5%) increases tax consequences, and inactive compliance leads to license suspension, fines, and client disputes.",
+    "goals": [
+      "Reduce median client consent turnaround from proposal submission to verified authorization from 72 hours down to under 4 hours",
+      "Achieve an >88% first-touch completion rate via mobile magic links without dropout",
+      "Generate 100% SEBI Regulation 19-compliant PDF dossiers with Section 65B Indian Evidence Act electronic audit metadata within 2 seconds of authorization"
+    ],
+    "success_metrics": [
+      {
+        "metric": "Median consent turnaround time",
+        "target": "under 4 hours",
+        "baseline": "72 hours",
+        "how_measured": "Timestamp delta from mandate creation to OTP-verified sign-off"
+      },
+      {
+        "metric": "First-touch mobile completion rate",
+        "target": ">88%",
+        "baseline": "unknown",
+        "how_measured": "Unique magic link visits resulting in verified consent without drop-off"
+      },
+      {
+        "metric": "SEBI Regulation 19 audit dossier generation latency",
+        "target": "<= 2 seconds",
+        "baseline": "manual compilation",
+        "how_measured": "Server response and PDF creation time post-authorization"
+      }
+    ],
+    "business_model": "Tiered B2B SaaS subscription in INR + 18% GST: Free sandbox (1 RIA, up to 3 active mandates), Pro RIA (₹2,499/month or ₹24,990/year + GST) with unlimited mandates, 150 clients, custom branding, DLT SMS, and 5-year cloud audit retention, and Multi-Advisor Firm (₹6,999/month + GST) with multi-seat access and compliance officer reviews.",
+    "stakeholders": [
+      {
+        "role": "Principal Officer / Tech Lead",
+        "decides": "System architecture, data security, and regulatory compliance"
+      },
+      {
+        "role": "RIA Compliance Advisory Group",
+        "decides": "Regulatory validity and audit certifiability prior to production rollout"
+      }
+    ],
+    "competitors": [
+      {
+        "name": "DocuSign / Adobe Sign",
+        "note": "Generic e-signature without financial context, expensive, intimidating for clients"
+      },
+      {
+        "name": "Wealthbox / Redtail",
+        "note": "US-focused CRMs lacking Indian tax laws and SEBI compliance mechanisms"
+      },
+      {
+        "name": "smallcase Gateway",
+        "note": "Execution-oriented broker integration rather than statutory advisory consent"
+      }
+    ],
+    "differentiators": [
+      "Purpose-built for Indian SEBI RIA compliance and Regulation 19 audit requirements",
+      "Automated pre-computed Indian capital gains engine (STCG 20%, LTCG 12.5%) and Advance Tax 234B/234C alerts",
+      "Zero-login mobile magic link review with 1-tap OTP verification in under 60 seconds",
+      "Instant Section 65B IT Act evidentiary compliance dossiers with SHA-256 tamper-evident logs"
+    ],
+    "launch": {
+      "target_date": "3 weeks",
+      "type": "pilot"
+    },
+    "budget": {
+      "range": "₹0 upfront (free tiers of Atlas M0, Vercel, Resend, Sentry)",
+      "notes": "Development executes against Razorpay test keys and test SMS/OTP gateways"
+    }
+  },
+  "audience": {
+    "primary_users": "SEBI-Registered Investment Advisers (RIAs) and their High-Net-Worth Individual (HNI) clients in India",
+    "devices": [
+      "Desktop/laptop (Chrome, Edge)",
+      "Mobile smartphones (iOS Safari, Android Chrome)"
+    ],
+    "network": "Office broadband for RIAs; 4G/5G mobile connections for HNI clients",
+    "notes": "English financial interface; Indian numbering formatting (Lakhs and Crores: ₹12,50,000); WCAG 2.1 AA compliant with high contrast (>= 4.5:1) and touch targets >= 44x44px on mobile approval controls.",
+    "personas": [
+      {
+        "id": "sebi-ria",
+        "name": "SEBI-Registered Investment Adviser",
+        "description": "Fee-only financial planner managing 50-200 non-discretionary HNI families, constructing asset allocations, rebalancing portfolios across mutual funds and direct equities.",
+        "goals": [
+          "Deliver timely rebalancing advice",
+          "Capture legally binding client consent before market cut-off (2:30 PM IST)",
+          "Maintain an unshakeable 5-year compliance audit trail"
+        ],
+        "pain_points": [
+          "Chasing clients across WhatsApp and email",
+          "Arguing over unexpected capital gains taxes at financial year-end",
+          "Manually assembling audit binders for SEBI inspections"
+        ],
+        "tech_comfort": "high",
+        "devices": [
+          "desktop",
+          "laptop"
+        ],
+        "languages": [
+          "en"
+        ],
+        "usage_frequency": "3-5 sessions per week"
+      },
+      {
+        "id": "hni-client",
+        "name": "Non-Technical HNI Client",
+        "description": "Working professional or business owner with investment portfolio of ₹50 Lakh to ₹10 Crore receiving advisory trade recommendations.",
+        "goals": [
+          "Understand reasons for asset reallocation",
+          "Know exact tax cost in Indian Rupees",
+          "Approve the trade in under 60 seconds from smartphone"
+        ],
+        "pain_points": [
+          "Reading 20-page legalistic PDF memos",
+          "Deciphering tax jargon",
+          "Forced to remember logins and passwords for another financial portal"
+        ],
+        "tech_comfort": "medium",
+        "devices": [
+          "iOS Safari",
+          "Android Chrome"
+        ],
+        "languages": [
+          "en"
+        ],
+        "usage_frequency": "1-2 times per quarter"
+      }
+    ]
+  },
+  "brand": {
+    "name_constant": "FinConsent",
+    "logo": "original-svg",
+    "tone": "Authoritative, Transparent, Frictionless",
+    "palette_hint": "Navy (#0A192F, #1E3A8A), Indigo (#4F46E5), Emerald (#059669), Amber (#D97706), Light (#F8FAFC, #FFFFFF), Dark (#0B132B)",
+    "forbidden": [
+      "real brand names",
+      "real brand logos",
+      "casual slang",
+      "walls of legal text",
+      "third-party ad tracking pixels"
+    ]
+  },
+  "languages": {
+    "default": "en",
+    "supported": [
+      "en"
+    ],
+    "formats": {
+      "currency": "INR",
+      "locale_map": {
+        "en": "en-IN"
+      }
+    }
+  },
+  "stack": {
+    "frontend": {
+      "framework": "react",
+      "build": "vite",
+      "ui_library": "material-ui",
+      "router": "react-router-dom"
+    },
+    "backend": {
+      "mode": "real",
+      "runtime": "node",
+      "framework": "express",
+      "api_style": "rest"
+    },
+    "database": {
+      "engine": "mongodb"
+    },
+    "auth": {
+      "method": "jwt-email-google-oauth"
+    },
+    "testing": [
+      "vitest",
+      "testing-library"
+    ],
+    "deploy": {
+      "target": "vercel"
+    }
+  },
+  "features": [
+    {
+      "id": "auth",
+      "name": "RIA Authentication & Session Management",
+      "priority": "must",
+      "description": "Email/password authentication with bcrypt hashing and Google OAuth 2.0 session handling.",
+      "screens": [
+        "dashboard"
+      ],
+      "tags": [
+        "auth"
+      ]
+    },
+    {
+      "id": "ria-profile",
+      "name": "RIA Profile & SEBI Credentials",
+      "priority": "must",
+      "description": "Configure SEBI Registration Number (INAXXXXXXXXXX), firm identity, and compliance contact email.",
+      "screens": [
+        "settings-profile"
+      ],
+      "tags": []
+    },
+    {
+      "id": "clients",
+      "name": "Client Management Directory",
+      "priority": "must",
+      "description": "Manage advisory client records including Name, PAN, mobile number, and email address.",
+      "screens": [
+        "clients"
+      ],
+      "tags": []
+    },
+    {
+      "id": "mandate-builder",
+      "name": "Mandate Builder & Rebalancing Interface",
+      "priority": "must",
+      "description": "Define source and target asset allocations (Equity, Debt, Gold, Cash), configure rebalance baskets, and set cutoff expiry window.",
+      "screens": [
+        "dashboard",
+        "mandate-new"
+      ],
+      "tags": []
+    },
+    {
+      "id": "tax-engine",
+      "name": "Indian Capital Gains & Advance Tax Engine",
+      "priority": "must",
+      "description": "Automated calculation of Equity STCG @ 20%, LTCG @ 12.5% beyond ₹1.25 Lakh exemption, 4% Health & Education cess, and upcoming quarterly Section 234B/234C Advance Tax alert.",
+      "screens": [
+        "mandate-new",
+        "mandate-detail",
+        "client-review"
+      ],
+      "tags": []
+    },
+    {
+      "id": "magic-link",
+      "name": "256-Bit Cryptographic Magic Link Generator",
+      "priority": "must",
+      "description": "Generate unique 256-bit cryptographically signed preview URLs with instant revocation and regeneration controls.",
+      "screens": [
+        "mandate-detail",
+        "client-review"
+      ],
+      "tags": []
+    },
+    {
+      "id": "client-review",
+      "name": "Client Zero-Login Mobile Review Portal",
+      "priority": "must",
+      "description": "Responsive single-page mobile interface displaying allocation shift comparisons, sell/buy baskets, and clear rupee tax estimates without requiring client login.",
+      "screens": [
+        "client-review",
+        "client-verify",
+        "client-receipt"
+      ],
+      "tags": []
+    },
+    {
+      "id": "otp-consent",
+      "name": "6-Digit Mobile OTP Consent & Statutory Verification",
+      "priority": "must",
+      "description": "Dispatch 6-digit OTP to client's registered mobile number and verify code upon explicit acceptance of statutory tax and advisory declarations.",
+      "screens": [
+        "client-verify",
+        "client-receipt"
+      ],
+      "tags": [
+        "auth"
+      ]
+    },
+    {
+      "id": "audit-trail",
+      "name": "Immutable SHA-256 Tamper-Evident Audit Trail",
+      "priority": "must",
+      "description": "Append-only audit record logging client IP, User-Agent, IST timestamp, SHA-256 payload hash, and OTP verification ID.",
+      "screens": [
+        "mandate-detail",
+        "client-receipt"
+      ],
+      "tags": []
+    },
+    {
+      "id": "compliance-dossier",
+      "name": "SEBI Regulation 19 Compliance Certificate & Dossier",
+      "priority": "must",
+      "description": "Instantly generate and export certified SEBI Regulation 19 dossiers with Section 65B IT Act electronic evidence metadata.",
+      "screens": [
+        "mandate-detail",
+        "client-receipt"
+      ],
+      "tags": []
+    },
+    {
+      "id": "billing-pro",
+      "name": "Tiered Subscription & Quota Enforcement",
+      "priority": "must",
+      "description": "Enforce 3 active mandates limit on Free tier and provide Razorpay checkout links for Pro RIA upgrade (₹2,499/month + GST).",
+      "screens": [
+        "dashboard",
+        "settings-billing"
+      ],
+      "tags": [
+        "payments"
+      ]
+    },
+    {
+      "id": "notifications",
+      "name": "Transactional Notifications & Template Dispatch",
+      "priority": "should",
+      "description": "Transactional emails via Resend for mandate invitations, approvals, and reminders, plus one-click copyable WhatsApp templates.",
+      "screens": [
+        "mandate-detail"
+      ],
+      "tags": []
+    },
+    {
+      "id": "legal-compliance",
+      "name": "DPDP Act 2023 & Regulatory Legal Disclosures",
+      "priority": "must",
+      "description": "Public compliance pages: DPDP 2023 Data Fiduciary Privacy Policy, Terms of Service, and Razorpay Refund Policy.",
+      "screens": [
+        "legal-privacy",
+        "legal-terms",
+        "legal-refund"
+      ],
+      "tags": []
+    }
+  ],
+  "screens": [
+    {
+      "id": "dashboard",
+      "name": "RIA Overview Dashboard",
+      "route": "/dashboard",
+      "auth_required": true,
+      "features": [
+        "auth",
+        "mandate-builder",
+        "billing-pro"
+      ]
+    },
+    {
+      "id": "mandate-new",
+      "name": "Mandate Creation Wizard",
+      "route": "/mandates/new",
+      "auth_required": true,
+      "features": [
+        "mandate-builder",
+        "tax-engine"
+      ]
+    },
+    {
+      "id": "mandate-detail",
+      "name": "Mandate Detail & Audit View",
+      "route": "/mandates/:id",
+      "auth_required": true,
+      "features": [
+        "tax-engine",
+        "magic-link",
+        "audit-trail",
+        "compliance-dossier",
+        "notifications"
+      ]
+    },
+    {
+      "id": "clients",
+      "name": "Client Directory",
+      "route": "/clients",
+      "auth_required": true,
+      "features": [
+        "clients"
+      ]
+    },
+    {
+      "id": "settings-profile",
+      "name": "RIA Profile & SEBI Credentials",
+      "route": "/settings/profile",
+      "auth_required": true,
+      "features": [
+        "ria-profile"
+      ]
+    },
+    {
+      "id": "settings-billing",
+      "name": "Subscription & Plan Settings",
+      "route": "/settings/billing",
+      "auth_required": true,
+      "features": [
+        "billing-pro"
+      ]
+    },
+    {
+      "id": "client-review",
+      "name": "Client Mobile Review Portal",
+      "route": "/m/:token",
+      "auth_required": false,
+      "features": [
+        "tax-engine",
+        "magic-link",
+        "client-review"
+      ]
+    },
+    {
+      "id": "client-verify",
+      "name": "Client Mobile OTP Verification",
+      "route": "/m/:token/verify",
+      "auth_required": false,
+      "features": [
+        "client-review",
+        "otp-consent"
+      ]
+    },
+    {
+      "id": "client-receipt",
+      "name": "Client Mandate Sign-off Receipt",
+      "route": "/m/:token/receipt",
+      "auth_required": false,
+      "features": [
+        "client-review",
+        "otp-consent",
+        "audit-trail",
+        "compliance-dossier"
+      ]
+    },
+    {
+      "id": "legal-privacy",
+      "name": "Privacy Policy (DPDP 2023)",
+      "route": "/legal/privacy",
+      "auth_required": false,
+      "features": [
+        "legal-compliance"
+      ]
+    },
+    {
+      "id": "legal-terms",
+      "name": "Terms of Service",
+      "route": "/legal/terms",
+      "auth_required": false,
+      "features": [
+        "legal-compliance"
+      ]
+    },
+    {
+      "id": "legal-refund",
+      "name": "Refund & Cancellation Policy",
+      "route": "/legal/refund",
+      "auth_required": false,
+      "features": [
+        "legal-compliance"
+      ]
+    }
+  ],
+  "data": {
+    "entities": [
+      {
+        "name": "User",
+        "fields": [
+          "id",
+          "name",
+          "email",
+          "passwordHash",
+          "googleId",
+          "firmName",
+          "sebiRegNumber",
+          "complianceEmail",
+          "plan",
+          "createdAt"
+        ]
+      },
+      {
+        "name": "Client",
+        "fields": [
+          "id",
+          "riaId",
+          "name",
+          "pan",
+          "mobile",
+          "email",
+          "portfolioValue",
+          "createdAt"
+        ]
+      },
+      {
+        "name": "Mandate",
+        "fields": [
+          "id",
+          "riaId",
+          "clientId",
+          "title",
+          "currentAllocation",
+          "proposedAllocation",
+          "sellBasket",
+          "buyBasket",
+          "stcgAmount",
+          "ltcgAmount",
+          "taxPayable",
+          "advanceTaxQuarter",
+          "cutoffTimestamp",
+          "status",
+          "magicToken",
+          "tokenExpiresAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      {
+        "name": "AuditLog",
+        "fields": [
+          "id",
+          "mandateId",
+          "eventType",
+          "ipAddress",
+          "userAgent",
+          "timestamp",
+          "payloadHash",
+          "otpVerificationId",
+          "metadata"
+        ]
+      }
+    ],
+    "seed": {
+      "min_records": {
+        "User": 2,
+        "Client": 2,
+        "Mandate": 4,
+        "AuditLog": 4
+      },
+      "source_files": []
+    }
+  },
+  "api": {
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/api/auth/register",
+        "purpose": "Register new RIA account with email and password"
+      },
+      {
+        "method": "POST",
+        "path": "/api/auth/login",
+        "purpose": "Authenticate RIA and return JWT token"
+      },
+      {
+        "method": "GET",
+        "path": "/api/auth/me",
+        "purpose": "Fetch currently authenticated RIA profile and quota status"
+      },
+      {
+        "method": "GET",
+        "path": "/api/clients",
+        "purpose": "List clients belonging to the authenticated RIA"
+      },
+      {
+        "method": "POST",
+        "path": "/api/clients",
+        "purpose": "Create a new client record with PAN and mobile verification"
+      },
+      {
+        "method": "GET",
+        "path": "/api/mandates",
+        "purpose": "List all mandates with filter by status"
+      },
+      {
+        "method": "POST",
+        "path": "/api/mandates",
+        "purpose": "Create a new rebalance mandate with computed capital gains"
+      },
+      {
+        "method": "GET",
+        "path": "/api/mandates/:id",
+        "purpose": "Get mandate details, live status, and audit events"
+      },
+      {
+        "method": "POST",
+        "path": "/api/mandates/:id/dispatch",
+        "purpose": "Dispatch mandate and generate 256-bit magic token"
+      },
+      {
+        "method": "POST",
+        "path": "/api/mandates/:id/revoke-link",
+        "purpose": "Invalidate current magic token and issue a fresh link"
+      },
+      {
+        "method": "GET",
+        "path": "/api/public/mandates/:token",
+        "purpose": "Fetch public preview data for client review portal"
+      },
+      {
+        "method": "POST",
+        "path": "/api/public/mandates/:token/request-otp",
+        "purpose": "Dispatch 6-digit OTP to client mobile number"
+      },
+      {
+        "method": "POST",
+        "path": "/api/public/mandates/:token/verify-otp",
+        "purpose": "Verify OTP, lock mandate to Approved, and log immutable audit event"
+      },
+      {
+        "method": "GET",
+        "path": "/api/mandates/:id/dossier",
+        "purpose": "Generate and return SEBI Regulation 19 compliance certificate PDF"
+      },
+      {
+        "method": "POST",
+        "path": "/api/billing/create-checkout",
+        "purpose": "Create Razorpay payment link for Pro plan upgrade"
+      },
+      {
+        "method": "POST",
+        "path": "/api/webhooks/razorpay",
+        "purpose": "Handle Razorpay payment webhook with HMAC signature verification"
+      }
+    ]
+  },
+  "integrations": [
+    {
+      "name": "Razorpay",
+      "purpose": "B2B SaaS subscription payments for Pro plan upgrade with HMAC webhook validation",
+      "real": true
+    },
+    {
+      "name": "Resend",
+      "purpose": "Transactional emails for mandate invitations, status alerts, and compliance receipts",
+      "real": true
+    },
+    {
+      "name": "SMS / OTP Service",
+      "purpose": "6-digit OTP delivery to client mobile number for statutory trade consent",
+      "real": true
+    },
+    {
+      "name": "Google OAuth 2.0",
+      "purpose": "OAuth authentication for RIA accounts",
+      "real": true
+    }
+  ],
+  "nonfunctional": {
+    "performance": "Client Mobile View FCP <= 1.2s and TTI <= 2.0s over throttled 4G; RIA Dashboard loaded in <= 2.5s; route-level code splitting and no external unoptimized assets",
+    "accessibility": "WCAG AA",
+    "breakpoints": [
+      360,
+      768,
+      1280
+    ],
+    "browsers": [
+      "Chrome Android",
+      "iOS Safari",
+      "latest Chrome",
+      "latest Edge",
+      "latest Firefox"
+    ],
+    "security": [
+      "Validate all inputs server-side with strict schemas",
+      "Bcrypt password hashing and secure JWT session tokens",
+      "256-bit cryptographically secure pseudorandom magic link tokens",
+      "Immutable append-only audit trail with SHA-256 hash chaining",
+      "Zero storage or logging of raw card data or banking credentials",
+      "Strict CORS and Helmet security headers"
+    ],
+    "seo": false,
+    "performance_budget": {
+      "max_bundle_kb": 250,
+      "target_load": "interactive in <= 2.0s on throttled 4G"
+    }
+  },
+  "constraints": {
+    "libraries_forbidden": [],
+    "forbidden_packages": [],
+    "no_external_images": true,
+    "secrets": "env",
+    "max_agent_calls": 25,
+    "never": [
+      "store or log raw payment cards, CVVs, or net banking passwords",
+      "install third-party tracking pixels (Meta Pixel, Google Ads)",
+      "allow updating, editing, or deleting committed audit log entries",
+      "execute automated trades directly on client brokerage accounts"
+    ]
+  },
+  "journeys": [
+    {
+      "id": "journey-rebalance-consent",
+      "persona": "sebi-ria",
+      "goal": "Draft, tax-evaluate, and dispatch a compliant rebalance mandate to an HNI client",
+      "steps": [
+        "RIA logs in and selects client Vikram Sharma (PAN ABCDE1234F)",
+        "RIA enters rebalance basket shifting ₹20 Lakh from Large-Cap to Arbitrage/Liquid funds",
+        "System computes STCG (₹50,000), LTCG (₹53,125), and total tax obligation (₹1,07,250 with cess)",
+        "System flags Advance Tax deadline warning for the upcoming quarterly installment",
+        "RIA sets market cutoff time and clicks Dispatch Mandate to generate tokenized 256-bit magic link"
+      ],
+      "success": "Mandate is created with pre-computed capital gains, advance tax flag, and dispatched via 256-bit magic link.",
+      "features": [
+        "mandate-builder",
+        "tax-engine",
+        "magic-link"
+      ]
+    },
+    {
+      "id": "journey-client-approval",
+      "persona": "hni-client",
+      "goal": "Review trade allocation and tax liability, and provide legally binding consent via OTP on mobile",
+      "steps": [
+        "Client opens finconsent.in/m/{token} on smartphone without logging in",
+        "Client reviews allocation shift bars, securities to buy/sell, and estimated tax obligation",
+        "Client taps Authorize Rebalance and acknowledges statutory tax and SEBI consent declarations",
+        "System sends 6-digit OTP to client registered mobile number",
+        "Client inputs OTP and submits verification",
+        "Mandate locks as Approved, commits immutable SHA-256 audit record, and generates Regulation 19 compliance dossier"
+      ],
+      "success": "Client reviews proposal on mobile, verifies 6-digit OTP, mandate transitions to Approved & Locked, and SEBI compliance dossier is generated.",
+      "features": [
+        "client-review",
+        "otp-consent",
+        "audit-trail",
+        "compliance-dossier"
+      ]
+    }
+  ],
+  "roles": [
+    {
+      "id": "sebi-ria",
+      "name": "SEBI Registered Investment Adviser",
+      "can": [
+        "Register and manage RIA profile with SEBI INA registration number",
+        "Add and manage client profiles with PAN and mobile details",
+        "Create, edit draft, and dispatch rebalancing mandates",
+        "Generate, revoke, and regenerate tokenized magic links",
+        "View audit logs and download SEBI Regulation 19 compliance dossiers",
+        "Upgrade subscription to Pro tier via Razorpay"
+      ],
+      "cannot": [
+        "Execute automated trades directly on client broker accounts",
+        "Modify, edit, or delete committed audit log records",
+        "Authorize mandates on behalf of clients"
+      ]
+    },
+    {
+      "id": "hni-client",
+      "name": "HNI Advisory Client",
+      "can": [
+        "Access proposal preview via tokenized magic link without account registration",
+        "Inspect current vs proposed asset allocations and detailed tax calculations",
+        "Request OTP and authorize mandate using verified 6-digit mobile OTP",
+        "Download signed SEBI compliance receipt and audit confirmation"
+      ],
+      "cannot": [
+        "Access other clients mandates or RIA admin dashboard",
+        "Alter mandate trade quantities, asset allocations, or tax computations",
+        "Authorize expired or revoked mandate links"
+      ]
+    }
+  ],
+  "design": {
+    "style": "Clean, authoritative, and financial-grade clarity",
+    "references": [
+      "WealthTech compliance portals",
+      "SEBI-compliant financial tools"
+    ],
+    "avoid": [
+      "enterprise bureaucracy",
+      "casual slang",
+      "unreadable legal walls of text",
+      "whimsical illustrations"
+    ],
+    "colors": {
+      "primary": "#0A192F",
+      "secondary": "#4F46E5",
+      "notes": "Deep Navy (#0A192F, #1E3A8A), Indigo (#4F46E5), Emerald (#059669), Amber (#D97706), Light Canvas (#F8FAFC, #FFFFFF), Dark Surface (#0B132B)"
+    },
+    "fonts": "Inter, Roboto, JetBrains Mono",
+    "dark_mode": true,
+    "density": "compact",
+    "logo_notes": "Minimalist geometric emblem: interlocking shield and checkmark contour intersecting financial growth trendline",
+    "imagery": "Strictly functional UI, Material UI icons, high-contrast statutory badges, zero stock photos"
+  },
+  "content": {
+    "voice": "Authoritative, Transparent, Frictionless",
+    "copy_owner": "RIA Compliance & Product Team",
+    "sample_phrases": [
+      "Estimated Tax Obligation: ₹1,07,250",
+      "Statutory Trade Authorization under SEBI Regulation 19",
+      "Ensure Advance Tax is deposited prior to the quarterly installment deadline"
+    ],
+    "legal_pages": [
+      "Privacy Policy (DPDP Act 2023 compliant)",
+      "Terms of Service (Advisory record-keeping boundaries)",
+      "Refund and Cancellation Policy (Razorpay compliance)"
+    ],
+    "translation_review": "none needed (English only)"
+  },
+  "notifications": {
+    "channels": [
+      "email",
+      "sms",
+      "whatsapp-template"
+    ],
+    "events": [
+      {
+        "name": "mandate_dispatched",
+        "channel": "email, sms",
+        "trigger": "RIA dispatches new mandate link"
+      },
+      {
+        "name": "otp_requested",
+        "channel": "sms",
+        "trigger": "Client requests verification code"
+      },
+      {
+        "name": "mandate_approved",
+        "channel": "email, sms",
+        "trigger": "Client successfully verifies OTP"
+      },
+      {
+        "name": "mandate_expired",
+        "channel": "email",
+        "trigger": "Market cutoff window lapses"
+      }
+    ]
+  },
+  "payments": {
+    "needed": true,
+    "methods": [
+      "upi",
+      "card",
+      "netbanking"
+    ],
+    "provider": "Razorpay",
+    "mocked": false
+  },
+  "analytics": {
+    "tool": "none (privacy-first, no external tracking pixels)",
+    "events": [],
+    "privacy_notes": "Zero third-party tracking pixels or ad tags. Only internal system telemetry for audit logs."
+  },
+  "compliance": {
+    "data_collected": [
+      "RIA Name, Email, Phone, SEBI Reg Number",
+      "Client Name, PAN, Mobile Number, Email",
+      "System Telemetry (IP, User-Agent, Timestamp)",
+      "Razorpay Payment IDs"
+    ],
+    "pii": true,
+    "regulations": [
+      "SEBI (Investment Advisers) Regulations, 2013 (Regulation 19)",
+      "Digital Personal Data Protection (DPDP) Act, 2023",
+      "Information Technology Act, 2000 (Section 65B)",
+      "PCI-DSS SAQ-A"
+    ],
+    "consent": "Explicit unchecked terms acceptance checkbox at RIA registration; mandatory statutory acknowledgement declaration before mobile OTP submission",
+    "retention": "Minimum 5 years (1,825 days) mandatory retention under SEBI (IA) Regulations, 2013, Regulation 19; append-only audit trail with cryptographic tombstoning for DPDP erasure",
+    "data_residency": "AWS Mumbai (ap-south-1), India",
+    "age_limit": "18+"
+  },
+  "operations": {
+    "hosting": "Vercel / Cloud",
+    "environments": [
+      "local",
+      "production"
+    ],
+    "domain": "finconsent.in",
+    "monitoring": "Sentry for frontend exceptions and backend error handlers",
+    "backups": "Automated daily snapshots via MongoDB Atlas with 7-day retention",
+    "support_contact_role": "support@finconsent.in",
+    "ci": "GitHub Actions"
+  },
+  "timeline": {
+    "deadline": "3 weeks",
+    "hard_deadline": false,
+    "milestones": [
+      {
+        "name": "Sprint 1: Core Foundation",
+        "when": "Days 1-7",
+        "deliverable": "Schemas, Authentication, Client & Mandate CRUD, Indian Capital Gains Tax Engine"
+      },
+      {
+        "name": "Sprint 2: Client Portal & Consent",
+        "when": "Days 8-14",
+        "deliverable": "Client Mobile Portal, SMS OTP Consent Engine, Immutable Audit Trail"
+      },
+      {
+        "name": "Sprint 3: Payments & Verification",
+        "when": "Days 15-21",
+        "deliverable": "Razorpay Pro Upgrades, Resend Notifications, Compliance PDF Dossier, E2E Verification"
+      }
+    ]
+  },
+  "risks": [
+    {
+      "risk": "Mobile network delays on OTP SMS delivery",
+      "impact": "medium",
+      "mitigation": "30-second resend countdown with fallback to WhatsApp or email verification"
+    },
+    {
+      "risk": "Client forwards magic link to unauthorized party",
+      "impact": "high",
+      "mitigation": "Link is read-only; authorization requires OTP delivered strictly to registered phone number on record"
+    },
+    {
+      "risk": "Disputed tax calculations due to external offsetting losses",
+      "impact": "medium",
+      "mitigation": "Prominent statutory disclaimer clarifying calculations are estimated advisory gross tax impacts"
+    }
+  ],
+  "dependencies": [
+    {
+      "what": "MongoDB Atlas connection URI in AWS Mumbai",
+      "owner": "Principal Officer / Tech Lead"
+    },
+    {
+      "what": "Razorpay API test/live keys and webhook secret",
+      "owner": "Principal Officer / Tech Lead"
+    },
+    {
+      "what": "Resend API key for transactional emails",
+      "owner": "Principal Officer / Tech Lead"
+    }
+  ],
+  "assumptions": [
+    {
+      "statement": "Target users operate with INR currency and Indian numbering format (Lakhs and Crores)",
+      "confirmed_by_client": true
+    },
+    {
+      "statement": "Client reviews mandates via mobile browser without native mobile app installation requirement",
+      "confirmed_by_client": true
+    },
+    {
+      "statement": "Audit logs require minimum 5-year retention under SEBI Regulation 19",
+      "confirmed_by_client": true
+    },
+    {
+      "statement": "UI default language is English with WCAG AA compliance",
+      "confirmed_by_client": true
+    }
+  ],
+  "decisions": [
+    {
+      "topic": "Backend architecture mode",
+      "answer": "Real backend with Express.js REST API and MongoDB Mongoose",
+      "source": "document"
+    },
+    {
+      "topic": "Frontend framework and UI library",
+      "answer": "React with Vite and Material UI (MUI)",
+      "source": "document"
+    },
+    {
+      "topic": "Client authentication method",
+      "answer": "Zero-login tokenized magic links authenticated via 6-digit Mobile OTP",
+      "source": "document"
+    },
+    {
+      "topic": "Audit record integrity",
+      "answer": "Immutable append-only records with SHA-256 payload hashing",
+      "source": "document"
+    },
+    {
+      "topic": "Payment gateway",
+      "answer": "Razorpay with webhook HMAC verification",
+      "source": "document"
+    },
+    {
+      "topic": "Data residency location",
+      "answer": "AWS Mumbai (ap-south-1), India",
+      "source": "document"
+    },
+    {
+      "topic": "Cap on automated agent calls",
+      "answer": "Strict 15 agent calls",
+      "source": "document"
+    }
+  ],
+  "open_questions": [
+    {
+      "question": "Which production SMS gateway provider and DLT template IDs will be configured in production?",
+      "owner": "Principal Officer / Tech Lead",
+      "needed_by": "Sprint 2"
+    },
+    {
+      "question": "What is the final registered company legal name for the Terms of Service entity disclosure?",
+      "owner": "RIA Compliance Advisory Group",
+      "needed_by": "Sprint 3"
+    }
+  ],
+  "acceptance": [
+    "An RIA can register with email/password or Google OAuth, set their SEBI Registration Number (INAXXXXXXXXXX), and configure client profiles with PAN and mobile numbers.",
+    "An RIA can build a portfolio rebalancing mandate that automatically computes estimated Equity STCG (20%) and LTCG (12.5% above ₹1.25 Lakh) in Indian Rupees (₹ Lakhs) and identifies the upcoming Advance Tax deadline.",
+    "Clicking Dispatch Mandate generates a secure tokenized magic link with a one-click copy button, opening the client review view without requiring client account creation.",
+    "The client review portal loads on throttled 4G mobile connections with First Contentful Paint under 1.2s.",
+    "Approving a mandate requires the client to accept statutory disclosures and successfully verify a 6-digit Mobile OTP sent to their registered number.",
+    "Submitting the verified OTP immediately transitions the mandate to Approved & Locked, generating a timestamped SEBI Regulation 19 Compliance Certificate.",
+    "Every state transition and OTP event is logged in an append-only audit trail with zero UI or API endpoints permitting modification or deletion of records.",
+    "Regenerating a mandate link immediately invalidates the prior token and renders an expired link page.",
+    "Attempting to create a fourth active mandate on the Free tier is blocked until existing mandates are archived or upgraded.",
+    "Baseline Privacy Policy, Terms of Service, and Refund Policy pages are accessible via the footer, verifying Indian data residency (AWS Mumbai) and showing zero third-party ad tracking scripts."
+  ],
+  "out_of_scope": [
+    "Direct automated trade execution on brokerage accounts (preserves strict non-discretionary boundary)",
+    "Demat account holding synchronization (no direct CAMS/KFintech/CDSL scrapers)",
+    "Portfolio accounting and performance reporting (no NAV or XIRR tracking)",
+    "Contractual RIA onboarding agreements (focus is strictly on trade/rebalance consent)"
+  ],
+  "unknowns": [
+    "Specific production SMS DLT template registration identifiers",
+    "Final legal entity registered address for DPDP grievance officer"
+  ]
+}
