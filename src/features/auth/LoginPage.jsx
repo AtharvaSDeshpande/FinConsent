@@ -10,9 +10,19 @@ import Divider from '@mui/material/Divider';
 import Chip from '@mui/material/Chip';
 import Link from '@mui/material/Link';
 import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import List from '@mui/material/List';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import Avatar from '@mui/material/Avatar';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Logo } from '../../components/brand/Logo.jsx';
 import { useAuth } from '../../security/AuthContext.jsx';
@@ -54,8 +64,19 @@ export const LoginPage = () => {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [gisMounted, setGisMounted] = useState(false);
+  const [googleModalOpen, setGoogleModalOpen] = useState(false);
+  const [customGoogleEmail, setCustomGoogleEmail] = useState('');
+  const [customGoogleName, setCustomGoogleName] = useState('');
+
   const { login, loginWithGoogle, resetToGuest } = useAuth();
   const navigate = useNavigate();
+
+  const GOOGLE_ACCOUNTS = [
+    { name: 'Dr. Aarav Mehta', email: 'aarav.mehta@gmail.com', role: 'ria', desc: 'SEBI Registered RIA (INA000088921)' },
+    { name: 'Rajesh Khurana', email: 'rajesh.khurana@gmail.com', role: 'client', desc: 'Individual Advisory Client / Investor' },
+    { name: 'Kavita Sharma', email: 'kavita.compliance@gmail.com', role: 'compliance_officer', desc: 'Statutory Compliance Auditor' },
+    { name: 'Sanjay Deshmukh', email: 'sanjay.admin@gmail.com', role: 'admin', desc: 'FinConsent Platform Superuser' },
+  ];
 
   const handleGoogleCredentialResponse = async (response) => {
     setError('');
@@ -160,14 +181,36 @@ export const LoginPage = () => {
     setSelectedRole(role);
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleSelectGoogleAccount = async (acct) => {
+    setGoogleModalOpen(false);
     setError('');
     setSubmitting(true);
     try {
       await loginWithGoogle({
-        email: email || 'advisor.google@example.in',
-        name: email ? email.split('@')[0] : 'Google Certified RIA',
-        googleId: `google_uid_${Date.now()}`,
+        email: acct.email,
+        name: acct.name,
+        googleId: `goog_${acct.email.replace(/[@.]/g, '_')}`,
+        role: selectedRole || acct.role,
+      });
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCustomGoogleSubmit = async (e) => {
+    e.preventDefault();
+    if (!customGoogleEmail) return;
+    setGoogleModalOpen(false);
+    setError('');
+    setSubmitting(true);
+    try {
+      await loginWithGoogle({
+        email: customGoogleEmail,
+        name: customGoogleName || customGoogleEmail.split('@')[0],
+        googleId: `goog_${Date.now()}`,
         role: selectedRole,
       });
       navigate('/dashboard');
@@ -179,7 +222,25 @@ export const LoginPage = () => {
   };
 
   return (
-    <Box sx={{ width: '100%', maxWidth: 460, mx: 'auto' }}>
+    <Box sx={{ width: '100%', maxWidth: 480, mx: 'auto' }}>
+      {/* Back to Home Link */}
+      <Box sx={{ mb: 2, textAlign: 'left' }}>
+        <Button
+          component={RouterLink}
+          to="/"
+          startIcon={<ArrowBackOutlinedIcon />}
+          size="small"
+          sx={{
+            color: 'rgba(255, 255, 255, 0.75)',
+            textTransform: 'none',
+            fontSize: '0.85rem',
+            '&:hover': { color: '#FFFFFF', bgcolor: 'rgba(255, 255, 255, 0.08)' },
+          }}
+        >
+          Back to FinConsent Home
+        </Button>
+      </Box>
+
       <Card
         elevation={0}
         sx={{
@@ -194,7 +255,7 @@ export const LoginPage = () => {
       >
         <CardContent sx={{ p: { xs: 3, sm: 4.5 } }}>
           {/* Header Brand */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3.5 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
             <Box
               sx={{
                 p: 1.2,
@@ -226,6 +287,47 @@ export const LoginPage = () => {
               <ShieldOutlinedIcon sx={{ fontSize: 14, color: '#38BDF8' }} />
               SEBI Reg 19 • Statutory Advisory & Consent Management
             </Typography>
+          </Box>
+
+          {/* Role Selection Tabs for Sign In */}
+          <Box sx={{ mb: 2.5, p: 1.5, bgcolor: 'rgba(15, 23, 42, 0.7)', borderRadius: 2.5, border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+            <Typography variant="caption" sx={{ fontWeight: 700, color: 'rgba(255, 255, 255, 0.75)', display: 'block', mb: 1, textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: '0.68rem' }}>
+              Select Active Role for Sign In:
+            </Typography>
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.8 }}>
+              {[
+                { id: 'ria', label: 'RIA Advisor', badge: 'Drafting' },
+                { id: 'client', label: 'Advisory Client', badge: 'Investor' },
+                { id: 'compliance_officer', label: 'Compliance', badge: 'Auditor' },
+                { id: 'admin', label: 'Platform Admin', badge: 'Superuser' },
+              ].map((r) => {
+                const isSelected = selectedRole === r.id;
+                return (
+                  <Button
+                    key={r.id}
+                    size="small"
+                    variant={isSelected ? 'contained' : 'outlined'}
+                    onClick={() => setSelectedRole(r.id)}
+                    sx={{
+                      textTransform: 'none',
+                      py: 0.6,
+                      px: 1,
+                      fontSize: '0.75rem',
+                      fontWeight: isSelected ? 700 : 500,
+                      borderRadius: 1.8,
+                      bgcolor: isSelected ? '#4F46E5' : 'transparent',
+                      borderColor: isSelected ? '#6366F1' : 'rgba(255, 255, 255, 0.15)',
+                      color: isSelected ? '#FFFFFF' : 'rgba(255, 255, 255, 0.8)',
+                      '&:hover': {
+                        bgcolor: isSelected ? '#4338CA' : 'rgba(255, 255, 255, 0.08)',
+                      },
+                    }}
+                  >
+                    {r.label}
+                  </Button>
+                );
+              })}
+            </Box>
           </Box>
 
           {error && (
@@ -311,7 +413,7 @@ export const LoginPage = () => {
                 },
               }}
             >
-              {submitting ? 'Authenticating...' : 'Sign In to Workspace'}
+              {submitting ? 'Authenticating...' : `Sign In as ${selectedRole === 'ria' ? 'RIA' : selectedRole === 'client' ? 'Client' : selectedRole === 'compliance_officer' ? 'Auditor' : 'Admin'}`}
             </Button>
 
             <Divider
@@ -338,32 +440,30 @@ export const LoginPage = () => {
               }}
             />
 
-            {!gisMounted && (
-              <Button
-                variant="outlined"
-                fullWidth
-                size="large"
-                onClick={handleGoogleSignIn}
-                disabled={submitting}
-                sx={{
-                  py: 1.2,
-                  borderRadius: 2.5,
-                  borderColor: 'rgba(255, 255, 255, 0.2)',
-                  color: '#FFFFFF',
-                  bgcolor: 'rgba(255, 255, 255, 0.05)',
-                  fontWeight: 600,
-                  fontSize: '0.92rem',
-                  textTransform: 'none',
-                  '&:hover': {
-                    bgcolor: 'rgba(255, 255, 255, 0.1)',
-                    borderColor: 'rgba(255, 255, 255, 0.35)',
-                  },
-                }}
-              >
-                <GoogleGIcon />
-                Continue with Google OAuth
-              </Button>
-            )}
+            <Button
+              variant="outlined"
+              fullWidth
+              size="large"
+              onClick={() => setGoogleModalOpen(true)}
+              disabled={submitting}
+              sx={{
+                py: 1.2,
+                borderRadius: 2.5,
+                borderColor: 'rgba(255, 255, 255, 0.2)',
+                color: '#FFFFFF',
+                bgcolor: 'rgba(255, 255, 255, 0.05)',
+                fontWeight: 600,
+                fontSize: '0.92rem',
+                textTransform: 'none',
+                '&:hover': {
+                  bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  borderColor: 'rgba(255, 255, 255, 0.35)',
+                },
+              }}
+            >
+              <GoogleGIcon />
+              Continue with Google OAuth
+            </Button>
           </Box>
 
           {/* Persona quick switch */}
@@ -437,6 +537,139 @@ export const LoginPage = () => {
           </Box>
         </CardContent>
       </Card>
+
+      {/* Google Account Selector Dialog */}
+      <Dialog
+        open={googleModalOpen}
+        onClose={() => setGoogleModalOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: 3.5,
+            p: 1,
+            width: '100%',
+            maxWidth: 440,
+            bgcolor: '#0F172A',
+            color: '#F8FAFC',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+          },
+        }}
+      >
+        <DialogTitle sx={{ pb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <GoogleGIcon />
+            <Typography variant="h6" fontWeight={700}>
+              Sign in with Google
+            </Typography>
+          </Box>
+          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', mt: 0.5, display: 'block' }}>
+            Choose an account to continue to <strong>FinConsent</strong> as <strong>{selectedRole.toUpperCase()}</strong>:
+          </Typography>
+        </DialogTitle>
+
+        <DialogContent sx={{ py: 1 }}>
+          <List disablePadding sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {GOOGLE_ACCOUNTS.map((acct) => (
+              <ListItemButton
+                key={acct.email}
+                onClick={() => handleSelectGoogleAccount(acct)}
+                sx={{
+                  borderRadius: 2.5,
+                  p: 1.5,
+                  bgcolor: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  '&:hover': {
+                    bgcolor: 'rgba(99, 102, 241, 0.2)',
+                    borderColor: 'rgba(99, 102, 241, 0.5)',
+                  },
+                }}
+              >
+                <ListItemAvatar>
+                  <Avatar sx={{ bgcolor: '#4F46E5', fontWeight: 700, fontSize: '0.9rem' }}>
+                    {acct.name.charAt(0)}
+                  </Avatar>
+                </ListItemAvatar>
+                <ListItemText
+                  primary={
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Typography variant="body2" fontWeight={700} color="#FFFFFF">
+                        {acct.name}
+                      </Typography>
+                      <Chip label={acct.role.toUpperCase()} size="small" sx={{ fontSize: '0.62rem', height: 18 }} />
+                    </Box>
+                  }
+                  secondary={
+                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.65)' }}>
+                      {acct.email}
+                    </Typography>
+                  }
+                />
+              </ListItemButton>
+            ))}
+          </List>
+
+          <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>OR USE ANOTHER ACCOUNT</Typography>
+          </Divider>
+
+          <Box component="form" onSubmit={handleCustomGoogleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <TextField
+              size="small"
+              label="Google Email"
+              type="email"
+              required
+              fullWidth
+              value={customGoogleEmail}
+              onChange={(e) => setCustomGoogleEmail(e.target.value)}
+              placeholder="user@gmail.com"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                  color: '#FFFFFF',
+                  bgcolor: 'rgba(255, 255, 255, 0.05)',
+                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.15)' },
+                },
+                '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.6)' },
+              }}
+            />
+            <TextField
+              size="small"
+              label="Full Name"
+              fullWidth
+              value={customGoogleName}
+              onChange={(e) => setCustomGoogleName(e.target.value)}
+              placeholder="e.g. Anand Rathi"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                  color: '#FFFFFF',
+                  bgcolor: 'rgba(255, 255, 255, 0.05)',
+                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.15)' },
+                },
+                '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.6)' },
+              }}
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              sx={{
+                borderRadius: 2,
+                mt: 0.5,
+                fontWeight: 700,
+                bgcolor: '#4F46E5',
+                '&:hover': { bgcolor: '#4338CA' },
+              }}
+            >
+              Authenticate & Continue
+            </Button>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setGoogleModalOpen(false)} sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

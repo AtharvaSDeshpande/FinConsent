@@ -57,10 +57,12 @@ export const AppLayout = ({ children }) => {
     );
   }
 
+  const isLandingRoute = location.pathname === '/';
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Navbar />
-      <Box component="main" sx={{ flexGrow: 1, py: { xs: 2, md: 4 } }}>
+      <Box component="main" sx={{ flexGrow: 1, py: isLandingRoute ? 0 : { xs: 2, md: 4 } }}>
         {children}
       </Box>
       <Footer />

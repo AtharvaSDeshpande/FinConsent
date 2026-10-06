@@ -12,7 +12,7 @@ import Link from '@mui/material/Link';
 import CircularProgress from '@mui/material/CircularProgress';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import HowToRegOutlinedIcon from '@mui/icons-material/HowToRegOutlined';
-import Grid from '@mui/material/Grid';
+import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Logo } from '../../components/brand/Logo.jsx';
 import { useAuth } from '../../security/AuthContext.jsx';
@@ -101,6 +101,24 @@ export const RegisterPage = () => {
 
   return (
     <Box sx={{ width: '100%', maxWidth: 620, mx: 'auto' }}>
+      {/* Back to Home Link */}
+      <Box sx={{ mb: 2, textAlign: 'left' }}>
+        <Button
+          component={RouterLink}
+          to="/"
+          startIcon={<ArrowBackOutlinedIcon />}
+          size="small"
+          sx={{
+            color: 'rgba(255, 255, 255, 0.75)',
+            textTransform: 'none',
+            fontSize: '0.85rem',
+            '&:hover': { color: '#FFFFFF', bgcolor: 'rgba(255, 255, 255, 0.08)' },
+          }}
+        >
+          Back to FinConsent Home
+        </Button>
+      </Box>
+
       <Card
         elevation={0}
         sx={{

@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { AppLayout } from '../components/layout/index.js';
 import { ProtectedRoute } from '../security/index.js';
 import { LoginPage, RegisterPage } from '../features/auth/index.js';
+import { LandingPage } from '../features/landing/index.js';
 import { DashboardPage, MandateNewPage, MandateDetailPage } from '../features/mandate-builder/index.js';
 import { ClientsPage } from '../features/clients/index.js';
 import { RequestComposerPage } from '../features/requests/index.js';
@@ -12,17 +13,12 @@ import { ClientReviewPage, ClientReceiptPage } from '../features/client-review/i
 import { PrivacyPolicyPage, TermsOfServicePage, RefundPolicyPage } from '../features/legal-compliance/index.js';
 import { useAuth } from '../security/index.js';
 
-const HomeRedirect = () => {
-  const { isAuthenticated } = useAuth();
-  return <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />;
-};
-
 export const AppRoutes = () => {
   return (
     <AppLayout>
       <Routes>
-        {/* Public & Authentication */}
-        <Route path="/" element={<HomeRedirect />} />
+        {/* Public & Landing Page */}
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 

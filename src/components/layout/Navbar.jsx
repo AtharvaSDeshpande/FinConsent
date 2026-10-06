@@ -93,7 +93,7 @@ export const Navbar = () => {
         {/* Left: Brand Logo & Navigation */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
           <RouterLink
-            to={isGuest ? '/' : '/dashboard'}
+            to="/"
             style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}
           >
             <Logo size={32} />
@@ -141,14 +141,59 @@ export const Navbar = () => {
             </Box>
           )}
 
-          {/* Guest Nav items */}
+          {/* Guest Nav items for Landing Page */}
           {isGuest && (
-            <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1.5 }}>
-              <Button component={RouterLink} to="/legal/privacy" color="inherit" size="small">
-                DPDP Privacy
+            <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
+              <Button
+                component={RouterLink}
+                to="/"
+                color="inherit"
+                size="small"
+                sx={{ fontWeight: 600 }}
+              >
+                Home
               </Button>
-              <Button component={RouterLink} to="/legal/terms" color="inherit" size="small">
-                SEBI Terms
+              <Button
+                onClick={() => {
+                  if (window.location.pathname !== '/') {
+                    navigate('/#value-proposition');
+                  } else {
+                    document.getElementById('value-proposition')?.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                color="inherit"
+                size="small"
+                sx={{ fontWeight: 600 }}
+              >
+                Value Proposition
+              </Button>
+              <Button
+                onClick={() => {
+                  if (window.location.pathname !== '/') {
+                    navigate('/#how-it-works');
+                  } else {
+                    document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                color="inherit"
+                size="small"
+                sx={{ fontWeight: 600 }}
+              >
+                How It Works
+              </Button>
+              <Button
+                onClick={() => {
+                  if (window.location.pathname !== '/') {
+                    navigate('/#pricing');
+                  } else {
+                    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                color="inherit"
+                size="small"
+                sx={{ fontWeight: 600 }}
+              >
+                Pricing
               </Button>
             </Box>
           )}

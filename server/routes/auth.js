@@ -125,10 +125,14 @@ router.post('/google', async (req, res) => {
     let user = dbStore.findUserByEmail(email) || (googleId ? dbStore.findUserByGoogleId(googleId) : null);
 
     if (user) {
-      // Update Google ID if not already set
-      if (googleId && !user.googleId) {
-        user = dbStore.updateUser(user.id, { googleId });
+      // Ensure existing user is updated with the latest Google profile information & role
+      const updates = {};
+      if (googleId) updates.googleId = googleId;
+      if (name && name.trim()) updates.name = name.trim();
+      if (role && ['ria', 'compliance_officer', 'admin', 'client'].includes(role)) {
+        updates.role = role;
       }
+      user = dbStore.updateUser(user.id, updates);
     } else {
       // Auto-provision user with selected role
       const defaultFirm = role === 'compliance_officer'
