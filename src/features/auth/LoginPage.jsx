@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -24,6 +24,58 @@ export const LoginPage = () => {
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
+  const handleGoogleCredentialResponse = async (response) => {
+    setError('');
+    setSubmitting(true);
+    try {
+      await loginWithGoogle({
+        credential: response.credential,
+        role: selectedRole,
+      });
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  useEffect(() => {
+    const googleClientId =
+      import.meta.env.VITE_GOOGLE_CLIENT_ID ||
+      '449245026318-c7tdrllunjusqapt02qn2ugmbp2t0r80.apps.googleusercontent.com';
+
+    const initGoogleGis = () => {
+      if (window.google?.accounts?.id) {
+        try {
+          window.google.accounts.id.initialize({
+            client_id: googleClientId,
+            callback: handleGoogleCredentialResponse,
+            auto_select: false,
+          });
+          const btn = document.getElementById('g_id_signin_btn');
+          if (btn) {
+            window.google.accounts.id.renderButton(btn, {
+              theme: 'outline',
+              size: 'large',
+              width: 360,
+              text: 'continue_with',
+            });
+          }
+        } catch (e) {
+          console.warn('[Google GIS init warning]:', e.message);
+        }
+      }
+    };
+
+    if (window.google?.accounts?.id) {
+      initGoogleGis();
+    } else {
+      const timer = setTimeout(initGoogleGis, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedRole]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -35,7 +87,16 @@ export const LoginPage = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-      const data = await res.json();
+
+      const contentType = res.headers.get('content-type') || '';
+      let data;
+      if (contentType.includes('application/json')) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        const cleanMsg = text.replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim().slice(0, 150);
+        throw new Error(cleanMsg || 'Server error occurred during login');
+      }
 
       if (!res.ok || !data.success) {
         throw new Error(data.error || 'Login failed');
@@ -124,6 +185,8 @@ export const LoginPage = () => {
             </Button>
 
             <Divider sx={{ my: 1 }}>OR</Divider>
+
+            <Box id="g_id_signin_btn" sx={{ display: 'flex', justifyContent: 'center', my: 0.5, minHeight: 40 }} />
 
             <Button
               variant="outlined"

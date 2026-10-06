@@ -45,6 +45,24 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Guaranteed pure JSON 404 response for any unmapped /api routes (prevents HTML)
+app.use('/api', (req, res) => {
+  res.status(404).json({
+    success: false,
+    error: `API route not found: ${req.method} ${req.originalUrl}`,
+  });
+});
+
+// Guaranteed pure JSON error handler for all routes
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  console.error('[API Error]:', err);
+  res.status(err.status || 500).json({
+    success: false,
+    error: err.message || 'Internal server error',
+  });
+});
+
 // Initialize database connection & seed data
 async function initServer() {
   const connected = await connectDB();

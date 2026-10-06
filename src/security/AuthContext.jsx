@@ -29,7 +29,21 @@ export const AuthProvider = ({ children }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      const data = await res.json();
+
+      const contentType = res.headers.get('content-type') || '';
+      let data;
+      if (contentType.includes('application/json')) {
+        try {
+          data = await res.json();
+        } catch (jsonErr) {
+          throw new Error(`Failed to parse authentication response: ${jsonErr.message}`);
+        }
+      } else {
+        const text = await res.text();
+        const cleanMsg = text.replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim().slice(0, 150);
+        throw new Error(cleanMsg || `Backend returned status ${res.status}. Please ensure backend is running.`);
+      }
+
       if (!res.ok || !data.success) {
         throw new Error(data.error || 'Google authentication failed');
       }
