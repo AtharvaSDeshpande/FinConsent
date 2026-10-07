@@ -306,7 +306,7 @@ export const RequestComposerPage = () => {
             </Card>
           ) : (
             // Request Composer Form for RIA, Admin, or Client
-            <Card elevation={2} sx={{ borderRadius: 3, border: 1, borderColor: 'divider', position: 'sticky', top: 88 }}>
+            <Card sx={{ borderRadius: 3, border: '1px solid #E2E8F0', boxShadow: '0 1px 3px 0 rgba(15, 23, 42, 0.04)', position: 'sticky', top: 88 }}>
               <CardContent sx={{ p: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -485,10 +485,13 @@ export const RequestComposerPage = () => {
                     size="large"
                     sx={{
                       mt: 1,
-                      py: 1.2,
+                      py: 1.4,
                       fontWeight: 700,
                       borderRadius: 2.5,
-                      background: 'linear-gradient(135deg, #4F46E5 0%, #2563EB 100%)',
+                      bgcolor: '#0F172A',
+                      color: '#FFFFFF',
+                      '&:hover': { bgcolor: '#1E293B' },
+                      boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)',
                     }}
                   >
                     {composeMutation.isPending ? 'Submitting...' : isClient ? 'Submit Inquiry' : 'Submit Advisory Request'}
@@ -501,8 +504,8 @@ export const RequestComposerPage = () => {
 
         {/* RIGHT PANEL: LIVE REQUESTS LEDGER */}
         <Grid size={{ xs: 12, lg: 7 }}>
-          <Card elevation={2} sx={{ borderRadius: 3, border: 1, borderColor: 'divider' }}>
-            <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+          <Card sx={{ borderRadius: 3, border: '1px solid #E2E8F0', boxShadow: '0 1px 3px 0 rgba(15, 23, 42, 0.04)' }}>
+            <Box sx={{ p: 2, borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
               <Typography variant="h6" fontWeight={700}>
                 Live Requests Ledger ({requests.length})
               </Typography>

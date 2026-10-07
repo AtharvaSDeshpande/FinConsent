@@ -511,7 +511,6 @@ export const ClientReviewPage = () => {
             <Button
               variant="contained"
               size="large"
-              color="primary"
               startIcon={<LockOutlinedIcon />}
               endIcon={<ArrowForwardIcon />}
               onClick={() => setShowOtpModal(true)}
@@ -521,9 +520,10 @@ export const ClientReviewPage = () => {
                 fontSize: { xs: '0.98rem', sm: '1.05rem' },
                 fontWeight: 800,
                 borderRadius: 3,
-                bgcolor: '#4F46E5',
-                '&:hover': { bgcolor: '#4338CA' },
-                boxShadow: '0 8px 25px rgba(79, 70, 229, 0.35)',
+                bgcolor: '#0F172A',
+                color: '#FFFFFF',
+                '&:hover': { bgcolor: '#1E293B' },
+                boxShadow: '0 8px 25px rgba(15, 23, 42, 0.25)',
               }}
             >
               Authorize with Mobile OTP

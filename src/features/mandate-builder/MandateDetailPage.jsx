@@ -4,11 +4,9 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Alert from '@mui/material/Alert';
-import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Stack from '@mui/material/Stack';
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
@@ -112,16 +110,19 @@ export const MandateDetailPage = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-        <CircularProgress />
+      <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', gap: 2 }}>
+        <CircularProgress size={32} sx={{ color: '#0F172A' }} />
+        <Typography variant="caption" color="text.secondary">
+          Loading mandate dossier...
+        </Typography>
       </Box>
     );
   }
 
   if (error || !mandate) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Alert severity="error">{error || 'Mandate not found'}</Alert>
+      <Container maxWidth="md" sx={{ py: 6 }}>
+        <Alert severity="error" sx={{ borderRadius: 2.5 }}>{error || 'Mandate record not found'}</Alert>
       </Container>
     );
   }
@@ -129,55 +130,97 @@ export const MandateDetailPage = () => {
   const clientMagicUrl = `${window.location.origin}/m/${mandate.magicToken}`;
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
+    <Container maxWidth="xl" sx={{ py: { xs: 2.5, md: 4 } }}>
       <Box sx={{ mb: 2.5 }}>
         <Button
           component={RouterLink}
           to="/dashboard"
-          startIcon={<ArrowBackOutlinedIcon />}
+          startIcon={<ArrowBackOutlinedIcon sx={{ fontSize: 18 }} />}
           size="small"
-          sx={{ textTransform: 'none', fontWeight: 600 }}
+          sx={{ textTransform: 'none', fontWeight: 600, color: '#64748B', '&:hover': { color: '#0F172A' } }}
         >
-          Back to Control Center
+          Back to Mandates Control Center
         </Button>
       </Box>
 
-      {/* Header Card */}
-      <Card elevation={2} sx={{ p: { xs: 2.5, sm: 3.5 }, mb: 3, borderRadius: 3, border: 1, borderColor: 'divider' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
-          <Box sx={{ maxWidth: { xs: '100%', md: '65%' } }}>
+      {/* Institutional Wealth Management Mandate Header */}
+      <Card
+        elevation={0}
+        sx={{
+          p: { xs: 3, md: 3.5 },
+          mb: 3,
+          borderRadius: 3.5,
+          border: '1px solid #E2E8F0',
+          bgcolor: '#FFFFFF',
+        }}
+      >
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2.5 }}>
+          <Box sx={{ maxWidth: { xs: '100%', md: '68%' } }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1, flexWrap: 'wrap' }}>
-              <Typography variant="h5" component="h1" fontWeight={800} letterSpacing="-0.01em">
+              <Typography variant="h4" component="h1" fontWeight={800} letterSpacing="-0.02em" color="#0F172A">
                 {mandate.title}
               </Typography>
               <StatutoryBadge status={mandate.status} />
             </Box>
-            <Typography variant="body2" color="text.secondary">
-              Client: <strong>{mandate.client?.name}</strong> | PAN: <code>{mandate.client?.pan}</code> | Mobile: {mandate.client?.mobile}
-            </Typography>
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-              48-Hour Cutoff Deadline: <strong>{new Date(mandate.cutoffTimestamp).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</strong>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', mt: 0.5 }}>
+              <Typography variant="body2" color="text.secondary">
+                Client: <strong style={{ color: '#0F172A' }}>{mandate.client?.name}</strong>
+              </Typography>
+              {mandate.client?.pan && (
+                <Box
+                  component="span"
+                  sx={{
+                    px: 0.8,
+                    py: 0.2,
+                    borderRadius: '4px',
+                    bgcolor: '#F1F5F9',
+                    color: '#475569',
+                    fontSize: '0.72rem',
+                    fontFamily: 'JetBrains Mono',
+                    fontWeight: 650,
+                  }}
+                >
+                  PAN: {mandate.client.pan}
+                </Box>
+              )}
+              <Typography variant="caption" color="text.secondary">
+                Mobile: {mandate.client?.mobile}
+              </Typography>
+            </Box>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.8 }}>
+              48-Hour Cutoff Deadline: <strong style={{ color: '#334155' }}>{new Date(mandate.cutoffTimestamp).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</strong>
             </Typography>
           </Box>
 
           <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
             {role === 'compliance_officer' ? (
-              <Chip
-                label="Compliance Audit Mode (Read-Only)"
-                color="info"
-                variant="outlined"
-                sx={{ fontWeight: 700 }}
-              />
+              <Box
+                sx={{
+                  px: 1.5,
+                  py: 0.8,
+                  borderRadius: 2,
+                  bgcolor: 'rgba(2, 132, 199, 0.08)',
+                  color: '#0369A1',
+                  border: '1px solid rgba(2, 132, 199, 0.25)',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                }}
+              >
+                Compliance Audit Mode (Read-Only)
+              </Box>
             ) : mandate.status === 'draft' ? (
               <Button
                 variant="contained"
-                startIcon={<SendOutlinedIcon />}
+                startIcon={<SendOutlinedIcon sx={{ fontSize: 18 }} />}
                 onClick={handleDispatch}
                 disabled={dispatching}
                 sx={{
                   fontWeight: 700,
                   borderRadius: 2.5,
-                  background: 'linear-gradient(135deg, #4F46E5 0%, #2563EB 100%)',
+                  bgcolor: '#0F172A',
+                  '&:hover': { bgcolor: '#1E293B' },
                 }}
               >
                 {dispatching ? 'Dispatching...' : 'Dispatch Mandate Link'}
@@ -185,9 +228,14 @@ export const MandateDetailPage = () => {
             ) : (
               <Button
                 variant="contained"
-                startIcon={<ShareOutlinedIcon />}
+                startIcon={<ShareOutlinedIcon sx={{ fontSize: 18 }} />}
                 onClick={() => setOpenMagicModal(true)}
-                sx={{ fontWeight: 700, borderRadius: 2.5 }}
+                sx={{
+                  fontWeight: 700,
+                  borderRadius: 2.5,
+                  bgcolor: '#0F172A',
+                  '&:hover': { bgcolor: '#1E293B' },
+                }}
               >
                 Share Magic Link
               </Button>
@@ -195,10 +243,9 @@ export const MandateDetailPage = () => {
 
             <Button
               variant="outlined"
-              color="secondary"
-              startIcon={<ReceiptLongOutlinedIcon />}
+              startIcon={<ReceiptLongOutlinedIcon sx={{ fontSize: 18 }} />}
               onClick={() => setOpenDossierModal(true)}
-              sx={{ fontWeight: 600, borderRadius: 2.5 }}
+              sx={{ fontWeight: 650, borderRadius: 2.5 }}
             >
               Regulation 19 Dossier
             </Button>
@@ -225,15 +272,23 @@ export const MandateDetailPage = () => {
             />
 
             {/* Client Mobile Portal Dispatch Card */}
-            <Card elevation={2} sx={{ p: 3, borderRadius: 3, border: 1, borderColor: 'divider' }}>
-              <Typography variant="subtitle2" fontWeight={800} gutterBottom>
+            <Card
+              elevation={0}
+              sx={{
+                p: 3,
+                borderRadius: 3.5,
+                border: '1px solid #E2E8F0',
+                bgcolor: '#FFFFFF',
+              }}
+            >
+              <Typography variant="subtitle1" fontWeight={750} color="#0F172A" gutterBottom>
                 Client Mobile Review Rail
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.82rem', mb: 2 }}>
                 Investor receives a tokenized, mobile-first view answering 5 plain-English questions with zero jargon.
               </Typography>
 
-              <Box sx={{ p: 1.5, bgcolor: '#F8FAFC', borderRadius: 2, border: '1px solid #E2E8F0', mb: 2 }}>
+              <Box sx={{ p: 1.5, bgcolor: '#F8FAFC', borderRadius: 2, border: '1px solid #E2E8F0', mb: 2.5 }}>
                 <Typography variant="caption" sx={{ wordBreak: 'break-all', display: 'block', fontFamily: 'JetBrains Mono', color: '#334155', fontSize: '0.78rem' }}>
                   {clientMagicUrl}
                 </Typography>
@@ -243,9 +298,9 @@ export const MandateDetailPage = () => {
                 <Box sx={{ display: 'flex', gap: 1 }}>
                   <Button
                     variant={copiedLink ? 'contained' : 'outlined'}
-                    color={copiedLink ? 'success' : 'primary'}
+                    color={copiedLink ? 'success' : 'inherit'}
                     size="small"
-                    startIcon={copiedLink ? <CheckIcon /> : <ContentCopyIcon />}
+                    startIcon={copiedLink ? <CheckIcon sx={{ fontSize: 16 }} /> : <ContentCopyIcon sx={{ fontSize: 16 }} />}
                     onClick={handleCopyLink}
                     fullWidth
                     sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2 }}
@@ -256,7 +311,7 @@ export const MandateDetailPage = () => {
                     variant="outlined"
                     color="success"
                     size="small"
-                    startIcon={<WhatsAppIcon />}
+                    startIcon={<WhatsAppIcon sx={{ fontSize: 16 }} />}
                     onClick={handleWhatsAppShare}
                     fullWidth
                     sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2 }}
@@ -272,15 +327,15 @@ export const MandateDetailPage = () => {
                   component={RouterLink}
                   to={`/m/${mandate.magicToken}`}
                   target="_blank"
-                  endIcon={<OpenInNewIcon sx={{ fontSize: '16px !important' }} />}
-                  sx={{ textTransform: 'none', fontWeight: 600, borderRadius: 2 }}
+                  endIcon={<OpenInNewIcon sx={{ fontSize: 15 }} />}
+                  sx={{ textTransform: 'none', fontWeight: 650, borderRadius: 2 }}
                 >
                   Preview Client Mobile View
                 </Button>
               </Stack>
 
-              <Box sx={{ mt: 2, pt: 2, borderTop: '1px dashed #E2E8F0', display: 'flex', alignItems: 'center', gap: 1 }}>
-                <InfoOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+              <Box sx={{ mt: 2.5, pt: 2, borderTop: '1px dashed #E2E8F0', display: 'flex', alignItems: 'center', gap: 1 }}>
+                <InfoOutlinedIcon sx={{ fontSize: 16, color: '#64748B' }} />
                 <Typography variant="caption" color="text.secondary">
                   Mobile OTP authorization is required before this link reaches the 48h cutoff.
                 </Typography>

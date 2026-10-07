@@ -10,21 +10,22 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
-import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
-import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
+import HourglassEmptyOutlinedIcon from '@mui/icons-material/HourglassEmptyOutlined';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
+import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { StatutoryBadge, ExpirationCountdownBadge } from '../../components/brand/StatutoryBadge.jsx';
@@ -35,7 +36,7 @@ import { useAuth } from '../../security/AuthContext.jsx';
 
 export const DashboardPage = () => {
   const queryClient = useQueryClient();
-  const { user, role, isGuest, isClient, isComplianceOfficer, isRia, isAdmin, switchPersona } = useAuth();
+  const { user, role, isGuest, isClient, isComplianceOfficer, isRia, isAdmin } = useAuth();
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedMandate, setSelectedMandate] = useState(null);
   const [openMagicModal, setOpenMagicModal] = useState(false);
@@ -107,56 +108,51 @@ export const DashboardPage = () => {
     revokeMutation.mutate(mandateId);
   };
 
-  // Role-specific metrics calculations
+  // Metrics calculations
   const pendingCount = mandates.filter((m) => m.status === 'sent' || m.status === 'viewed').length;
-  const consentedCount = mandates.filter((m) => m.status === 'consented').length;
+  const consentedCount = mandates.filter((m) => m.status === 'consented' || m.status === 'approved').length;
   const totalTax = mandates.reduce((sum, m) => sum + (m.taxPayable || 0), 0);
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
-      {/* Role-tailored Page Header */}
+    <Container maxWidth="xl" sx={{ py: { xs: 2.5, md: 4 } }}>
+      {/* WealthTech Workspace Page Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3.5, flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
-            <Typography variant="h4" component="h1" fontWeight={800} letterSpacing="-0.02em">
-              {isClient
-                ? 'My Advisory Portfolio & Authorizations'
-                : isComplianceOfficer
-                ? 'Statutory Compliance Audit Center'
-                : isGuest
-                ? 'FinConsent Workspace Preview'
-                : 'Mandate Control Center'}
-            </Typography>
-            <Chip
-              label={`ROLE: ${role?.toUpperCase() || 'GUEST'}`}
-              color={role === 'admin' ? 'secondary' : role === 'compliance_officer' ? 'info' : role === 'client' ? 'success' : 'primary'}
-              size="small"
-              sx={{ fontWeight: 800 }}
-            />
-          </Box>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="h4" component="h1" fontWeight={800} letterSpacing="-0.025em" color="#0F172A">
             {isClient
-              ? 'Inspect and grant statutory trade rebalance consent per SEBI (Investment Advisers) Regulations, 2013'
+              ? 'My Advisory Portfolios & Consents'
               : isComplianceOfficer
-              ? 'Audit non-discretionary advisory mandates, Section 65B electronic evidence, and SHA-256 chained logs'
+              ? 'Statutory Compliance Audit Center'
               : isGuest
-              ? 'Explore SEBI Regulation 19 compliance workflows. Switch roles or sign in to execute live actions.'
-              : 'Statutory trade rebalancing authorizations & SEBI Regulation 19 compliance dossiers'}
+              ? 'FinConsent Workspace Preview'
+              : 'Mandate Control Center'}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, maxWidth: 700 }}>
+            {isClient
+              ? 'Review proposed portfolio allocations, inspect pre-computed tax obligations, and authorize statutory trade rebalances.'
+              : isComplianceOfficer
+              ? 'Audit non-discretionary advisory mandates, electronic evidence logs, and Section 65B immutable compliance trails.'
+              : isGuest
+              ? 'Explore SEBI Regulation 19 compliance workflows. Switch roles or sign in to execute live mandates.'
+              : 'Non-discretionary client consent workflows, pre-computed capital gains tax disclosures, and SEBI Regulation 19 compliance receipts.'}
           </Typography>
         </Box>
 
-        {/* Action Button strictly tailored to authorized roles */}
+        {/* Clear Primary Action Button */}
         <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
           {(isRia || isAdmin) && (
             <Button
               variant="contained"
-              startIcon={<AddCircleOutlineIcon />}
+              startIcon={<AddCircleOutlineIcon sx={{ fontSize: 20 }} />}
               component={RouterLink}
               to="/mandates/new"
               sx={{
                 fontWeight: 700,
                 borderRadius: 2.5,
-                background: 'linear-gradient(135deg, #4F46E5 0%, #2563EB 100%)',
+                px: 2.5,
+                py: 1,
+                bgcolor: '#0F172A',
+                '&:hover': { bgcolor: '#1E293B' },
               }}
             >
               Draft Rebalance Mandate
@@ -166,11 +162,10 @@ export const DashboardPage = () => {
           {isComplianceOfficer && (
             <Button
               variant="contained"
-              color="info"
-              startIcon={<FactCheckOutlinedIcon />}
+              startIcon={<FactCheckOutlinedIcon sx={{ fontSize: 20 }} />}
               component={RouterLink}
               to="/requests"
-              sx={{ fontWeight: 700, borderRadius: 2.5 }}
+              sx={{ fontWeight: 700, borderRadius: 2.5, bgcolor: '#0F172A', '&:hover': { bgcolor: '#1E293B' } }}
             >
               Scrutinize Requests Queue
             </Button>
@@ -181,7 +176,7 @@ export const DashboardPage = () => {
               variant="contained"
               component={RouterLink}
               to="/login"
-              sx={{ fontWeight: 700, borderRadius: 2.5 }}
+              sx={{ fontWeight: 700, borderRadius: 2.5, bgcolor: '#0F172A' }}
             >
               Sign In to Practice
             </Button>
@@ -189,98 +184,147 @@ export const DashboardPage = () => {
         </Box>
       </Box>
 
-      {/* Role-Specific Metric Summary Cards */}
-      <Grid container spacing={2.5} sx={{ mb: 3 }}>
+      {/* Institutional WealthTech Metric Summary Cards */}
+      <Grid container spacing={2.5} sx={{ mb: 3.5 }}>
         <Grid size={{ xs: 12, sm: 4 }}>
-          <Card elevation={1} sx={{ p: 2.5, borderRadius: 3, border: 1, borderColor: 'divider' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Box sx={{ p: 1, borderRadius: 2, bgcolor: isClient ? 'warning.light' : 'primary.light', color: 'white' }}>
-                <HourglassEmptyIcon />
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                  {isClient ? 'Awaiting Your Consent' : isComplianceOfficer ? 'Active Audit Windows' : 'Pending Authorizations'}
-                </Typography>
-                <Typography variant="h5" fontWeight={800}>
-                  {pendingCount}
-                </Typography>
+          <Card
+            elevation={0}
+            sx={{
+              p: 3,
+              borderRadius: 3.5,
+              bgcolor: '#FFFFFF',
+              border: '1px solid #E2E8F0',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              height: '100%',
+            }}
+          >
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+              <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 650, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                {isClient ? 'Awaiting Your Consent' : isComplianceOfficer ? 'Active Audit Windows' : 'Pending Authorizations'}
+              </Typography>
+              <Box sx={{ p: 0.8, borderRadius: 2, bgcolor: '#FEF3C7', color: '#D97706', display: 'flex' }}>
+                <HourglassEmptyOutlinedIcon sx={{ fontSize: 18 }} />
               </Box>
             </Box>
+            <Typography variant="h3" fontWeight={800} color="#0F172A" letterSpacing="-0.03em">
+              {pendingCount}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block', fontSize: '0.78rem' }}>
+              {isClient ? 'Active mandates requiring your OTP approval' : 'Awaiting investor mobile OTP review within 48h cutoff'}
+            </Typography>
           </Card>
         </Grid>
 
         <Grid size={{ xs: 12, sm: 4 }}>
-          <Card elevation={1} sx={{ p: 2.5, borderRadius: 3, border: 1, borderColor: 'divider' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'success.main', color: 'white' }}>
-                <CheckCircleIcon />
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                  {isClient ? 'Consented & Approved' : isComplianceOfficer ? 'Certified Compliance Records' : 'Consented Mandates'}
-                </Typography>
-                <Typography variant="h5" fontWeight={800}>
-                  {consentedCount}
-                </Typography>
+          <Card
+            elevation={0}
+            sx={{
+              p: 3,
+              borderRadius: 3.5,
+              bgcolor: '#FFFFFF',
+              border: '1px solid #E2E8F0',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              height: '100%',
+            }}
+          >
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+              <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 650, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                {isClient ? 'Consented & Approved' : isComplianceOfficer ? 'Certified Audit Records' : 'Consented Mandates'}
+              </Typography>
+              <Box sx={{ p: 0.8, borderRadius: 2, bgcolor: '#ECFDF5', color: '#059669', display: 'flex' }}>
+                <CheckCircleOutlineIcon sx={{ fontSize: 18 }} />
               </Box>
             </Box>
+            <Typography variant="h3" fontWeight={800} color="#0F172A" letterSpacing="-0.03em">
+              {consentedCount}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block', fontSize: '0.78rem' }}>
+              {isClient ? 'Approved mandates ready for trade execution' : 'Legally sealed with Regulation 19 audit receipt'}
+            </Typography>
           </Card>
         </Grid>
 
         <Grid size={{ xs: 12, sm: 4 }}>
-          <Card elevation={1} sx={{ p: 2.5, borderRadius: 3, border: 1, borderColor: 'divider' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'info.main', color: 'white' }}>
-                <VerifiedUserOutlinedIcon />
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                  {isClient ? 'Total Pre-Computed Tax' : 'Total Capital Gains Tax Impact'}
-                </Typography>
-                <Typography variant="h5" fontWeight={800} sx={{ fontFamily: 'JetBrains Mono' }}>
-                  ₹{totalTax.toLocaleString('en-IN')}
-                </Typography>
+          <Card
+            elevation={0}
+            sx={{
+              p: 3,
+              borderRadius: 3.5,
+              bgcolor: '#FFFFFF',
+              border: '1px solid #E2E8F0',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              height: '100%',
+            }}
+          >
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+              <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 650, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                {isClient ? 'Total Pre-Computed Tax' : 'Total Capital Gains Tax Impact'}
+              </Typography>
+              <Box sx={{ p: 0.8, borderRadius: 2, bgcolor: '#EEF2FF', color: '#4F46E5', display: 'flex' }}>
+                <CurrencyRupeeIcon sx={{ fontSize: 18 }} />
               </Box>
             </Box>
+            <Typography variant="h3" fontWeight={800} color="#0F172A" sx={{ fontFamily: 'JetBrains Mono', letterSpacing: '-0.02em' }}>
+              ₹{totalTax.toLocaleString('en-IN')}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block', fontSize: '0.78rem' }}>
+              Pre-computed advisory tax liability under Finance Act 2024
+            </Typography>
           </Card>
         </Grid>
       </Grid>
 
-      {/* Statutory Lifecycle Rail for RIAs & Admins */}
+      {/* Statutory Lifecycle Rail for Wealth Professionals */}
       {(isRia || isAdmin) && (
         <StatutoryLifecycleGuide overview={true} />
       )}
 
-      {queryError && <Alert severity="error" sx={{ mb: 3 }}>{queryError.message}</Alert>}
+      {queryError && <Alert severity="error" sx={{ mb: 3, borderRadius: 2.5 }}>{queryError.message}</Alert>}
 
       {/* Mandate Ledger Card */}
-      <Card elevation={2} sx={{ borderRadius: 3, border: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs
-          value={statusFilter}
-          onChange={(e, val) => setStatusFilter(val)}
-          sx={{ px: 2, borderBottom: 1, borderColor: 'divider' }}
-          variant="scrollable"
-          scrollButtons="auto"
-        >
-          <Tab label="All Mandates" value="all" sx={{ fontWeight: 600 }} />
-          <Tab label="Draft" value="draft" sx={{ fontWeight: 600 }} />
-          <Tab label="Sent" value="sent" sx={{ fontWeight: 600 }} />
-          <Tab label="Viewed" value="viewed" sx={{ fontWeight: 600 }} />
-          <Tab label="Consented" value="consented" sx={{ fontWeight: 600 }} />
-          <Tab label="Expired" value="expired" sx={{ fontWeight: 600 }} />
-        </Tabs>
+      <Card
+        elevation={0}
+        sx={{
+          borderRadius: 3.5,
+          border: '1px solid #E2E8F0',
+          bgcolor: '#FFFFFF',
+          mb: 4,
+          overflow: 'hidden',
+        }}
+      >
+        <Box sx={{ px: 3, pt: 2, borderBottom: '1px solid #F1F5F9' }}>
+          <Tabs
+            value={statusFilter}
+            onChange={(e, val) => setStatusFilter(val)}
+            variant="scrollable"
+            scrollButtons="auto"
+          >
+            <Tab label="All Mandates" value="all" />
+            <Tab label="Draft" value="draft" />
+            <Tab label="Dispatched" value="sent" />
+            <Tab label="In Review" value="viewed" />
+            <Tab label="Consented" value="consented" />
+            <Tab label="Cutoff Expired" value="expired" />
+          </Tabs>
+        </Box>
 
         <TableContainer>
           <Table>
-            <TableHead sx={{ bgcolor: 'background.default' }}>
+            <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 700 }}>
-                  {isClient ? 'Rebalance Proposal' : 'Mandate Title & ID'}
+                <TableCell>
+                  {isClient ? 'Rebalance Proposal' : 'Mandate & Investor Particulars'}
                 </TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Statutory Status</TableCell>
-                <TableCell sx={{ fontWeight: 700 }} align="right">Pre-computed Tax (₹)</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>48-Hour Cutoff & Countdown</TableCell>
-                <TableCell sx={{ fontWeight: 700 }} align="center">
+                <TableCell>Statutory Status</TableCell>
+                <TableCell align="right">Pre-Computed Tax</TableCell>
+                <TableCell>48-Hour Cutoff Deadline</TableCell>
+                <TableCell align="center">
                   {isClient ? 'Investor Action' : isComplianceOfficer ? 'Statutory Audit Action' : 'Guided Next Action'}
                 </TableCell>
               </TableRow>
@@ -288,54 +332,104 @@ export const DashboardPage = () => {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
-                    <CircularProgress size={32} />
+                  <TableCell colSpan={5} align="center" sx={{ py: 8 }}>
+                    <CircularProgress size={28} sx={{ color: '#0F172A' }} />
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5 }}>
+                      Loading verified portfolio mandates...
+                    </Typography>
                   </TableCell>
                 </TableRow>
               ) : mandates.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.secondary' }}>
-                    {isClient
-                      ? 'No rebalance proposals currently assigned to your portfolio in this view.'
-                      : 'No mandates found in this filter view.'}
+                  <TableCell colSpan={5} align="center" sx={{ py: 8 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                      <FolderOpenOutlinedIcon sx={{ fontSize: 40, color: '#94A3B8' }} />
+                      <Typography variant="subtitle2" fontWeight={700} color="#334155">
+                        No mandates found in this filter view
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {isClient
+                          ? 'No rebalance proposals currently assigned to your portfolio.'
+                          : 'Draft a new mandate or select another filter view above.'}
+                      </Typography>
+                      {(isRia || isAdmin) && (
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          component={RouterLink}
+                          to="/mandates/new"
+                          sx={{ mt: 1.5, borderRadius: 2 }}
+                        >
+                          Draft New Mandate
+                        </Button>
+                      )}
+                    </Box>
                   </TableCell>
                 </TableRow>
               ) : (
                 mandates.map((mandate) => (
                   <TableRow key={mandate.id} hover>
+                    {/* Column 1: Mandate Title & Client particulars */}
                     <TableCell>
                       <Typography
                         component={RouterLink}
                         to={`/mandates/${mandate.id}`}
                         variant="body2"
                         fontWeight={700}
-                        sx={{ color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                        sx={{
+                          color: '#0F172A',
+                          textDecoration: 'none',
+                          '&:hover': { color: '#4F46E5', textDecoration: 'underline' },
+                          display: 'block',
+                        }}
                       >
                         {mandate.title}
                       </Typography>
-                      <Typography variant="caption" color="text.secondary" display="block">
-                        ID: {mandate.id}
-                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.4 }}>
+                        <Typography variant="caption" color="text.secondary">
+                          {mandate.client?.name ? `Client: ${mandate.client.name}` : `ID: ${mandate.id}`}
+                        </Typography>
+                        {mandate.client?.pan && (
+                          <Box
+                            component="span"
+                            sx={{
+                              px: 0.7,
+                              py: 0.1,
+                              borderRadius: '4px',
+                              bgcolor: '#F1F5F9',
+                              color: '#475569',
+                              fontSize: '0.68rem',
+                              fontFamily: 'JetBrains Mono',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {mandate.client.pan}
+                          </Box>
+                        )}
+                      </Box>
                     </TableCell>
 
+                    {/* Column 2: Minimalist WealthTech Status Badge */}
                     <TableCell>
                       <StatutoryBadge status={mandate.status} />
                     </TableCell>
 
-                    <TableCell align="right" sx={{ fontWeight: 700, fontFamily: 'JetBrains Mono' }}>
+                    {/* Column 3: Tabular Pre-computed Tax */}
+                    <TableCell align="right" sx={{ fontWeight: 700, fontFamily: 'JetBrains Mono', color: '#0F172A' }}>
                       ₹{(mandate.taxPayable || 0).toLocaleString('en-IN')}
                     </TableCell>
 
-                    <TableCell sx={{ fontSize: '0.82rem' }}>
+                    {/* Column 4: 48h Deadline & Countdown */}
+                    <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 0.5 }}>
-                        <span>
+                        <Typography variant="caption" color="#475569" fontWeight={550}>
                           {mandate.cutoffTimestamp
                             ? new Date(mandate.cutoffTimestamp).toLocaleString('en-IN', {
                                 dateStyle: 'medium',
                                 timeStyle: 'short',
                               })
                             : '—'}
-                        </span>
+                        </Typography>
                         <ExpirationCountdownBadge
                           cutoffTimestamp={mandate.cutoffTimestamp}
                           status={mandate.status}
@@ -343,133 +437,131 @@ export const DashboardPage = () => {
                       </Box>
                     </TableCell>
 
-                    {/* Role-Tailored Action Column */}
+                    {/* Column 5: Clear Guided Next Action */}
                     <TableCell align="center">
                       {isClient ? (
-                        // Client Actions
                         mandate.status === 'sent' || mandate.status === 'viewed' ? (
                           <Button
                             size="small"
                             variant="contained"
-                            color="primary"
-                            endIcon={<ArrowForwardIcon />}
+                            endIcon={<ArrowForwardIcon sx={{ fontSize: 16 }} />}
                             component={RouterLink}
                             to={`/m/${mandate.magicToken || 'demo-token'}`}
-                            sx={{ fontWeight: 700, borderRadius: 2, textTransform: 'none' }}
+                            sx={{
+                              fontWeight: 700,
+                              borderRadius: 2,
+                              bgcolor: '#0F172A',
+                              '&:hover': { bgcolor: '#1E293B' },
+                            }}
                           >
                             Review & Authorize
                           </Button>
-                        ) : mandate.status === 'consented' ? (
+                        ) : mandate.status === 'consented' || mandate.status === 'approved' ? (
                           <Button
                             size="small"
                             variant="outlined"
                             color="success"
-                            startIcon={<AssignmentTurnedInIcon />}
+                            startIcon={<AssignmentTurnedInIcon sx={{ fontSize: 16 }} />}
                             component={RouterLink}
                             to={`/m/${mandate.magicToken || 'demo-token'}/receipt`}
-                            sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none' }}
+                            sx={{ fontWeight: 650, borderRadius: 2 }}
                           >
-                            Receipt
+                            View Receipt
                           </Button>
                         ) : (
-                          <Chip label={mandate.status.toUpperCase()} size="small" variant="outlined" />
+                          <Typography variant="caption" color="text.secondary">
+                            {mandate.status.toUpperCase()}
+                          </Typography>
                         )
                       ) : isComplianceOfficer ? (
-                        // Compliance Officer Actions
-                        <Box sx={{ display: 'inline-flex', gap: 1 }}>
+                        <Stack direction="row" spacing={1} justifyContent="center">
                           <Button
                             size="small"
                             variant="outlined"
                             component={RouterLink}
                             to={`/mandates/${mandate.id}`}
-                            sx={{ textTransform: 'none', borderRadius: 2 }}
+                            sx={{ borderRadius: 2, fontSize: '0.78rem' }}
                           >
                             Audit Trail
                           </Button>
                           <Button
                             size="small"
                             variant="outlined"
-                            color="secondary"
-                            startIcon={<ReceiptLongOutlinedIcon />}
+                            startIcon={<ReceiptLongOutlinedIcon sx={{ fontSize: 16 }} />}
                             onClick={() => handleOpenDossier(mandate)}
-                            sx={{ textTransform: 'none', borderRadius: 2 }}
+                            sx={{ borderRadius: 2, fontSize: '0.78rem' }}
                           >
                             Dossier
                           </Button>
-                        </Box>
+                        </Stack>
                       ) : (
-                        // RIA / Admin Guided Next Actions
+                        // RIA / Admin Guided Actions
                         mandate.status === 'draft' ? (
                           <Button
                             size="small"
                             variant="contained"
-                            color="primary"
                             component={RouterLink}
                             to={`/mandates/${mandate.id}`}
-                            endIcon={<ArrowForwardIcon />}
+                            endIcon={<ArrowForwardIcon sx={{ fontSize: 16 }} />}
                             sx={{
                               fontWeight: 700,
                               borderRadius: 2,
-                              textTransform: 'none',
-                              background: 'linear-gradient(135deg, #4F46E5 0%, #2563EB 100%)',
+                              bgcolor: '#0F172A',
+                              '&:hover': { bgcolor: '#1E293B' },
                             }}
                           >
                             Review & Dispatch
                           </Button>
                         ) : mandate.status === 'sent' ? (
-                          <Box sx={{ display: 'inline-flex', gap: 1 }}>
+                          <Stack direction="row" spacing={1} justifyContent="center">
                             <Button
                               size="small"
                               variant="contained"
                               color="warning"
-                              startIcon={<ShareOutlinedIcon />}
+                              startIcon={<ShareOutlinedIcon sx={{ fontSize: 15 }} />}
                               onClick={() => handleOpenMagicLink(mandate)}
-                              sx={{ fontWeight: 700, borderRadius: 2, textTransform: 'none' }}
+                              sx={{ fontWeight: 700, borderRadius: 2 }}
                             >
                               Share Link
                             </Button>
                             <Button
                               size="small"
                               variant="outlined"
-                              color="secondary"
-                              startIcon={<ReceiptLongOutlinedIcon />}
                               onClick={() => handleOpenDossier(mandate)}
-                              sx={{ textTransform: 'none', borderRadius: 2 }}
+                              sx={{ borderRadius: 2, fontSize: '0.75rem' }}
                             >
                               Dossier
                             </Button>
-                          </Box>
+                          </Stack>
                         ) : mandate.status === 'viewed' ? (
-                          <Box sx={{ display: 'inline-flex', gap: 1 }}>
+                          <Stack direction="row" spacing={1} justifyContent="center">
                             <Button
                               size="small"
                               variant="outlined"
                               color="primary"
-                              startIcon={<ShareOutlinedIcon />}
+                              startIcon={<ShareOutlinedIcon sx={{ fontSize: 15 }} />}
                               onClick={() => handleOpenMagicLink(mandate)}
-                              sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none' }}
+                              sx={{ fontWeight: 650, borderRadius: 2 }}
                             >
                               Remind Client
                             </Button>
                             <Button
                               size="small"
                               variant="outlined"
-                              color="secondary"
-                              startIcon={<ReceiptLongOutlinedIcon />}
                               onClick={() => handleOpenDossier(mandate)}
-                              sx={{ textTransform: 'none', borderRadius: 2 }}
+                              sx={{ borderRadius: 2, fontSize: '0.75rem' }}
                             >
                               Dossier
                             </Button>
-                          </Box>
-                        ) : mandate.status === 'consented' ? (
+                          </Stack>
+                        ) : mandate.status === 'consented' || mandate.status === 'approved' ? (
                           <Button
                             size="small"
                             variant="contained"
                             color="success"
-                            startIcon={<ReceiptLongOutlinedIcon />}
+                            startIcon={<ReceiptLongOutlinedIcon sx={{ fontSize: 16 }} />}
                             onClick={() => handleOpenDossier(mandate)}
-                            sx={{ fontWeight: 700, borderRadius: 2, textTransform: 'none' }}
+                            sx={{ fontWeight: 700, borderRadius: 2 }}
                           >
                             Reg. 19 Receipt
                           </Button>
@@ -480,7 +572,7 @@ export const DashboardPage = () => {
                             color="error"
                             component={RouterLink}
                             to="/mandates/new"
-                            sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none' }}
+                            sx={{ fontWeight: 650, borderRadius: 2 }}
                           >
                             Re-draft
                           </Button>

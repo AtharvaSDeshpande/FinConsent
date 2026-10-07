@@ -149,7 +149,12 @@ export const ClientsPage = () => {
             sx={{
               fontWeight: 700,
               borderRadius: 2.5,
-              background: 'linear-gradient(135deg, #4F46E5 0%, #2563EB 100%)',
+              py: 1.2,
+              px: 2.5,
+              bgcolor: '#0F172A',
+              color: '#FFFFFF',
+              '&:hover': { bgcolor: '#1E293B' },
+              boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)',
             }}
           >
             Add Advisory Client
@@ -159,10 +164,10 @@ export const ClientsPage = () => {
 
       {queryError && <Alert severity="error" sx={{ mb: 3 }}>{queryError.message}</Alert>}
 
-      <Card elevation={2} sx={{ borderRadius: 3, border: 1, borderColor: 'divider' }}>
+      <Card sx={{ borderRadius: 3, border: '1px solid #E2E8F0', boxShadow: '0 1px 3px 0 rgba(15, 23, 42, 0.04)' }}>
         <TableContainer>
           <Table>
-            <TableHead sx={{ bgcolor: 'background.default' }}>
+            <TableHead sx={{ bgcolor: '#F8FAFC' }}>
               <TableRow>
                 <TableCell sx={{ fontWeight: 700 }}>Client Name</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>PAN Number</TableCell>

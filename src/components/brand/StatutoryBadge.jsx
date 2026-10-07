@@ -1,64 +1,94 @@
 import React from 'react';
-import Chip from '@mui/material/Chip';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
+import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 
 export const StatutoryBadge = ({ status = 'DRAFT', size = 'small' }) => {
   const norm = (status || '').toUpperCase();
 
   const configs = {
     DRAFT: {
-      label: 'Draft',
-      color: 'default',
-      icon: <LockOutlinedIcon fontSize="small" />,
+      label: 'Draft Mandate',
+      bg: 'rgba(241, 245, 249, 0.8)',
+      color: '#475569',
+      border: 'rgba(203, 213, 225, 0.8)',
+      icon: <EditOutlinedIcon sx={{ fontSize: 13, color: '#64748B' }} />,
     },
     SENT: {
-      label: 'Sent',
-      color: 'info',
-      icon: <SendOutlinedIcon fontSize="small" />,
+      label: 'Link Dispatched',
+      bg: 'rgba(254, 243, 199, 0.6)',
+      color: '#92400E',
+      border: 'rgba(245, 158, 11, 0.35)',
+      icon: <SendOutlinedIcon sx={{ fontSize: 13, color: '#D97706' }} />,
     },
     VIEWED: {
-      label: 'Viewed',
-      color: 'secondary',
-      icon: <VisibilityOutlinedIcon fontSize="small" />,
+      label: 'Client Reviewing',
+      bg: 'rgba(238, 242, 255, 0.8)',
+      color: '#3730A3',
+      border: 'rgba(99, 102, 241, 0.35)',
+      icon: <VisibilityOutlinedIcon sx={{ fontSize: 13, color: '#4F46E5' }} />,
     },
     IN_REVIEW: {
-      label: 'Viewed',
-      color: 'secondary',
-      icon: <VisibilityOutlinedIcon fontSize="small" />,
+      label: 'Client Reviewing',
+      bg: 'rgba(238, 242, 255, 0.8)',
+      color: '#3730A3',
+      border: 'rgba(99, 102, 241, 0.35)',
+      icon: <VisibilityOutlinedIcon sx={{ fontSize: 13, color: '#4F46E5' }} />,
     },
     CONSENTED: {
-      label: 'Consented',
-      color: 'success',
-      icon: <CheckCircleOutlineIcon fontSize="small" />,
+      label: 'Statutory Consented',
+      bg: 'rgba(236, 253, 245, 0.8)',
+      color: '#065F46',
+      border: 'rgba(16, 185, 129, 0.35)',
+      icon: <CheckCircleRoundedIcon sx={{ fontSize: 13, color: '#059669' }} />,
     },
     APPROVED: {
-      label: 'Consented',
-      color: 'success',
-      icon: <CheckCircleOutlineIcon fontSize="small" />,
+      label: 'Statutory Consented',
+      bg: 'rgba(236, 253, 245, 0.8)',
+      color: '#065F46',
+      border: 'rgba(16, 185, 129, 0.35)',
+      icon: <CheckCircleRoundedIcon sx={{ fontSize: 13, color: '#059669' }} />,
     },
     EXPIRED: {
-      label: 'Expired',
-      color: 'error',
-      icon: <WarningAmberOutlinedIcon fontSize="small" />,
+      label: 'Cutoff Expired',
+      bg: 'rgba(254, 242, 242, 0.8)',
+      color: '#991B1B',
+      border: 'rgba(239, 68, 68, 0.35)',
+      icon: <WarningAmberRoundedIcon sx={{ fontSize: 13, color: '#DC2626' }} />,
     },
   };
 
   const current = configs[norm] || configs.DRAFT;
 
   return (
-    <Chip
-      size={size}
-      icon={current.icon}
-      label={current.label}
-      color={current.color}
-      variant="outlined"
-      sx={{ fontWeight: 600, fontSize: '0.75rem' }}
-    />
+    <Box
+      sx={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 0.7,
+        px: size === 'small' ? 1 : 1.4,
+        py: size === 'small' ? 0.35 : 0.6,
+        borderRadius: '6px',
+        bgcolor: current.bg,
+        border: '1px solid',
+        borderColor: current.border,
+        color: current.color,
+        fontWeight: 650,
+        fontSize: size === 'small' ? '0.73rem' : '0.8rem',
+        letterSpacing: '0.01em',
+        lineHeight: 1,
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {current.icon}
+      <span>{current.label}</span>
+    </Box>
   );
 };
 
@@ -73,27 +103,53 @@ export const ExpirationCountdownBadge = ({ cutoffTimestamp, status }) => {
 
   if (diffMs <= 0 || status === 'expired') {
     return (
-      <Chip
-        size="small"
-        color="error"
-        label="Expired"
-        icon={<AccessTimeOutlinedIcon fontSize="small" />}
-        sx={{ fontWeight: 600, fontSize: '0.72rem', ml: 1 }}
-      />
+      <Box
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 0.5,
+          px: 0.9,
+          py: 0.35,
+          borderRadius: '6px',
+          bgcolor: 'rgba(254, 242, 242, 0.8)',
+          border: '1px solid rgba(239, 68, 68, 0.3)',
+          color: '#991B1B',
+          fontWeight: 650,
+          fontSize: '0.7rem',
+          ml: 0.75,
+        }}
+      >
+        <AccessTimeOutlinedIcon sx={{ fontSize: 12, color: '#DC2626' }} />
+        <span>Cutoff Passed</span>
+      </Box>
     );
   }
 
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+  const isUrgent = diffHours < 12;
 
   return (
-    <Chip
-      size="small"
-      color={diffHours < 12 ? 'warning' : 'default'}
-      variant="filled"
-      label={`${diffHours}h ${diffMinutes}m left (48h window)`}
-      icon={<AccessTimeOutlinedIcon fontSize="small" />}
-      sx={{ fontWeight: 600, fontSize: '0.72rem', ml: 1 }}
-    />
+    <Box
+      sx={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 0.5,
+        px: 0.9,
+        py: 0.35,
+        borderRadius: '6px',
+        bgcolor: isUrgent ? 'rgba(254, 243, 199, 0.8)' : 'rgba(241, 245, 249, 0.8)',
+        border: '1px solid',
+        borderColor: isUrgent ? 'rgba(245, 158, 11, 0.4)' : 'rgba(203, 213, 225, 0.7)',
+        color: isUrgent ? '#92400E' : '#475569',
+        fontWeight: 650,
+        fontSize: '0.7rem',
+        ml: 0.75,
+        whiteSpace: 'nowrap',
+      }}
+    >
+      <AccessTimeOutlinedIcon sx={{ fontSize: 12, color: isUrgent ? '#D97706' : '#64748B' }} />
+      <span>{`${diffHours}h ${diffMinutes}m left`}</span>
+    </Box>
   );
 };

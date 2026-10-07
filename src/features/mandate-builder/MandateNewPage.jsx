@@ -202,12 +202,12 @@ export const MandateNewPage = () => {
         <Grid container spacing={3}>
           {/* Main Proposal Form */}
           <Grid size={{ xs: 12, md: 7 }}>
-            <Card elevation={2} sx={{ borderRadius: 3, border: 1, borderColor: 'divider' }}>
+            <Card sx={{ borderRadius: 3, border: '1px solid #E2E8F0', boxShadow: '0 1px 3px 0 rgba(15, 23, 42, 0.04)' }}>
               <CardContent sx={{ p: { xs: 2.5, sm: 3.5 } }}>
                 {/* 1. Automated Client Selection Section */}
                 <Box sx={{ mb: 3 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
-                    <Typography variant="h6" fontWeight={700}>
+                    <Typography variant="h6" fontWeight={750} color="#0F172A">
                       1. Advisory Client Allocation
                     </Typography>
                     <Box sx={{ display: 'flex', gap: 1 }}>
@@ -217,7 +217,7 @@ export const MandateNewPage = () => {
                         startIcon={<ShuffleIcon />}
                         onClick={handleRerollClient}
                         disabled={loadingClients || clients.length <= 1}
-                        sx={{ textTransform: 'none', borderRadius: 2, fontWeight: 600 }}
+                        sx={{ textTransform: 'none', borderRadius: 2, fontWeight: 600, borderColor: '#CBD5E1', color: '#0F172A' }}
                       >
                         Auto-Assign Another Client
                       </Button>
@@ -226,7 +226,7 @@ export const MandateNewPage = () => {
                         color="inherit"
                         startIcon={<EditOutlinedIcon />}
                         onClick={() => setManualOverride(!manualOverride)}
-                        sx={{ textTransform: 'none', fontSize: '0.78rem' }}
+                        sx={{ textTransform: 'none', fontSize: '0.78rem', color: '#64748B' }}
                       >
                         {manualOverride ? 'Hide Manual Picker' : 'Manual Picker'}
                       </Button>
@@ -235,8 +235,8 @@ export const MandateNewPage = () => {
 
                   {/* Automated Assignment Display Card */}
                   {loadingClients ? (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 2, bgcolor: 'background.default', borderRadius: 2 }}>
-                      <CircularProgress size={20} />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 2.5, bgcolor: '#F8FAFC', borderRadius: 2.5, border: '1px solid #E2E8F0' }}>
+                      <CircularProgress size={20} sx={{ color: '#0F172A' }} />
                       <Typography variant="body2" color="text.secondary">
                         Loading client database and auto-assigning advisory client...
                       </Typography>
@@ -244,37 +244,60 @@ export const MandateNewPage = () => {
                   ) : selectedClient ? (
                     <Box
                       sx={{
-                        p: 2.2,
-                        bgcolor: 'rgba(99, 102, 241, 0.05)',
-                        border: '1px solid rgba(99, 102, 241, 0.25)',
+                        p: 2.5,
+                        bgcolor: '#F8FAFC',
+                        border: '1px solid #E2E8F0',
                         borderRadius: 2.5,
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: 1.2,
+                        gap: 1.5,
                       }}
                     >
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <CheckCircleOutlineIcon color="primary" fontSize="small" />
-                          <Typography variant="subtitle1" fontWeight={700}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
+                          <CheckCircleOutlineIcon sx={{ color: '#0F172A', fontSize: 20 }} />
+                          <Typography variant="subtitle1" fontWeight={750} color="#0F172A">
                             {selectedClient.name}
                           </Typography>
-                          <Chip label="Auto-Assigned" size="small" color="primary" sx={{ height: 20, fontSize: '0.7rem', fontWeight: 700 }} />
+                          <Chip
+                            label="Auto-Assigned"
+                            size="small"
+                            sx={{
+                              height: 20,
+                              fontSize: '0.68rem',
+                              fontWeight: 700,
+                              bgcolor: '#F1F5F9',
+                              color: '#334155',
+                              border: '1px solid #E2E8F0',
+                            }}
+                          />
                         </Box>
-                        <Typography variant="caption" sx={{ fontFamily: 'JetBrains Mono', color: 'text.secondary' }}>
+                        <Typography variant="caption" sx={{ fontFamily: 'JetBrains Mono', color: 'text.secondary', fontSize: '0.75rem' }}>
                           ID: {selectedClient.id}
                         </Typography>
                       </Box>
 
-                      <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', fontSize: '0.82rem' }}>
-                        <Chip label={`PAN: ${selectedClient.pan}`} size="small" variant="outlined" sx={{ fontWeight: 600 }} />
-                        <Chip label={`Mobile: ${selectedClient.mobile}`} size="small" variant="outlined" />
+                      <Box sx={{ display: 'flex', gap: 1.2, flexWrap: 'wrap', fontSize: '0.82rem' }}>
+                        <Chip
+                          label={`PAN: ${selectedClient.pan}`}
+                          size="small"
+                          sx={{ fontWeight: 650, bgcolor: '#FFFFFF', border: '1px solid #E2E8F0', color: '#1E293B', height: 24 }}
+                        />
+                        <Chip
+                          label={`Mobile: ${selectedClient.mobile}`}
+                          size="small"
+                          sx={{ bgcolor: '#FFFFFF', border: '1px solid #E2E8F0', color: '#475569', height: 24 }}
+                        />
                         <Chip
                           label={`Portfolio: ₹${(selectedClient.portfolioValue || 7500000).toLocaleString('en-IN')}`}
                           size="small"
-                          color="success"
-                          variant="outlined"
-                          sx={{ fontWeight: 700 }}
+                          sx={{
+                            fontWeight: 750,
+                            bgcolor: '#ECFDF5',
+                            color: '#065F46',
+                            border: '1px solid #A7F3D0',
+                            height: 24,
+                          }}
                         />
                       </Box>
                     </Box>
@@ -432,11 +455,11 @@ export const MandateNewPage = () => {
                 totalTax={computed.totalTax}
               />
 
-              <Card elevation={2} sx={{ p: 3, borderRadius: 3, border: 1, borderColor: 'divider' }}>
-                <Typography variant="subtitle2" fontWeight={700} gutterBottom>
+              <Card sx={{ borderRadius: 3, border: '1px solid #E2E8F0', boxShadow: '0 1px 3px 0 rgba(15, 23, 42, 0.04)', p: 3 }}>
+                <Typography variant="subtitle2" fontWeight={750} color="#0F172A" gutterBottom>
                   Ready to Dispatch
                 </Typography>
-                <Typography variant="body2" color="text.secondary" paragraph>
+                <Typography variant="body2" color="text.secondary" paragraph sx={{ lineHeight: 1.6 }}>
                   Saving will generate a 256-bit cryptographically signed magic link that your client can inspect and authorize on mobile with 6-digit OTP.
                 </Typography>
 
@@ -448,10 +471,13 @@ export const MandateNewPage = () => {
                   disabled={submitting || !clientId}
                   startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <SendOutlinedIcon />}
                   sx={{
-                    py: 1.3,
+                    py: 1.4,
                     fontWeight: 700,
                     borderRadius: 2.5,
-                    background: 'linear-gradient(135deg, #4F46E5 0%, #2563EB 100%)',
+                    bgcolor: '#0F172A',
+                    color: '#FFFFFF',
+                    '&:hover': { bgcolor: '#1E293B' },
+                    boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)',
                   }}
                 >
                   {submitting ? 'Creating Proposal...' : 'Create & Generate Magic Link'}
