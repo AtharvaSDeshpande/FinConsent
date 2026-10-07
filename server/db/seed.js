@@ -80,6 +80,8 @@ export async function runSeed() {
     email: 'client@example.in',
     passwordHash: defaultPasswordHash,
     role: 'client',
+    pan: 'ABCDE1234F',
+    mobile: '9820112345',
     firmName: 'Individual Investor',
     plan: 'free',
   });
@@ -170,8 +172,8 @@ export async function runSeed() {
   for (let c = 1; c <= 200; c++) {
     const fn = firstNames[(c * 7) % firstNames.length];
     const ln = lastNames[(c * 5) % lastNames.length];
-    const clientName = `${fn} ${ln}`;
-    const email = `${fn.toLowerCase()}.${ln.toLowerCase()}${c}@gmail.com`;
+    let clientName = `${fn} ${ln}`;
+    let email = `${fn.toLowerCase()}.${ln.toLowerCase()}${c}@gmail.com`;
 
     // Valid Indian PAN format: 5 letters, 4 digits, 1 letter
     const p1 = panLetters[c % panLetters.length];
@@ -181,12 +183,22 @@ export async function runSeed() {
     const p5 = ln[0].toUpperCase();
     const panDigits = String(1000 + (c * 37) % 8999);
     const pChecksum = panLetters[(c * 2) % panLetters.length];
-    const pan = `${p1}${p2}${p3}${p4}${p5}${panDigits}${pChecksum}`;
+    let pan = `${p1}${p2}${p3}${p4}${p5}${panDigits}${pChecksum}`;
 
-    const mobile = `98${String(10000000 + c * 31415).slice(0, 8)}`;
-    const portfolioValue = Math.round((15 + (c % 85) * 1.2) * 100000); // 15L to 1.17 Cr
-    const assignedRia = generatedRias[c % Math.min(generatedRias.length, 30)];
+    let mobile = `98${String(10000000 + c * 31415).slice(0, 8)}`;
+    let portfolioValue = Math.round((15 + (c % 85) * 1.2) * 100000); // 15L to 1.17 Cr
+    let assignedRia = generatedRias[c % Math.min(generatedRias.length, 30)];
     const createdAt = pastDate(Math.floor((c % 180) + 20));
+
+    // Ensure benchmark client user Rohan Mehta is explicitly created and linked
+    if (c === 1) {
+      clientName = 'Rohan Mehta';
+      email = 'client@example.in';
+      pan = 'ABCDE1234F';
+      mobile = '9820112345';
+      portfolioValue = 8500000;
+      assignedRia = ria1; // Suresh Narayanan
+    }
 
     const client = dbStore.createClient({
       id: `cli_${c}`,
@@ -220,12 +232,22 @@ export async function runSeed() {
   ];
 
   for (let m = 1; m <= 350; m++) {
-    const client = generatedClients[m % generatedClients.length];
-    const riaId = client.riaId;
+    let client = generatedClients[m % generatedClients.length];
+    let riaId = client.riaId;
     let status = statuses[m % statuses.length];
     
-    // Weight consented heavier for realistic historical archive
-    if (m > 150) status = 'consented';
+    // Explicitly seed Rohan Mehta with live testable records
+    if (m === 1) {
+      client = generatedClients[0];
+      riaId = ria1.id;
+      status = 'sent';
+    } else if (m === 2) {
+      client = generatedClients[0];
+      riaId = ria1.id;
+      status = 'consented';
+    } else if (m > 150) {
+      status = 'consented';
+    }
 
     let daysAgo = 1;
     if (status === 'consented') daysAgo = Math.floor(5 + (m % 320));

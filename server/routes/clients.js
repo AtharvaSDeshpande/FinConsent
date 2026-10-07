@@ -1,18 +1,23 @@
 import express from 'express';
 import { dbStore } from '../db/store.js';
-import { requireAuth } from '../auth/middleware.js';
+import { requireAuth, requireRole } from '../auth/middleware.js';
 
 const router = express.Router();
 router.use(requireAuth);
 
-// List clients
+// List clients (RBAC: RIA views own; Compliance Officer & Admin view full registry; Forbidden for Client)
 router.get('/', (req, res) => {
-  const clients = dbStore.findClientsByRiaId(req.user.id);
+  if (req.user.role === 'client') {
+    return res.status(403).json({ success: false, error: 'Unauthorized: Clients cannot access advisor client directories' });
+  }
+
+  const isSuperUser = req.user.role === 'compliance_officer' || req.user.role === 'admin';
+  const clients = isSuperUser ? dbStore.findClients() : dbStore.findClientsByRiaId(req.user.id);
   res.json({ success: true, data: clients });
 });
 
-// Create client
-router.post('/', (req, res) => {
+// Create client (RBAC: Strictly RIA & Admin)
+router.post('/', requireRole(['ria', 'admin']), (req, res) => {
   const { name, pan, mobile, email, portfolioValue } = req.body;
 
   if (!name || !pan || !mobile || !email) {
@@ -43,12 +48,28 @@ router.post('/', (req, res) => {
   res.status(201).json({ success: true, data: client });
 });
 
-// Single client
+// Single client (Tenant & RBAC Boundary)
 router.get('/:id', (req, res) => {
   const client = dbStore.findClientById(req.params.id);
-  if (!client || client.riaId !== req.user.id) {
+  if (!client) {
     return res.status(404).json({ success: false, error: 'Client not found' });
   }
+
+  if (req.user.role === 'ria' && client.riaId !== req.user.id) {
+    return res.status(403).json({ success: false, error: 'Unauthorized: You can only view clients of your advisory firm' });
+  }
+
+  if (req.user.role === 'client') {
+    const userEmail = req.user.email?.toLowerCase();
+    const userPan = req.user.pan?.toUpperCase();
+    const isSelf = (userEmail && client.email?.toLowerCase() === userEmail) ||
+                   (userPan && client.pan?.toUpperCase() === userPan) ||
+                   client.userId === req.user.id;
+    if (!isSelf) {
+      return res.status(403).json({ success: false, error: 'Unauthorized' });
+    }
+  }
+
   res.json({ success: true, data: client });
 });
 

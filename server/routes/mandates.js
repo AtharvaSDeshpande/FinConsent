@@ -46,14 +46,46 @@ function computeTaxesAndDeadlines(stcgAmount, ltcgAmount) {
   return { stcg, ltcg, stcgTax, ltcgTax, cessAmount, taxPayable, advanceTaxQuarter, advanceTaxAlert };
 }
 
-// List mandates (RBAC: RIA views own; Compliance Officer & Admin view all)
+// List mandates (RBAC & Tenant Isolation)
+// - Compliance Officer & Admin: View all platform mandates
+// - RIA: View mandates drafted by their own firm
+// - Client: View rebalance mandates prepared strictly for this client
 router.get('/', (req, res) => {
   const { status } = req.query;
-  const isSuperUser = req.user.role === 'compliance_officer' || req.user.role === 'admin';
-  const mandates = isSuperUser
-    ? dbStore.findAllMandates(status)
-    : dbStore.findMandatesByRiaId(req.user.id, status);
-  res.json({ success: true, data: mandates });
+  let mandates = [];
+
+  if (req.user.role === 'compliance_officer' || req.user.role === 'admin') {
+    mandates = dbStore.findAllMandates(status);
+  } else if (req.user.role === 'ria') {
+    mandates = dbStore.findMandatesByRiaId(req.user.id, status);
+  } else if (req.user.role === 'client') {
+    const userEmail = req.user.email?.toLowerCase();
+    const userPan = req.user.pan?.toUpperCase();
+    const clientIds = dbStore
+      .findClients()
+      .filter((c) => (userEmail && c.email?.toLowerCase() === userEmail) || (userPan && c.pan?.toUpperCase() === userPan) || c.userId === req.user.id)
+      .map((c) => c.id);
+
+    mandates = dbStore
+      .findAllMandates(status)
+      .filter((m) => clientIds.includes(m.clientId));
+  }
+
+  // Enrich with client details and RIA firm details for consistent presentation
+  const enriched = mandates.map((m) => {
+    const client = dbStore.findClientById(m.clientId);
+    const ria = dbStore.findUserById(m.riaId);
+    return {
+      ...m,
+      clientName: client?.name || 'Advisory Client',
+      clientPan: client?.pan,
+      clientMobile: client?.mobile,
+      riaFirmName: ria?.firmName || 'Registered Investment Adviser',
+      riaSebiReg: ria?.sebiRegNumber || 'INA000088921',
+    };
+  });
+
+  res.json({ success: true, data: enriched });
 });
 
 // Create mandate (RBAC: Restricted to RIA and Admin)
@@ -126,14 +158,36 @@ router.post('/', requireRole(['ria', 'admin']), (req, res) => {
   res.status(201).json({ success: true, data: mandate });
 });
 
-// Get mandate detail with audit trail
+// Get mandate detail with audit trail (RBAC & Tenant boundary enforcement)
 router.get('/:id', (req, res) => {
   const mandate = dbStore.findMandateById(req.params.id);
-  if (!mandate || mandate.riaId !== req.user.id) {
+  if (!mandate) {
     return res.status(404).json({ success: false, error: 'Mandate not found' });
   }
 
   const client = dbStore.findClientById(mandate.clientId);
+
+  // Tenant Boundary Authorization
+  if (req.user.role === 'ria') {
+    if (mandate.riaId !== req.user.id) {
+      return res.status(403).json({ success: false, error: 'Unauthorized: You can only access mandates belonging to your advisory firm' });
+    }
+  } else if (req.user.role === 'client') {
+    const userEmail = req.user.email?.toLowerCase();
+    const userPan = req.user.pan?.toUpperCase();
+    const isOwner = client && (
+      (userEmail && client.email?.toLowerCase() === userEmail) ||
+      (userPan && client.pan?.toUpperCase() === userPan) ||
+      client.userId === req.user.id
+    );
+    if (!isOwner) {
+      return res.status(403).json({ success: false, error: 'Unauthorized: You can only view mandates prepared for your account' });
+    }
+  } else if (req.user.role !== 'compliance_officer' && req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, error: 'Unauthorized role' });
+  }
+
+  const ria = dbStore.findUserById(mandate.riaId);
   const auditLogs = dbStore.getAuditLogsForMandate(mandate.id);
 
   res.json({
@@ -141,6 +195,11 @@ router.get('/:id', (req, res) => {
     data: {
       ...mandate,
       client,
+      ria: {
+        firmName: ria?.firmName || 'Registered Investment Adviser',
+        sebiRegNumber: ria?.sebiRegNumber || 'INA000088921',
+        complianceEmail: ria?.complianceEmail || 'compliance@advisor.in',
+      },
       auditLogs,
     },
   });

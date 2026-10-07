@@ -32,13 +32,21 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../security/AuthContext.jsx';
 
-const REQUEST_CATEGORIES = [
+const RIA_REQUEST_CATEGORIES = [
   'Portfolio Rebalance Advisory',
   'Statutory Compliance Review',
   'Tax Loss Harvesting Proposal',
   'Asset Allocation Drift Adjustment',
   'HNW Customized Advisory Mandate',
   'SEBI Audit Documentation Sign-Off',
+];
+
+const CLIENT_REQUEST_CATEGORIES = [
+  'Advisory Clarification & Guidance',
+  'Portfolio Rebalance Inquiry',
+  'Capital Gains Tax Impact Query',
+  'Asset Allocation Review Request',
+  'General Service Inquiry',
 ];
 
 const PRIORITY_COLORS = {
@@ -66,10 +74,12 @@ export const RequestComposerPage = () => {
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
 
+  const activeCategories = isClient ? CLIENT_REQUEST_CATEGORIES : RIA_REQUEST_CATEGORIES;
+
   // Form State
   const [formData, setFormData] = useState({
     title: '',
-    category: isClient ? 'Portfolio Rebalance Advisory' : 'Portfolio Rebalance Advisory',
+    category: isClient ? CLIENT_REQUEST_CATEGORIES[0] : RIA_REQUEST_CATEGORIES[0],
     clientId: '',
     priority: 'standard',
     description: '',
@@ -352,7 +362,7 @@ export const RequestComposerPage = () => {
                         value={formData.category}
                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                       >
-                        {REQUEST_CATEGORIES.map((cat) => (
+                        {activeCategories.map((cat) => (
                           <MenuItem key={cat} value={cat}>
                             {cat}
                           </MenuItem>

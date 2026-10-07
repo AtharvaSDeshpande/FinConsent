@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link as RouterLink } from 'react-router-dom';
+import { useParams, Link as RouterLink, useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -28,7 +28,8 @@ import { useAuth } from '../../security/AuthContext.jsx';
 
 export const MandateDetailPage = () => {
   const { id } = useParams();
-  const { user, role } = useAuth();
+  const navigate = useNavigate();
+  const { user, role, isClient } = useAuth();
   const [mandate, setMandate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -58,6 +59,16 @@ export const MandateDetailPage = () => {
   useEffect(() => {
     fetchMandate();
   }, [id]);
+
+  useEffect(() => {
+    if (mandate && isClient && mandate.magicToken) {
+      if (mandate.status === 'consented' || mandate.status === 'approved') {
+        navigate(`/m/${mandate.magicToken}/receipt`, { replace: true });
+      } else {
+        navigate(`/m/${mandate.magicToken}`, { replace: true });
+      }
+    }
+  }, [mandate, isClient, navigate]);
 
   const handleDispatch = async () => {
     setDispatching(true);

@@ -2,4 +2,5 @@
 20261006-203843-rbac-oauth-live-api | Live MongoDB Atlas, Google OAuth, RBAC, Request Composer Hub, SMS Deprecation | shipped
 20261007-143600-enhance-journey-ui-ux | Enhanced RIA & client journey UI/UX with statutory guide and clean mobile narrative | shipped
 20261007-145700-fix-mandate-createdat-error | Fix TypeError m.createdAt.startsWith is not a function when creating mandate | shipped
-20261007-150600-wealthtech-ui-redesign | Premium WealthTech redesign with refined typography, minimal aesthetic, and unified design system | in progress
+20261007-150600-wealthtech-ui-redesign | Premium WealthTech redesign with refined typography, minimal aesthetic, and unified design system | shipped
+20261007-182000-role-access-ux-overhaul | Overhaul role-based access control, intentional dashboards, and day-to-day user experience | in progress

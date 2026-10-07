@@ -113,10 +113,13 @@ export const ProtectedRoute = ({ children, allowedRoles = [] }) => {
               onClick={handleOneClickTestDrive}
               endIcon={<ArrowForwardIcon />}
               sx={{
-                py: 1.2,
+                py: 1.3,
                 fontWeight: 700,
                 borderRadius: 2.5,
-                background: 'linear-gradient(135deg, #4F46E5 0%, #2563EB 100%)',
+                bgcolor: '#0F172A',
+                color: '#FFFFFF',
+                '&:hover': { bgcolor: '#1E293B' },
+                boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)',
               }}
             >
               1-Click Test Drive as {recommendedRole.replace('_', ' ').toUpperCase()}
@@ -129,7 +132,7 @@ export const ProtectedRoute = ({ children, allowedRoles = [] }) => {
               to="/login"
               state={{ from: location }}
               startIcon={<PersonOutlineIcon />}
-              sx={{ borderRadius: 2.5, fontWeight: 600 }}
+              sx={{ borderRadius: 2.5, fontWeight: 600, borderColor: '#CBD5E1', color: '#0F172A' }}
             >
               Sign In with Existing Account
             </Button>
@@ -139,43 +142,61 @@ export const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     );
   }
 
-  // Authenticated Role Access Check
+  // Authenticated Role Access Check (Strict RBAC & Private Data Guard)
   const userRole = user?.role || role;
   if (allowedRoles.length > 0 && !allowedRoles.includes(userRole) && userRole !== 'admin') {
     return (
       <Container maxWidth="sm" sx={{ py: 8 }}>
         <Card
-          elevation={3}
+          elevation={0}
           sx={{
-            p: 4,
+            p: 4.5,
             textAlign: 'center',
-            borderRadius: 4,
-            border: 1,
-            borderColor: 'error.light',
-            bgcolor: 'background.paper',
+            borderRadius: 3.5,
+            border: '1px solid #E2E8F0',
+            bgcolor: '#FFFFFF',
+            boxShadow: '0 4px 20px rgba(15, 23, 42, 0.05)',
           }}
         >
-          <ShieldAlertIcon color="error" sx={{ fontSize: 56, mb: 2 }} />
-          <Typography variant="h5" fontWeight={800} gutterBottom>
-            Access Restricted by Role (RBAC)
-          </Typography>
-          <Typography variant="body1" color="text.secondary" paragraph>
-            Your active role is <strong>{userRole.toUpperCase()}</strong>. Access to this page requires one of the
-            following authorized roles:
-          </Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, mb: 3, flexWrap: 'wrap' }}>
-            {allowedRoles.map((r) => (
-              <Chip
-                key={r}
-                label={r.toUpperCase()}
-                size="small"
-                color={r === 'admin' ? 'secondary' : r === 'compliance_officer' ? 'info' : 'primary'}
-                sx={{ fontWeight: 700 }}
-              />
-            ))}
+          <Box
+            sx={{
+              width: 56,
+              height: 56,
+              borderRadius: '50%',
+              bgcolor: '#F1F5F9',
+              color: '#475569',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mx: 'auto',
+              mb: 2.5,
+            }}
+          >
+            <LockOutlinedIcon sx={{ fontSize: 28 }} />
           </Box>
-          <Button variant="contained" component={RouterLink} to="/dashboard" sx={{ borderRadius: 2.5 }}>
-            Return to Dashboard
+          <Typography variant="h5" fontWeight={800} color="#0F172A" gutterBottom>
+            Access Restricted
+          </Typography>
+          <Typography variant="body2" color="text.secondary" paragraph sx={{ lineHeight: 1.6, maxWidth: 440, mx: 'auto', mb: 3 }}>
+            You do not have permission to view or manage this section under your active profile.
+            To safeguard investor privacy and regulatory compliance, this workspace is restricted to authorized roles.
+          </Typography>
+          <Button
+            variant="contained"
+            component={RouterLink}
+            to="/dashboard"
+            sx={{
+              fontWeight: 700,
+              borderRadius: 2.5,
+              px: 3.5,
+              py: 1.2,
+              bgcolor: '#0F172A',
+              color: '#FFFFFF',
+              '&:hover': { bgcolor: '#1E293B' },
+              boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)',
+            }}
+          >
+            Return to My Workspace
           </Button>
         </Card>
       </Container>
