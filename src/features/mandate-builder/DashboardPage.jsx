@@ -28,6 +28,7 @@ import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { StatutoryBadge, ExpirationCountdownBadge } from '../../components/brand/StatutoryBadge.jsx';
+import { StatutoryLifecycleGuide } from '../../components/brand/StatutoryLifecycleGuide.jsx';
 import { MagicLinkModal } from '../magic-link/MagicLinkModal.jsx';
 import { ComplianceDossierModal } from '../compliance-dossier/ComplianceDossierModal.jsx';
 import { useAuth } from '../../security/AuthContext.jsx';
@@ -189,7 +190,7 @@ export const DashboardPage = () => {
       </Box>
 
       {/* Role-Specific Metric Summary Cards */}
-      <Grid container spacing={2.5} sx={{ mb: 3.5 }}>
+      <Grid container spacing={2.5} sx={{ mb: 3 }}>
         <Grid size={{ xs: 12, sm: 4 }}>
           <Card elevation={1} sx={{ p: 2.5, borderRadius: 3, border: 1, borderColor: 'divider' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -245,6 +246,11 @@ export const DashboardPage = () => {
         </Grid>
       </Grid>
 
+      {/* Statutory Lifecycle Rail for RIAs & Admins */}
+      {(isRia || isAdmin) && (
+        <StatutoryLifecycleGuide overview={true} />
+      )}
+
       {queryError && <Alert severity="error" sx={{ mb: 3 }}>{queryError.message}</Alert>}
 
       {/* Mandate Ledger Card */}
@@ -275,7 +281,7 @@ export const DashboardPage = () => {
                 <TableCell sx={{ fontWeight: 700 }} align="right">Pre-computed Tax (₹)</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>48-Hour Cutoff & Countdown</TableCell>
                 <TableCell sx={{ fontWeight: 700 }} align="center">
-                  {isClient ? 'Investor Action' : isComplianceOfficer ? 'Statutory Audit Action' : 'Management Actions'}
+                  {isClient ? 'Investor Action' : isComplianceOfficer ? 'Statutory Audit Action' : 'Guided Next Action'}
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -392,28 +398,93 @@ export const DashboardPage = () => {
                           </Button>
                         </Box>
                       ) : (
-                        // RIA / Admin Actions
-                        <Box sx={{ display: 'inline-flex', gap: 1 }}>
+                        // RIA / Admin Guided Next Actions
+                        mandate.status === 'draft' ? (
                           <Button
                             size="small"
-                            variant="outlined"
-                            startIcon={<ShareOutlinedIcon />}
-                            onClick={() => handleOpenMagicLink(mandate)}
-                            sx={{ textTransform: 'none', borderRadius: 2 }}
+                            variant="contained"
+                            color="primary"
+                            component={RouterLink}
+                            to={`/mandates/${mandate.id}`}
+                            endIcon={<ArrowForwardIcon />}
+                            sx={{
+                              fontWeight: 700,
+                              borderRadius: 2,
+                              textTransform: 'none',
+                              background: 'linear-gradient(135deg, #4F46E5 0%, #2563EB 100%)',
+                            }}
                           >
-                            Magic Link
+                            Review & Dispatch
                           </Button>
+                        ) : mandate.status === 'sent' ? (
+                          <Box sx={{ display: 'inline-flex', gap: 1 }}>
+                            <Button
+                              size="small"
+                              variant="contained"
+                              color="warning"
+                              startIcon={<ShareOutlinedIcon />}
+                              onClick={() => handleOpenMagicLink(mandate)}
+                              sx={{ fontWeight: 700, borderRadius: 2, textTransform: 'none' }}
+                            >
+                              Share Link
+                            </Button>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              color="secondary"
+                              startIcon={<ReceiptLongOutlinedIcon />}
+                              onClick={() => handleOpenDossier(mandate)}
+                              sx={{ textTransform: 'none', borderRadius: 2 }}
+                            >
+                              Dossier
+                            </Button>
+                          </Box>
+                        ) : mandate.status === 'viewed' ? (
+                          <Box sx={{ display: 'inline-flex', gap: 1 }}>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              color="primary"
+                              startIcon={<ShareOutlinedIcon />}
+                              onClick={() => handleOpenMagicLink(mandate)}
+                              sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none' }}
+                            >
+                              Remind Client
+                            </Button>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              color="secondary"
+                              startIcon={<ReceiptLongOutlinedIcon />}
+                              onClick={() => handleOpenDossier(mandate)}
+                              sx={{ textTransform: 'none', borderRadius: 2 }}
+                            >
+                              Dossier
+                            </Button>
+                          </Box>
+                        ) : mandate.status === 'consented' ? (
                           <Button
                             size="small"
-                            variant="outlined"
-                            color="secondary"
+                            variant="contained"
+                            color="success"
                             startIcon={<ReceiptLongOutlinedIcon />}
                             onClick={() => handleOpenDossier(mandate)}
-                            sx={{ textTransform: 'none', borderRadius: 2 }}
+                            sx={{ fontWeight: 700, borderRadius: 2, textTransform: 'none' }}
                           >
-                            Dossier
+                            Reg. 19 Receipt
                           </Button>
-                        </Box>
+                        ) : (
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            color="error"
+                            component={RouterLink}
+                            to="/mandates/new"
+                            sx={{ fontWeight: 600, borderRadius: 2, textTransform: 'none' }}
+                          >
+                            Re-draft
+                          </Button>
+                        )
                       )}
                     </TableCell>
                   </TableRow>
