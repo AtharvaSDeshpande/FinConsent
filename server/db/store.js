@@ -36,7 +36,21 @@ class FinConsentStore {
       }
       if (mandates.length > 0) {
         this.mandates.clear();
-        mandates.forEach((m) => this.mandates.set(m.id, m));
+        mandates.forEach((m) => {
+          if (m.createdAt && typeof m.createdAt !== 'string') {
+            m.createdAt = new Date(m.createdAt).toISOString();
+          }
+          if (m.updatedAt && typeof m.updatedAt !== 'string') {
+            m.updatedAt = new Date(m.updatedAt).toISOString();
+          }
+          if (m.cutoffTimestamp && typeof m.cutoffTimestamp !== 'string') {
+            m.cutoffTimestamp = new Date(m.cutoffTimestamp).toISOString();
+          }
+          if (m.tokenExpiresAt && typeof m.tokenExpiresAt !== 'string') {
+            m.tokenExpiresAt = new Date(m.tokenExpiresAt).toISOString();
+          }
+          this.mandates.set(m.id, m);
+        });
       }
       if (auditLogs.length > 0) {
         this.auditLogs = auditLogs;
@@ -139,8 +153,16 @@ class FinConsentStore {
   createMandate(mandateData) {
     const id = mandateData.id || `man_${crypto.randomUUID()}`;
     const magicToken = mandateData.magicToken || crypto.randomBytes(32).toString('hex');
-    const tokenExpiresAt = mandateData.tokenExpiresAt || new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
-    const cutoffTimestamp = mandateData.cutoffTimestamp || new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+    const tokenExpiresAt = mandateData.tokenExpiresAt
+      ? (typeof mandateData.tokenExpiresAt === 'string' ? mandateData.tokenExpiresAt : new Date(mandateData.tokenExpiresAt).toISOString())
+      : new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+    const cutoffTimestamp = mandateData.cutoffTimestamp
+      ? (typeof mandateData.cutoffTimestamp === 'string' ? mandateData.cutoffTimestamp : new Date(mandateData.cutoffTimestamp).toISOString())
+      : new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+
+    const createdAt = mandateData.createdAt
+      ? (typeof mandateData.createdAt === 'string' ? mandateData.createdAt : new Date(mandateData.createdAt).toISOString())
+      : new Date().toISOString();
 
     const mandate = {
       id,
@@ -149,7 +171,7 @@ class FinConsentStore {
       tokenExpiresAt,
       cutoffTimestamp,
       status: mandateData.status || 'draft',
-      createdAt: mandateData.createdAt || new Date().toISOString(),
+      createdAt,
       updatedAt: new Date().toISOString(),
     };
     this.mandates.set(id, mandate);
@@ -207,9 +229,19 @@ class FinConsentStore {
 
   countMonthlyMandates(riaId) {
     const currentMonthPrefix = new Date().toISOString().slice(0, 7);
-    return Array.from(this.mandates.values()).filter(
-      (m) => m.riaId === riaId && m.createdAt && m.createdAt.startsWith(currentMonthPrefix)
-    ).length;
+    return Array.from(this.mandates.values()).filter((m) => {
+      if (!m || m.riaId !== riaId || !m.createdAt) return false;
+      try {
+        const dateStr = typeof m.createdAt === 'string'
+          ? m.createdAt
+          : m.createdAt instanceof Date
+          ? m.createdAt.toISOString()
+          : new Date(m.createdAt).toISOString();
+        return typeof dateStr === 'string' && dateStr.startsWith(currentMonthPrefix);
+      } catch (err) {
+        return false;
+      }
+    }).length;
   }
 
   // Request composer operations (Dedicated request composer UI)
