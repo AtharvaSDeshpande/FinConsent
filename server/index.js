@@ -12,9 +12,16 @@ import clientRoutes from './routes/clients.js';
 import mandateRoutes from './routes/mandates.js';
 import publicRoutes from './routes/public.js';
 import billingRoutes from './routes/billing.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
 import requestRoutes from './routes/requests.js';
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const distPath = path.resolve(__dirname, '../dist');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,7 +33,8 @@ app.set('trust proxy', 1);
 app.use((req, res, next) => {
   if (process.env.NODE_ENV === 'production') {
     const isHttps = req.secure || req.headers['x-forwarded-proto'] === 'https';
-    if (!isHttps) {
+    const isLocal = req.hostname === 'localhost' || req.hostname === '127.0.0.1';
+    if (!isHttps && !isLocal) {
       if (req.method === 'GET' || req.method === 'HEAD') {
         return res.redirect(301, `https://${req.headers.host}${req.url}`);
       }
@@ -98,6 +106,15 @@ app.use((err, req, res, next) => {
     error: safeMessage,
   });
 });
+
+// Serve frontend static build in production
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) return next();
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
 
 // Initialize database connection & seed data
 async function initServer() {

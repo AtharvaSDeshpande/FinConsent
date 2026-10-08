@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "server": "node server/index.js",
+    "start": "node server/index.js",
+    "preview": "vite preview",
     "seed": "node server/db/seed.js",
     "build": "vite build",
     "lint": "eslint src server",
