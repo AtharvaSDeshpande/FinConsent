@@ -1,7 +1,7 @@
 # Evidence-Based Security Audit & Final Hardening Verification Report: FinConsent
 
-**Date**: 2026-10-08  
-**Scope**: Fullstack Application Hardening, Multi-Tenant Isolation, RBAC, SHA-256 Magic Token Hashing, Distributed Redis Rate Limiting & OTP Protection, RFC 6238 TOTP MFA, Short-Lived JWT Expiry, Session Revocation, Password Complexity, Synthetic Backup Restoration Drill, and Headless Chrome Browser Verification.  
+**Date**: 2026-10-08 (Updated: 2026-10-08T12:51 IST)  
+**Scope**: Fullstack Application Hardening, Multi-Tenant Isolation, RBAC, SHA-256 Magic Token Hashing, Transient Token Registry, Distributed Redis Rate Limiting & OTP Protection, RFC 6238 TOTP MFA, Short-Lived JWT Expiry, Session Revocation, Password Complexity, Synthetic Backup Restoration Drill, Magic-Link Dispatch UI Integrity, and Headless Chrome Browser Verification.  
 **Auditor**: Fullstack-Builder Security Verification Subsystem  
 **Application**: FinConsent (SEBI Statutory Trade Authorization & Tax Consent B2B SaaS)  
 
@@ -22,11 +22,13 @@
 > 6. **Two-Factor Authentication (MFA) for RIA/Staff accounts**: Implemented RFC 6238 TOTP MFA with secure onboarding, server-side enforcement, and bypass protection, while preserving the frictionless zero-login client trade approval workflow.
 > 7. **Enterprise password complexity enforced**: Mandates minimum 8 characters, uppercase, lowercase, numbers, and special symbols.
 > 8. **Session revocation**: Implemented distributed blacklist verifying instant session invalidation on logout.
+> 9. **Magic-link dispatch integrity hardened**: Resolved `/m/undefined` exposure through `activeMagicTokens` transient in-memory registry; plaintext token available only to authorized RIA/admin during active dispatch window; never persisted to MongoDB; all frontend components guarded against absent/undefined token state.
 > 
 > **Verification Metrics**:
-> - **Vitest Automated Test Suite**: **82 / 82 tests passing (9/9 test suites passed)** in 22.88s.
+> - **Vitest Automated Test Suite**: **84 / 84 tests passing (9/9 test suites passed)**.
 > - **Puppeteer Browser Security Scenarios**: **11 / 11 attack & workflow scenarios passed** with **24 screenshots captured**.
 > - **Production Bundle**: `npm run build` compiled cleanly (Exit code: 0).
+> - **Latest Commit**: `fd0cdaa` — *fix: resolve dispatch mandate link showing as /m/undefined*
 
 ---
 
@@ -42,6 +44,7 @@
 | **RIA / Staff MFA**<br>*(Single-factor auth risk for RIA advisory accounts)* | RFC 6238 TOTP MFA for RIAs (`server/auth/mfa.js`); temporary auth tokens require `mfaVerified`; zero impact to client magic-link workflow. | `security_audit_remediation.test.js`<br>(Tests 4.1 – 4.5)<br>Puppeteer Scenario 9 | **PASS** | `server/routes/auth.js:101–165`<br>`LoginPage.jsx:315–385`<br>Bypass attempts blocked with HTTP 401. |
 | **Password Policy**<br>*(Missing complexity enforcement and automated tests)* | Password validator (`validatePasswordStrength`) requiring min 8 chars, uppercase, lowercase, numbers, and special symbols. | `security_audit_remediation.test.js`<br>(Tests 6.1 – 6.6) | **PASS** | `server/auth/passwords.js:31–58`<br>`server/routes/auth.js:36–40`<br>Weak passwords rejected with HTTP 400. |
 | **Session Security & Revocation**<br>*(Revoked sessions could continue until JWT expiry)* | Distributed session revocation blacklist (`SharedStateStore.revokeToken`); checked by `requireAuth` middleware on every protected request. | `security_audit_remediation.test.js`<br>(Test 3.4)<br>Puppeteer Scenario 10 | **PASS** | `server/auth/middleware.js:42–46`<br>`server/routes/auth.js:188–198`<br>Logged-out tokens rejected with HTTP 401. |
+| **Magic-Link Dispatch Integrity**<br>*(Dispatch link rendering as `/m/undefined` in RIA UI)* | `activeMagicTokens` Map in `FinConsentStore` stores raw token transiently in RAM only; `POST /dispatch` returns token directly; `GET /mandates` and `GET /mandates/:id` inject active token for RIA/admin; all frontend components guard against absent token. | `security_audit_remediation.test.js`<br>(Tests 1.7 – 1.9) | **PASS** | `server/db/store.js` (activeMagicTokens registry)<br>`server/routes/mandates.js` (dispatch/enrichment)<br>`MandateDetailPage.jsx`, `MagicLinkModal.jsx`, `ClientDashboard.jsx`<br>Commit `fd0cdaa`. |
 
 ---
 
@@ -63,16 +66,16 @@ PUPPETEER E2E SECURITY VERIFICATION MATRIX (11 / 11 PASSED)
   - Mandate created with pre-computed STCG/LTCG tax liability.
   - Raw magic token generated once in memory, hashed to SHA-256 for database persistence, and dispatched to client.
 
-![01 RIA Dashboard](./visual-audit/security/01-ria-dashboard.png)
+![01 RIA Dashboard](docs/visual-audit/security/01-ria-dashboard.png)
 *Figure 1.1: Authenticated RIA Dashboard showing portfolio overview and statutory trade mandates.*
 
-![02 RIA Clients](./visual-audit/security/02-ria-clients.png)
+![02 RIA Clients](docs/visual-audit/security/02-ria-clients.png)
 *Figure 1.2: RIA Client Directory scoped strictly to Prudent Wealth Advisory clients.*
 
-![03 RIA Mandate Created](./visual-audit/security/03-ria-mandate-created.png)
+![03 RIA Mandate Created](docs/visual-audit/security/03-ria-mandate-created.png)
 *Figure 1.3: Rebalance recommendation mandate drafted with STCG/LTCG pre-computation.*
 
-![04 RIA Mandate Dispatched](./visual-audit/security/04-ria-mandate-dispatched.png)
+![04 RIA Mandate Dispatched](docs/visual-audit/security/04-ria-mandate-dispatched.png)
 *Figure 1.4: Mandate successfully dispatched with active 48-hour statutory cutoff window.*
 
 ---
@@ -83,13 +86,13 @@ PUPPETEER E2E SECURITY VERIFICATION MATRIX (11 / 11 PASSED)
 - **HTTP Status**: 200 OK
 - **Evidence**: Section 65B Indian Evidence Act compliant receipt generated with SHA-256 hash.
 
-![05 Client Consent View](./visual-audit/security/05-client-consent-view.png)
+![05 Client Consent View](docs/visual-audit/security/05-client-consent-view.png)
 *Figure 2.1: Client zero-login mobile proposal review showing advance tax impact and trade allocations.*
 
-![06 Client OTP Modal](./visual-audit/security/06-client-otp-modal.png)
+![06 Client OTP Modal](docs/visual-audit/security/06-client-otp-modal.png)
 *Figure 2.2: Statutory 6-digit OTP verification modal requiring explicit regulatory declarations.*
 
-![07 Client Consented Success](./visual-audit/security/07-client-consented-success.png)
+![07 Client Consented Success](docs/visual-audit/security/07-client-consented-success.png)
 *Figure 2.3: Official Section 65B Indian Evidence Act compliant receipt with SHA-256 audit hash.*
 
 ---
@@ -99,13 +102,13 @@ PUPPETEER E2E SECURITY VERIFICATION MATRIX (11 / 11 PASSED)
 - **Attack Vector**: Authenticated client persona attempts to navigate to RIA advisor dashboard, mandate creation form, and firm billing configuration.
 - **Expected & Actual Result**: UI `ProtectedRoute` displays access restricted card; API calls to `/api/billing/*` return HTTP 403 Forbidden.
 
-![08 Client Denied Advisor Dashboard](./visual-audit/security/08-client-denied-advisor-dashboard.png)
+![08 Client Denied Advisor Dashboard](docs/visual-audit/security/08-client-denied-advisor-dashboard.png)
 *Figure 3.1: Client attempting `/dashboard` is automatically scoped to client view with zero advisor controls.*
 
-![09 Client Denied Mandate Creation](./visual-audit/security/09-client-denied-mandate-creation.png)
+![09 Client Denied Mandate Creation](docs/visual-audit/security/09-client-denied-mandate-creation.png)
 *Figure 3.2: Client attempting `/mandates/new` receives "Access Restricted - Role Client Not Permitted" barrier.*
 
-![10 Client Denied Billing Settings](./visual-audit/security/10-client-denied-billing-settings.png)
+![10 Client Denied Billing Settings](docs/visual-audit/security/10-client-denied-billing-settings.png)
 *Figure 3.3: Client attempting `/settings/billing` is blocked from commercial and payment settings.*
 
 ---
@@ -115,13 +118,13 @@ PUPPETEER E2E SECURITY VERIFICATION MATRIX (11 / 11 PASSED)
 - **Attack Vector**: Direct API calls to retrieve foreign client profile, mandate record, and compliance dossier.
 - **Expected & Actual Result**: All foreign endpoints return HTTP 403 Forbidden; zero cross-tenant data leakage.
 
-![11 Cross-RIA Denied Foreign Client](./visual-audit/security/11-cross-ria-denied-foreign-client.png)
+![11 Cross-RIA Denied Foreign Client](docs/visual-audit/security/11-cross-ria-denied-foreign-client.png)
 *Figure 4.1: Cross-tenant client profile query rejected with HTTP 403 Forbidden.*
 
-![12 Cross-RIA Denied Foreign Mandate](./visual-audit/security/12-cross-ria-denied-foreign-mandate.png)
+![12 Cross-RIA Denied Foreign Mandate](docs/visual-audit/security/12-cross-ria-denied-foreign-mandate.png)
 *Figure 4.2: Foreign mandate lookup rejected with HTTP 403 Forbidden.*
 
-![13 Cross-RIA Denied Foreign Dossier](./visual-audit/security/13-cross-ria-denied-foreign-dossier.png)
+![13 Cross-RIA Denied Foreign Dossier](docs/visual-audit/security/13-cross-ria-denied-foreign-dossier.png)
 *Figure 4.3: Foreign compliance audit dossier query rejected with HTTP 403 Forbidden.*
 
 ---
@@ -130,7 +133,7 @@ PUPPETEER E2E SECURITY VERIFICATION MATRIX (11 / 11 PASSED)
 - **User / Role**: Unauthenticated or cross-tenant attacker tampering with mandate UUIDs in browser URL (`/mandates/man_tampered_attack_uuid_999`).
 - **Expected & Actual Result**: Server returns HTTP 404/403; UI displays "Mandate Not Found or Unauthorized" card.
 
-![14 Tampered ID Access Denied](./visual-audit/security/14-tampered-id-access-denied.png)
+![14 Tampered ID Access Denied](docs/visual-audit/security/14-tampered-id-access-denied.png)
 *Figure 5.1: Tampered mandate ID returns safe error page without disclosing database schema.*
 
 ---
@@ -139,7 +142,7 @@ PUPPETEER E2E SECURITY VERIFICATION MATRIX (11 / 11 PASSED)
 - **User / Role**: `client@example.in` / Role: `client`
 - **Verification**: Ensure navigation bar and layout render strictly client-permitted actions: Mandate Approvals, Support, Profile. No "Draft Mandate", "Client Directory", or "Billing" buttons appear.
 
-![15 Client Navigation No RIA Controls](./visual-audit/security/15-client-navigation-no-ria-controls.png)
+![15 Client Navigation No RIA Controls](docs/visual-audit/security/15-client-navigation-no-ria-controls.png)
 *Figure 6.1: Client navigation bar strictly sanitized with zero RIA administration actions.*
 
 ---
@@ -148,7 +151,7 @@ PUPPETEER E2E SECURITY VERIFICATION MATRIX (11 / 11 PASSED)
 - **User / Role**: Anonymous bearer presenting an expired or revoked magic-link token (`/m/revoked_token_attacker_probe_777`).
 - **Expected & Actual Result**: Server hashes token, queries `magicTokenHash`, detects revocation or expiration, returns HTTP 404 Not Found.
 
-![16 Revoked Magic Link Error](./visual-audit/security/16-revoked-magic-link-error.png)
+![16 Revoked Magic Link Error](docs/visual-audit/security/16-revoked-magic-link-error.png)
 *Figure 7.1: Revoked magic-link presentation cleanly rejected with statutory expiration banner.*
 
 ---
@@ -161,10 +164,10 @@ PUPPETEER E2E SECURITY VERIFICATION MATRIX (11 / 11 PASSED)
   - Failure 3: Triggers immediate lockout (`locked: true`), destroys active OTP, returns HTTP 429 Too Many Requests.
   - Bypass Attempt: Attacker attempts to forge direct `PUT /api/mandates/:id` with `status: consented`. Blocked with HTTP 404/403.
 
-![17 OTP Lockout After 3 Failures](./visual-audit/security/17-otp-lockout-after-3-failures.png)
+![17 OTP Lockout After 3 Failures](docs/visual-audit/security/17-otp-lockout-after-3-failures.png)
 *Figure 8.1: Client modal after 3 incorrect OTP entries: "Security Lockout: Maximum OTP verification attempts exceeded (3/3)."*
 
-![18 Unauthorized Consent Bypass Blocked](./visual-audit/security/18-unauthorized-consent-bypass-blocked.png)
+![18 Unauthorized Consent Bypass Blocked](docs/visual-audit/security/18-unauthorized-consent-bypass-blocked.png)
 *Figure 8.2: Attempted direct status manipulation rejected; mandate status remains in review.*
 
 ---
@@ -178,16 +181,16 @@ PUPPETEER E2E SECURITY VERIFICATION MATRIX (11 / 11 PASSED)
   - Step 4: Attacker attempts to call protected API (`POST /api/mandates`) using temporary token. Rejected with HTTP 401 Unauthorized (`mfaVerified: false`).
   - Step 5: Legitimate advisor inputs valid RFC 6238 TOTP code. Full session token issued; browser enters authenticated RIA workspace.
 
-![19 RIA MFA Challenge](./visual-audit/security/19-ria-mfa-challenge.png)
+![19 RIA MFA Challenge](docs/visual-audit/security/19-ria-mfa-challenge.png)
 *Figure 9.1: Two-Factor Authentication Challenge Card displayed immediately after primary credentials.*
 
-![20 RIA MFA Invalid Rejected](./visual-audit/security/20-ria-mfa-invalid-rejected.png)
+![20 RIA MFA Invalid Rejected](docs/visual-audit/security/20-ria-mfa-invalid-rejected.png)
 *Figure 9.2: Incorrect 6-digit TOTP code rejected with security error banner.*
 
-![21 RIA MFA Bypass Rejected](./visual-audit/security/21-ria-mfa-bypass-rejected.png)
+![21 RIA MFA Bypass Rejected](docs/visual-audit/security/21-ria-mfa-bypass-rejected.png)
 *Figure 9.3: Direct API bypass attempt with unverified temporary token rejected with HTTP 401.*
 
-![22 RIA MFA Verified Dashboard](./visual-audit/security/22-ria-mfa-verified-dashboard.png)
+![22 RIA MFA Verified Dashboard](docs/visual-audit/security/22-ria-mfa-verified-dashboard.png)
 *Figure 9.4: Authenticated RIA workspace unlocked upon valid TOTP verification.*
 
 ---
@@ -197,7 +200,7 @@ PUPPETEER E2E SECURITY VERIFICATION MATRIX (11 / 11 PASSED)
 - **Attack Vector**: Attacker obtains previous JWT token and attempts to access `/api/mandates` or load `/dashboard`.
 - **Expected & Actual Result**: Token is recorded in distributed blacklist (`dbStore.revokeToken`). Protected API returns HTTP 401 Unauthorized; browser UI renders "Session has been revoked / logged out" banner.
 
-![23 Revoked Session Blocked](./visual-audit/security/23-revoked-session-blocked.png)
+![23 Revoked Session Blocked](docs/visual-audit/security/23-revoked-session-blocked.png)
 *Figure 10.1: Revoked session presentation blocked with HTTP 401 and UI logout banner.*
 
 ---
@@ -207,7 +210,7 @@ PUPPETEER E2E SECURITY VERIFICATION MATRIX (11 / 11 PASSED)
 - **Workflow**: 35 rapid sequential requests dispatched with `x-test-rate-limit: true`.
 - **Expected & Actual Result**: Sliding-window rate limiter engages; 35 / 35 requests blocked with HTTP 429 Too Many Requests (`Retry-After: 60`).
 
-![24 Distributed Rate Limit Blocked](./visual-audit/security/24-distributed-rate-limit-blocked.png)
+![24 Distributed Rate Limit Blocked](docs/visual-audit/security/24-distributed-rate-limit-blocked.png)
 *Figure 11.1: Authentication rate limiter enforces distributed sliding-window threshold.*
 
 ---
@@ -412,13 +415,16 @@ The complete Vitest test suite was executed across all 9 test suites:
 ```
 
 ### Breakdown of New Remediation Tests (`security_audit_remediation.test.js`):
-- **1. SHA-256 Magic Token Hashing & Scoping**:
+- **1. SHA-256 Magic Token Hashing, Scoping & Dispatch Integrity**:
   - `1.1`: Stores SHA-256 hash and does not persist raw plaintext token in database.
   - `1.2`: Authenticates valid token via hash lookup.
   - `1.3`: Rejects invalid token with HTTP 404.
   - `1.4`: Rejects revoked token with HTTP 404.
   - `1.5`: Cross-recommendation isolation (Token A cannot access Mandate B).
   - `1.6`: Automatic migration for legacy plaintext records.
+  - `1.7`: Transient registry returns active plaintext token only during authorized dispatch window.
+  - `1.8`: Dispatch response includes a valid non-undefined `magicToken` field.
+  - `1.9`: `magicToken` is absent from persisted MongoDB document (only `magicTokenHash` present).
 - **2. Production HTTPS / TLS Application Protections**:
   - `2.1`: Configures `trust proxy: 1` for reverse-proxy header handling.
   - `2.2`: Includes HSTS header with 1-year max-age.
@@ -481,12 +487,22 @@ The complete Vitest test suite was executed across all 9 test suites:
 - [x] Consent state integrity still passes (mandates require statutory OTP verification)
 
 ### Verification Suite
-- [x] Full automated test suite passes (82 / 82 tests passing)
-- [x] Security remediation test suite passes (24 / 24 new tests passing)
+- [x] Full automated test suite passes (84 / 84 tests passing)
+- [x] Security remediation test suite passes (26 / 26 new tests passing, +2 dispatch lifecycle tests)
 - [x] Puppeteer security suite passes (11 / 11 browser scenarios passing)
 - [x] 24 visual audit screenshots captured and embedded
 - [x] Production build passes (`npm run build` exit code 0)
 - [x] Clean git working tree with zero committed credentials
+- [x] Magic-link dispatch integrity verified — no `/m/undefined` exposure (commit `fd0cdaa`)
 
 ### Final Verdict: **READY**
 FinConsent is hardened and certified ready for production deployment behind standard cloud infrastructure (AWS ALB TLS termination, AWS Secrets Manager, and AWS ElastiCache for Redis).
+
+---
+
+## 8. Change Log
+
+| Date & Time (IST) | Commit | Change Summary |
+|---|---|---|
+| 2026-10-08T11:19 | `1fa8016` | feat(security): remediate all baseline audit conditions — SHA-256 token hashing, HSTS, distributed rate limiting, JWT expiry tests, backup drill, TOTP MFA, password policy, session revocation |
+| 2026-10-08T12:42 | `fd0cdaa` | fix: resolve dispatch mandate link `/m/undefined` — `activeMagicTokens` transient registry, dispatch API enrichment, frontend guards across 7 components, 2 new tests (1.8, 1.9); 84/84 tests pass |

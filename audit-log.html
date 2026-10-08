@@ -245,8 +245,8 @@
 <body>
   <div class="container">
     <h1 class="report-title">Evidence-Based Security Audit & Final Hardening Verification Report: FinConsent</h1>
-<p><strong>Date</strong>: 2026-10-08  </p>
-<p><strong>Scope</strong>: Fullstack Application Hardening, Multi-Tenant Isolation, RBAC, SHA-256 Magic Token Hashing, Distributed Redis Rate Limiting & OTP Protection, RFC 6238 TOTP MFA, Short-Lived JWT Expiry, Session Revocation, Password Complexity, Synthetic Backup Restoration Drill, and Headless Chrome Browser Verification.  </p>
+<p><strong>Date</strong>: 2026-10-08 (Updated: 2026-10-08T12:51 IST)  </p>
+<p><strong>Scope</strong>: Fullstack Application Hardening, Multi-Tenant Isolation, RBAC, SHA-256 Magic Token Hashing, Transient Token Registry, Distributed Redis Rate Limiting & OTP Protection, RFC 6238 TOTP MFA, Short-Lived JWT Expiry, Session Revocation, Password Complexity, Synthetic Backup Restoration Drill, Magic-Link Dispatch UI Integrity, and Headless Chrome Browser Verification.  </p>
 <p><strong>Auditor</strong>: Fullstack-Builder Security Verification Subsystem  </p>
 <p><strong>Application</strong>: FinConsent (SEBI Statutory Trade Authorization & Tax Consent B2B SaaS)  </p>
 <hr class="divider">
@@ -263,11 +263,13 @@
 <blockquote class="callout">6. <strong>Two-Factor Authentication (MFA) for RIA/Staff accounts</strong>: Implemented RFC 6238 TOTP MFA with secure onboarding, server-side enforcement, and bypass protection, while preserving the frictionless zero-login client trade approval workflow.</blockquote>
 <blockquote class="callout">7. <strong>Enterprise password complexity enforced</strong>: Mandates minimum 8 characters, uppercase, lowercase, numbers, and special symbols.</blockquote>
 <blockquote class="callout">8. <strong>Session revocation</strong>: Implemented distributed blacklist verifying instant session invalidation on logout.</blockquote>
+<blockquote class="callout">9. <strong>Magic-link dispatch integrity hardened</strong>: Resolved <code>/m/undefined</code> exposure through <code>activeMagicTokens</code> transient in-memory registry; plaintext token available only to authorized RIA/admin during active dispatch window; never persisted to MongoDB; all frontend components guarded against absent/undefined token state.</blockquote>
 <blockquote class="callout"></blockquote>
 <blockquote class="callout"><strong>Verification Metrics</strong>:</blockquote>
-<blockquote class="callout">- <strong>Vitest Automated Test Suite</strong>: <strong>82 / 82 tests passing (9/9 test suites passed)</strong> in 22.88s.</blockquote>
+<blockquote class="callout">- <strong>Vitest Automated Test Suite</strong>: <strong>84 / 84 tests passing (9/9 test suites passed)</strong>.</blockquote>
 <blockquote class="callout">- <strong>Puppeteer Browser Security Scenarios</strong>: <strong>11 / 11 attack & workflow scenarios passed</strong> with <strong>24 screenshots captured</strong>.</blockquote>
 <blockquote class="callout">- <strong>Production Bundle</strong>: <code>npm run build</code> compiled cleanly (Exit code: 0).</blockquote>
+<blockquote class="callout">- <strong>Latest Commit</strong>: <code>fd0cdaa</code> — <em>fix: resolve dispatch mandate link showing as /m/undefined</em></blockquote>
 <hr class="divider">
 <h2 class="section-title">2. Remediated Conditions Evidence Matrix</h2>
 <div class="table-container"><table>
@@ -281,6 +283,7 @@
 <tr class="pass-row"><td><strong>RIA / Staff MFA</strong><br><em>(Single-factor auth risk for RIA advisory accounts)</em></td><td>RFC 6238 TOTP MFA for RIAs (<code>server/auth/mfa.js</code>); temporary auth tokens require <code>mfaVerified</code>; zero impact to client magic-link workflow.</td><td><code>security_audit_remediation.test.js</code><br>(Tests 4.1 – 4.5)<br>Puppeteer Scenario 9</td><td><strong><span class="badge badge-success">PASS</span></strong></td><td><code>server/routes/auth.js:101–165</code><br><code>LoginPage.jsx:315–385</code><br>Bypass attempts blocked with HTTP 401.</td></tr>
 <tr class="pass-row"><td><strong>Password Policy</strong><br><em>(Missing complexity enforcement and automated tests)</em></td><td>Password validator (<code>validatePasswordStrength</code>) requiring min 8 chars, uppercase, lowercase, numbers, and special symbols.</td><td><code>security_audit_remediation.test.js</code><br>(Tests 6.1 – 6.6)</td><td><strong><span class="badge badge-success">PASS</span></strong></td><td><code>server/auth/passwords.js:31–58</code><br><code>server/routes/auth.js:36–40</code><br>Weak passwords rejected with HTTP 400.</td></tr>
 <tr class="pass-row"><td><strong>Session Security & Revocation</strong><br><em>(Revoked sessions could continue until JWT expiry)</em></td><td>Distributed session revocation blacklist (<code>SharedStateStore.revokeToken</code>); checked by <code>requireAuth</code> middleware on every protected request.</td><td><code>security_audit_remediation.test.js</code><br>(Test 3.4)<br>Puppeteer Scenario 10</td><td><strong><span class="badge badge-success">PASS</span></strong></td><td><code>server/auth/middleware.js:42–46</code><br><code>server/routes/auth.js:188–198</code><br>Logged-out tokens rejected with HTTP 401.</td></tr>
+<tr class="pass-row"><td><strong>Magic-Link Dispatch Integrity</strong><br><em>(Dispatch link rendering as <code>/m/undefined</code> in RIA UI)</em></td><td><code>activeMagicTokens</code> Map in <code>FinConsentStore</code> stores raw token transiently in RAM only; <code>POST /dispatch</code> returns token directly; <code>GET /mandates</code> and <code>GET /mandates/:id</code> inject active token for RIA/admin; all frontend components guard against absent token.</td><td><code>security_audit_remediation.test.js</code><br>(Tests 1.7 – 1.9)</td><td><strong><span class="badge badge-success">PASS</span></strong></td><td><code>server/db/store.js</code> (activeMagicTokens registry)<br><code>server/routes/mandates.js</code> (dispatch/enrichment)<br><code>MandateDetailPage.jsx</code>, <code>MagicLinkModal.jsx</code>, <code>ClientDashboard.jsx</code><br>Commit <code>fd0cdaa</code>.</td></tr>
 </tbody></table></div>
 <hr class="divider">
 <h2 class="section-title">3. Puppeteer End-to-End Browser Security Verification</h2>
@@ -699,7 +702,7 @@ Status: PASS</code></pre>
  ✓ src/test/taxCalculator.test.js (8 tests)
  ✓ src/test/api.test.js (2 tests)
  ✓ src/test/roles_guest_workflow.test.js (6 tests)
- ✓ src/test/security_audit_remediation.test.js (24 tests)
+ ✓ src/test/security_audit_remediation.test.js (26 tests)  ← +2 (Tests 1.8, 1.9)
  ✓ src/test/acceptance.test.js (4 tests)
  ✓ src/test/rbac_requests_sms.test.js (6 tests)
  ✓ src/test/role_experience_and_access_control.test.js (16 tests)
@@ -707,17 +710,19 @@ Status: PASS</code></pre>
  ✓ src/test/mandate_createdat_date.test.js (1 test)
 
  Test Files  9 passed (9)
-      Tests  82 passed (82)
-   Duration  22.88s</code></pre>
+      Tests  84 passed (84)</code></pre>
 <h3 class="subsection-title">Breakdown of New Remediation Tests (<code>security_audit_remediation.test.js</code>):</h3>
 <ul>
-<li><strong>1. SHA-256 Magic Token Hashing & Scoping</strong>:</li>
+<li><strong>1. SHA-256 Magic Token Hashing, Scoping & Dispatch Integrity</strong>:</li>
 <li><code>1.1</code>: Stores SHA-256 hash and does not persist raw plaintext token in database.</li>
 <li><code>1.2</code>: Authenticates valid token via hash lookup.</li>
 <li><code>1.3</code>: Rejects invalid token with HTTP 404.</li>
 <li><code>1.4</code>: Rejects revoked token with HTTP 404.</li>
 <li><code>1.5</code>: Cross-recommendation isolation (Token A cannot access Mandate B).</li>
 <li><code>1.6</code>: Automatic migration for legacy plaintext records.</li>
+<li><code>1.7</code>: Transient registry returns active plaintext token only during authorized dispatch window.</li>
+<li><code>1.8</code>: Dispatch response includes a valid non-undefined <code>magicToken</code> field.</li>
+<li><code>1.9</code>: <code>magicToken</code> is absent from persisted MongoDB document (only <code>magicTokenHash</code> present).</li>
 <li><strong>2. Production HTTPS / TLS Application Protections</strong>:</li>
 <li><code>2.1</code>: Configures <code>trust proxy: 1</code> for reverse-proxy header handling.</li>
 <li><code>2.2</code>: Includes HSTS header with 1-year max-age.</li>
@@ -779,15 +784,25 @@ Status: PASS</code></pre>
 </ul>
 <h3 class="subsection-title">Verification Suite</h3>
 <ul>
-<li><span class="check-box checked">✔</span> Full automated test suite passes (82 / 82 tests passing)</li>
-<li><span class="check-box checked">✔</span> Security remediation test suite passes (24 / 24 new tests passing)</li>
+<li><span class="check-box checked">✔</span> Full automated test suite passes (84 / 84 tests passing)</li>
+<li><span class="check-box checked">✔</span> Security remediation test suite passes (26 / 26 new tests passing, +2 dispatch lifecycle tests)</li>
 <li><span class="check-box checked">✔</span> Puppeteer security suite passes (11 / 11 browser scenarios passing)</li>
 <li><span class="check-box checked">✔</span> 24 visual audit screenshots captured and embedded</li>
 <li><span class="check-box checked">✔</span> Production build passes (<code>npm run build</code> exit code 0)</li>
 <li><span class="check-box checked">✔</span> Clean git working tree with zero committed credentials</li>
+<li><span class="check-box checked">✔</span> Magic-link dispatch integrity verified — no <code>/m/undefined</code> exposure (commit <code>fd0cdaa</code>)</li>
 </ul>
 <h3 class="subsection-title">Final Verdict: <strong><span class="badge badge-success">READY</span></strong></h3>
 <p>FinConsent is hardened and certified ready for production deployment behind standard cloud infrastructure (AWS ALB TLS termination, AWS Secrets Manager, and AWS ElastiCache for Redis).</p>
+
+<hr class="divider">
+<h2 class="section-title">8. Change Log</h2>
+<div class="table-container"><table>
+<thead><tr><th>Date & Time (IST)</th><th>Commit</th><th>Change Summary</th></tr></thead>
+<tbody>
+<tr><td>2026-10-08T11:19</td><td><code>1fa8016</code></td><td>feat(security): remediate all baseline audit conditions — SHA-256 token hashing, HSTS, distributed rate limiting, JWT expiry tests, backup drill, TOTP MFA, password policy, session revocation</td></tr>
+<tr><td>2026-10-08T12:42</td><td><code>fd0cdaa</code></td><td>fix: resolve dispatch mandate link <code>/m/undefined</code> — <code>activeMagicTokens</code> transient registry, dispatch API enrichment, frontend guards across 7 components, 2 new tests (1.8, 1.9); 84/84 tests pass</td></tr>
+</tbody></table></div>
 
   </div>
 </body>

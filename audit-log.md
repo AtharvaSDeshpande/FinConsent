@@ -1,7 +1,7 @@
 # Evidence-Based Security Audit & Final Hardening Verification Report: FinConsent
 
-**Date**: 2026-10-08  
-**Scope**: Fullstack Application Hardening, Multi-Tenant Isolation, RBAC, SHA-256 Magic Token Hashing, Distributed Redis Rate Limiting & OTP Protection, RFC 6238 TOTP MFA, Short-Lived JWT Expiry, Session Revocation, Password Complexity, Synthetic Backup Restoration Drill, and Headless Chrome Browser Verification.  
+**Date**: 2026-10-08 (Updated: 2026-10-08T12:51 IST)  
+**Scope**: Fullstack Application Hardening, Multi-Tenant Isolation, RBAC, SHA-256 Magic Token Hashing, Transient Token Registry, Distributed Redis Rate Limiting & OTP Protection, RFC 6238 TOTP MFA, Short-Lived JWT Expiry, Session Revocation, Password Complexity, Synthetic Backup Restoration Drill, Magic-Link Dispatch UI Integrity, and Headless Chrome Browser Verification.  
 **Auditor**: Fullstack-Builder Security Verification Subsystem  
 **Application**: FinConsent (SEBI Statutory Trade Authorization & Tax Consent B2B SaaS)  
 
@@ -22,11 +22,13 @@
 > 6. **Two-Factor Authentication (MFA) for RIA/Staff accounts**: Implemented RFC 6238 TOTP MFA with secure onboarding, server-side enforcement, and bypass protection, while preserving the frictionless zero-login client trade approval workflow.
 > 7. **Enterprise password complexity enforced**: Mandates minimum 8 characters, uppercase, lowercase, numbers, and special symbols.
 > 8. **Session revocation**: Implemented distributed blacklist verifying instant session invalidation on logout.
+> 9. **Magic-link dispatch integrity hardened**: Resolved `/m/undefined` exposure through `activeMagicTokens` transient in-memory registry; plaintext token available only to authorized RIA/admin during active dispatch window; never persisted to MongoDB; all frontend components guarded against absent/undefined token state.
 > 
 > **Verification Metrics**:
-> - **Vitest Automated Test Suite**: **82 / 82 tests passing (9/9 test suites passed)** in 22.88s.
+> - **Vitest Automated Test Suite**: **84 / 84 tests passing (9/9 test suites passed)**.
 > - **Puppeteer Browser Security Scenarios**: **11 / 11 attack & workflow scenarios passed** with **24 screenshots captured**.
 > - **Production Bundle**: `npm run build` compiled cleanly (Exit code: 0).
+> - **Latest Commit**: `fd0cdaa` — *fix: resolve dispatch mandate link showing as /m/undefined*
 
 ---
 
@@ -42,6 +44,7 @@
 | **RIA / Staff MFA**<br>*(Single-factor auth risk for RIA advisory accounts)* | RFC 6238 TOTP MFA for RIAs (`server/auth/mfa.js`); temporary auth tokens require `mfaVerified`; zero impact to client magic-link workflow. | `security_audit_remediation.test.js`<br>(Tests 4.1 – 4.5)<br>Puppeteer Scenario 9 | **PASS** | `server/routes/auth.js:101–165`<br>`LoginPage.jsx:315–385`<br>Bypass attempts blocked with HTTP 401. |
 | **Password Policy**<br>*(Missing complexity enforcement and automated tests)* | Password validator (`validatePasswordStrength`) requiring min 8 chars, uppercase, lowercase, numbers, and special symbols. | `security_audit_remediation.test.js`<br>(Tests 6.1 – 6.6) | **PASS** | `server/auth/passwords.js:31–58`<br>`server/routes/auth.js:36–40`<br>Weak passwords rejected with HTTP 400. |
 | **Session Security & Revocation**<br>*(Revoked sessions could continue until JWT expiry)* | Distributed session revocation blacklist (`SharedStateStore.revokeToken`); checked by `requireAuth` middleware on every protected request. | `security_audit_remediation.test.js`<br>(Test 3.4)<br>Puppeteer Scenario 10 | **PASS** | `server/auth/middleware.js:42–46`<br>`server/routes/auth.js:188–198`<br>Logged-out tokens rejected with HTTP 401. |
+| **Magic-Link Dispatch Integrity**<br>*(Dispatch link rendering as `/m/undefined` in RIA UI)* | `activeMagicTokens` Map in `FinConsentStore` stores raw token transiently in RAM only; `POST /dispatch` returns token directly; `GET /mandates` and `GET /mandates/:id` inject active token for RIA/admin; all frontend components guard against absent token. | `security_audit_remediation.test.js`<br>(Tests 1.7 – 1.9) | **PASS** | `server/db/store.js` (activeMagicTokens registry)<br>`server/routes/mandates.js` (dispatch/enrichment)<br>`MandateDetailPage.jsx`, `MagicLinkModal.jsx`, `ClientDashboard.jsx`<br>Commit `fd0cdaa`. |
 
 ---
 
@@ -412,13 +415,16 @@ The complete Vitest test suite was executed across all 9 test suites:
 ```
 
 ### Breakdown of New Remediation Tests (`security_audit_remediation.test.js`):
-- **1. SHA-256 Magic Token Hashing & Scoping**:
+- **1. SHA-256 Magic Token Hashing, Scoping & Dispatch Integrity**:
   - `1.1`: Stores SHA-256 hash and does not persist raw plaintext token in database.
   - `1.2`: Authenticates valid token via hash lookup.
   - `1.3`: Rejects invalid token with HTTP 404.
   - `1.4`: Rejects revoked token with HTTP 404.
   - `1.5`: Cross-recommendation isolation (Token A cannot access Mandate B).
   - `1.6`: Automatic migration for legacy plaintext records.
+  - `1.7`: Transient registry returns active plaintext token only during authorized dispatch window.
+  - `1.8`: Dispatch response includes a valid non-undefined `magicToken` field.
+  - `1.9`: `magicToken` is absent from persisted MongoDB document (only `magicTokenHash` present).
 - **2. Production HTTPS / TLS Application Protections**:
   - `2.1`: Configures `trust proxy: 1` for reverse-proxy header handling.
   - `2.2`: Includes HSTS header with 1-year max-age.
@@ -481,12 +487,22 @@ The complete Vitest test suite was executed across all 9 test suites:
 - [x] Consent state integrity still passes (mandates require statutory OTP verification)
 
 ### Verification Suite
-- [x] Full automated test suite passes (82 / 82 tests passing)
-- [x] Security remediation test suite passes (24 / 24 new tests passing)
+- [x] Full automated test suite passes (84 / 84 tests passing)
+- [x] Security remediation test suite passes (26 / 26 new tests passing, +2 dispatch lifecycle tests)
 - [x] Puppeteer security suite passes (11 / 11 browser scenarios passing)
 - [x] 24 visual audit screenshots captured and embedded
 - [x] Production build passes (`npm run build` exit code 0)
 - [x] Clean git working tree with zero committed credentials
+- [x] Magic-link dispatch integrity verified — no `/m/undefined` exposure (commit `fd0cdaa`)
 
 ### Final Verdict: **READY**
 FinConsent is hardened and certified ready for production deployment behind standard cloud infrastructure (AWS ALB TLS termination, AWS Secrets Manager, and AWS ElastiCache for Redis).
+
+---
+
+## 8. Change Log
+
+| Date & Time (IST) | Commit | Change Summary |
+|---|---|---|
+| 2026-10-08T11:19 | `1fa8016` | feat(security): remediate all baseline audit conditions — SHA-256 token hashing, HSTS, distributed rate limiting, JWT expiry tests, backup drill, TOTP MFA, password policy, session revocation |
+| 2026-10-08T12:42 | `fd0cdaa` | fix: resolve dispatch mandate link `/m/undefined` — `activeMagicTokens` transient registry, dispatch API enrichment, frontend guards across 7 components, 2 new tests (1.8, 1.9); 84/84 tests pass |
