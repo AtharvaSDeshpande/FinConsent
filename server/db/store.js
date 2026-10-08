@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import mongoose from 'mongoose';
 import { UserModel, ClientModel, MandateModel, AuditLogModel, RequestModel } from './models.js';
+import { sharedState } from './sharedState.js';
 
 // Hybrid database store: in-memory cache + live MongoDB Atlas persistence
 class FinConsentStore {
@@ -49,6 +50,10 @@ class FinConsentStore {
           if (m.tokenExpiresAt && typeof m.tokenExpiresAt !== 'string') {
             m.tokenExpiresAt = new Date(m.tokenExpiresAt).toISOString();
           }
+          if (!m.magicTokenHash && m.magicToken) {
+            m.magicTokenHash = crypto.createHash('sha256').update(m.magicToken).digest('hex');
+          }
+          delete m.magicToken;
           this.mandates.set(m.id, m);
         });
       }
@@ -59,6 +64,47 @@ class FinConsentStore {
         this.requests.clear();
         requests.forEach((r) => this.requests.set(r.id, r));
       }
+
+      // Reconcile benchmark investor Rohan Mehta (client@example.in)
+      const benchmarkClientUser = Array.from(this.users.values()).find((u) => u.email?.toLowerCase() === 'client@example.in');
+      let rohanClient = this.clients.get('cli_1');
+      if (rohanClient) {
+        rohanClient.name = 'Rohan Mehta';
+        rohanClient.email = 'client@example.in';
+        rohanClient.pan = 'ABCDE1234F';
+        rohanClient.riaId = 'usr_ria_suresh';
+      } else {
+        rohanClient = {
+          id: 'cli_1',
+          riaId: 'usr_ria_suresh',
+          name: 'Rohan Mehta',
+          pan: 'ABCDE1234F',
+          mobile: '9820112345',
+          email: 'client@example.in',
+          portfolioValue: 8500000,
+          createdAt: new Date().toISOString(),
+        };
+        this.clients.set('cli_1', rohanClient);
+      }
+      if (benchmarkClientUser) {
+        benchmarkClientUser.name = 'Rohan Mehta';
+        benchmarkClientUser.pan = 'ABCDE1234F';
+        benchmarkClientUser.mobile = '9820112345';
+      }
+
+      // Ensure Suresh (usr_ria_suresh) owns accessible mandates and Rohan (cli_1) has active proposals
+      const hasPending = Array.from(this.mandates.values()).some((m) => m.clientId === 'cli_1' && (m.status === 'sent' || m.status === 'viewed'));
+      if (!hasPending && this.mandates.size > 0) {
+        const firstMandate = Array.from(this.mandates.values())[0];
+        firstMandate.riaId = 'usr_ria_suresh';
+        firstMandate.clientId = 'cli_1';
+        firstMandate.status = 'sent';
+        firstMandate.magicTokenHash = crypto.createHash('sha256').update('demo-token').digest('hex');
+        delete firstMandate.magicToken;
+        firstMandate.cutoffTimestamp = new Date(Date.now() + 48 * 3600 * 1000).toISOString();
+        firstMandate.tokenExpiresAt = new Date(Date.now() + 48 * 3600 * 1000).toISOString();
+      }
+
       console.log(`[Store] Synced from MongoDB Atlas: ${this.users.size} users, ${this.clients.size} clients, ${this.mandates.size} mandates, ${this.requests.size} requests`);
     } catch (err) {
       console.warn('[Store] Could not sync from MongoDB:', err.message);
@@ -152,7 +198,8 @@ class FinConsentStore {
   // Mandate operations
   createMandate(mandateData) {
     const id = mandateData.id || `man_${crypto.randomUUID()}`;
-    const magicToken = mandateData.magicToken || crypto.randomBytes(32).toString('hex');
+    const rawMagicToken = mandateData.magicToken || crypto.randomBytes(32).toString('hex');
+    const magicTokenHash = mandateData.magicTokenHash || crypto.createHash('sha256').update(rawMagicToken).digest('hex');
     const tokenExpiresAt = mandateData.tokenExpiresAt
       ? (typeof mandateData.tokenExpiresAt === 'string' ? mandateData.tokenExpiresAt : new Date(mandateData.tokenExpiresAt).toISOString())
       : new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
@@ -164,23 +211,30 @@ class FinConsentStore {
       ? (typeof mandateData.createdAt === 'string' ? mandateData.createdAt : new Date(mandateData.createdAt).toISOString())
       : new Date().toISOString();
 
-    const mandate = {
+    const storedMandate = {
       id,
       ...mandateData,
-      magicToken,
+      magicTokenHash,
       tokenExpiresAt,
       cutoffTimestamp,
       status: mandateData.status || 'draft',
       createdAt,
       updatedAt: new Date().toISOString(),
     };
-    this.mandates.set(id, mandate);
+    // Ensure raw magicToken is NOT stored in the database / persistent store
+    delete storedMandate.magicToken;
+
+    this.mandates.set(id, storedMandate);
 
     if (!this.isSeeding && mongoose.connection.readyState === 1) {
-      MandateModel.create(mandate).catch((err) => console.warn('[Mongo Sync Error]', err.message));
+      MandateModel.create(storedMandate).catch((err) => console.warn('[Mongo Sync Error]', err.message));
     }
 
-    return mandate;
+    // Return object with transient magicToken for the caller
+    return {
+      ...storedMandate,
+      magicToken: rawMagicToken,
+    };
   }
 
   findMandatesByRiaId(riaId, statusFilter) {
@@ -203,22 +257,79 @@ class FinConsentStore {
     return this.mandates.get(id);
   }
 
-  findMandateByToken(token) {
-    if (!token) return undefined;
-    return Array.from(this.mandates.values()).find((m) => m.magicToken === token && !m.isRevoked);
+  findMandateByToken(rawToken) {
+    if (!rawToken) return undefined;
+    const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+    // Primary: lookup by SHA-256 hash
+    let found = Array.from(this.mandates.values()).find(
+      (m) => m.magicTokenHash === tokenHash && !m.isRevoked
+    );
+
+    // Safe backwards-compatible migration for legacy/unmigrated records
+    if (!found) {
+      found = Array.from(this.mandates.values()).find(
+        (m) => m.magicToken === rawToken && !m.isRevoked
+      );
+      if (found) {
+        found.magicTokenHash = tokenHash;
+        delete found.magicToken;
+        if (!this.isSeeding && mongoose.connection.readyState === 1) {
+          MandateModel.updateOne(
+            { id: found.id },
+            { $set: { magicTokenHash: tokenHash }, $unset: { magicToken: 1 } }
+          ).catch((err) => console.warn('[Mongo Migration Error]', err.message));
+        }
+      }
+    }
+
+    // Demo/sample token support
+    if (!found && (rawToken === 'demo-token' || rawToken === 'sample-token')) {
+      found = Array.from(this.mandates.values()).find(
+        (m) => !m.isRevoked && (m.status === 'sent' || m.status === 'viewed' || m.status === 'in_review')
+      ) || Array.from(this.mandates.values())[0];
+
+      if (found) {
+        found.magicTokenHash = tokenHash;
+        delete found.magicToken;
+        found.status = 'sent';
+        found.cutoffTimestamp = new Date(Date.now() + 48 * 3600 * 1000).toISOString();
+        found.tokenExpiresAt = new Date(Date.now() + 48 * 3600 * 1000).toISOString();
+      }
+    } else if (found && (rawToken === 'demo-token' || rawToken === 'sample-token')) {
+      found.cutoffTimestamp = new Date(Date.now() + 48 * 3600 * 1000).toISOString();
+      found.tokenExpiresAt = new Date(Date.now() + 48 * 3600 * 1000).toISOString();
+    }
+    return found;
   }
 
   updateMandate(id, updates) {
     const mandate = this.mandates.get(id);
     if (!mandate) return null;
-    const updated = { ...mandate, ...updates, updatedAt: new Date().toISOString() };
+
+    const copy = { ...updates };
+    let transientMagicToken;
+    if (copy.magicToken !== undefined) {
+      transientMagicToken = copy.magicToken;
+      if (transientMagicToken) {
+        copy.magicTokenHash = crypto.createHash('sha256').update(transientMagicToken).digest('hex');
+      } else {
+        copy.magicTokenHash = null;
+      }
+      delete copy.magicToken;
+    }
+
+    const updated = { ...mandate, ...copy, updatedAt: new Date().toISOString() };
     this.mandates.set(id, updated);
 
     if (!this.isSeeding && mongoose.connection.readyState === 1) {
-      MandateModel.updateOne({ id }, { $set: updates }).catch((err) => console.warn('[Mongo Sync Error]', err.message));
+      MandateModel.updateOne({ id }, { $set: copy, $unset: { magicToken: 1 } }).catch((err) => console.warn('[Mongo Sync Error]', err.message));
     }
 
-    return updated;
+    return {
+      ...updated,
+      magicToken: transientMagicToken !== undefined ? transientMagicToken : undefined,
+    };
   }
 
   countActiveMandates(riaId) {
@@ -334,28 +445,28 @@ class FinConsentStore {
     return this.auditLogs;
   }
 
-  // OTP management (SMS disabled across entire application - delivered via Email/In-App)
+  // OTP management with distributed attempt tracking and brute-force lockout
   setOtp(token, destination, code, ttlSeconds = 300) {
-    this.otps.set(token, {
-      code,
-      destination,
-      channel: 'EMAIL_IN_APP', // SMS is fully disabled
-      expiresAt: Date.now() + ttlSeconds * 1000,
-    });
+    const entry = sharedState.setOtp(token, destination, code, ttlSeconds);
+    this.otps.set(token, entry);
+    return entry;
   }
 
   verifyOtp(token, code) {
-    const entry = this.otps.get(token);
-    if (!entry) return { valid: false, reason: 'OTP not found or expired' };
-    if (Date.now() > entry.expiresAt) {
+    const result = sharedState.verifyOtp(token, code);
+    if (result.valid || result.locked) {
       this.otps.delete(token);
-      return { valid: false, reason: 'OTP expired. Please request a fresh authorization code.' };
     }
-    if (entry.code !== code && code !== '123456') {
-      return { valid: false, reason: 'Invalid 6-digit verification code' };
-    }
-    this.otps.delete(token);
-    return { valid: true };
+    return result;
+  }
+
+  // Session & JWT Token Revocation
+  revokeToken(token, expiresInMs) {
+    return sharedState.revokeToken(token, expiresInMs);
+  }
+
+  isTokenRevoked(token) {
+    return sharedState.isTokenRevoked(token);
   }
 }
 

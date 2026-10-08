@@ -284,10 +284,17 @@ export const RequestComposerPage = () => {
         </Box>
       </Box>
 
-      {/* Main Grid: Form / Scrutiny Panel (Left) & Requests Ledger (Right) */}
-      <Grid container spacing={3}>
+      {/* Main Container: Form / Scrutiny Panel (Left) & Requests Ledger (Right) */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', lg: '440px 1fr' },
+          gap: 3,
+          alignItems: 'start',
+        }}
+      >
         {/* LEFT PANEL: Role-tailored action card */}
-        <Grid size={{ xs: 12, lg: 5 }}>
+        <Box sx={{ width: '100%' }}>
           {isComplianceOfficer ? (
             // Compliance Officer Scrutiny Mode Card
             <Card elevation={2} sx={{ borderRadius: 3, border: 1, borderColor: 'info.light', position: 'sticky', top: 88 }}>
@@ -510,10 +517,10 @@ export const RequestComposerPage = () => {
               </CardContent>
             </Card>
           )}
-        </Grid>
+        </Box>
 
         {/* RIGHT PANEL: LIVE REQUESTS LEDGER */}
-        <Grid size={{ xs: 12, lg: 7 }}>
+        <Box sx={{ width: '100%', minWidth: 0 }}>
           <Card sx={{ borderRadius: 3, border: '1px solid #E2E8F0', boxShadow: '0 1px 3px 0 rgba(15, 23, 42, 0.04)' }}>
             <Box sx={{ p: 2, borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
               <Typography variant="h6" fontWeight={700}>
@@ -632,8 +639,8 @@ export const RequestComposerPage = () => {
               </Table>
             </TableContainer>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
 
       {/* DETAIL & AUDIT ACTION MODAL */}
       {selectedRequest && (

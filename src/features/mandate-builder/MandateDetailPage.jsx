@@ -18,6 +18,8 @@ import CheckIcon from '@mui/icons-material/Check';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import TrendingUpOutlinedIcon from '@mui/icons-material/TrendingUpOutlined';
 import { StatutoryBadge } from '../../components/brand/StatutoryBadge.jsx';
 import { StatutoryLifecycleGuide } from '../../components/brand/StatutoryLifecycleGuide.jsx';
 import { TaxBreakdownCard } from '../tax-engine/index.js';
@@ -132,8 +134,86 @@ export const MandateDetailPage = () => {
 
   if (error || !mandate) {
     return (
-      <Container maxWidth="md" sx={{ py: 6 }}>
-        <Alert severity="error" sx={{ borderRadius: 2.5 }}>{error || 'Mandate record not found'}</Alert>
+      <Container maxWidth="md" sx={{ py: { xs: 4, md: 8 } }}>
+        <Box sx={{ mb: 3 }}>
+          <Button
+            component={RouterLink}
+            to="/dashboard"
+            startIcon={<ArrowBackOutlinedIcon sx={{ fontSize: 18 }} />}
+            size="small"
+            sx={{ textTransform: 'none', fontWeight: 600, color: '#64748B', '&:hover': { color: '#0F172A' } }}
+          >
+            Back to Control Center
+          </Button>
+        </Box>
+
+        <Card
+          elevation={0}
+          sx={{
+            p: { xs: 3.5, sm: 5 },
+            borderRadius: 4,
+            border: '1px solid #E2E8F0',
+            bgcolor: '#FFFFFF',
+            textAlign: 'center',
+          }}
+        >
+          <Box
+            sx={{
+              width: 56,
+              height: 56,
+              borderRadius: '50%',
+              bgcolor: error?.toLowerCase().includes('unauthorized') ? 'rgba(239, 68, 68, 0.08)' : '#F1F5F9',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mx: 'auto',
+              mb: 2.5,
+            }}
+          >
+            <LockOutlinedIcon
+              sx={{
+                fontSize: 28,
+                color: error?.toLowerCase().includes('unauthorized') ? '#DC2626' : '#64748B',
+              }}
+            />
+          </Box>
+
+          <Typography variant="h5" fontWeight={800} color="#0F172A" gutterBottom>
+            {error?.toLowerCase().includes('unauthorized')
+              ? 'Mandate Access Restricted'
+              : 'Mandate Record Not Found'}
+          </Typography>
+
+          <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 540, mx: 'auto', mb: 3, lineHeight: 1.6 }}>
+            {error || 'The requested mandate could not be retrieved. Under SEBI Investment Advisers Regulations and firm-level data segregation, advisory records are strictly partitioned to protect client confidentiality.'}
+          </Typography>
+
+          <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap">
+            <Button
+              variant="contained"
+              component={RouterLink}
+              to="/dashboard"
+              sx={{
+                fontWeight: 700,
+                borderRadius: 2.5,
+                px: 3,
+                py: 1,
+                bgcolor: '#0F172A',
+                '&:hover': { bgcolor: '#1E293B' },
+              }}
+            >
+              Return to Control Center
+            </Button>
+            <Button
+              variant="outlined"
+              component={RouterLink}
+              to="/mandates/new"
+              sx={{ fontWeight: 650, borderRadius: 2.5, borderColor: '#CBD5E1', color: '#334155' }}
+            >
+              Draft New Mandate
+            </Button>
+          </Stack>
+        </Card>
       </Container>
     );
   }
@@ -355,9 +435,24 @@ export const MandateDetailPage = () => {
           </Box>
         </Grid>
 
-        {/* Right Column: Statutory Activity & Section 65B Audit Trail */}
+        {/* Right Column: Statutory Rationale & Activity / Audit Trail */}
         <Grid size={{ xs: 12, md: 7 }}>
-          <AuditTrailTimeline logs={mandate.auditLogs || []} />
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {mandate.rationale && (
+              <Card elevation={0} sx={{ p: 3, borderRadius: 3.5, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+                  <TrendingUpOutlinedIcon color="primary" sx={{ fontSize: 22 }} />
+                  <Typography variant="subtitle1" fontWeight={750} color="#0F172A">
+                    Adviser Investment Rationale
+                  </Typography>
+                </Box>
+                <Typography variant="body2" color="#475569" sx={{ lineHeight: 1.65, whiteSpace: 'pre-line' }}>
+                  {mandate.rationale}
+                </Typography>
+              </Card>
+            )}
+            <AuditTrailTimeline logs={mandate.auditLogs || []} />
+          </Box>
         </Grid>
       </Grid>
 

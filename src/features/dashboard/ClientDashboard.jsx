@@ -42,7 +42,7 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
       <Box sx={{ mb: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1, flexWrap: 'wrap' }}>
           <Typography variant="h4" component="h1" fontWeight={800} letterSpacing="-0.025em" color="#0F172A">
-            Welcome, {user.name || 'Valued Investor'}
+            {`Welcome, ${user?.name || 'Valued Investor'}`}
           </Typography>
           <Chip
             icon={<ShieldOutlinedIcon sx={{ fontSize: '15px !important', color: '#047857' }} />}

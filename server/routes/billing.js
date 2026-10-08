@@ -1,12 +1,12 @@
 import express from 'express';
 import crypto from 'node:crypto';
 import { dbStore } from '../db/store.js';
-import { requireAuth } from '../auth/middleware.js';
+import { requireAuth, requireRole } from '../auth/middleware.js';
 
 const router = express.Router();
 
 // Generate Razorpay Pro checkout link (₹2,499/mo + 18% GST = ₹2,948.82)
-router.post('/create-checkout', requireAuth, (req, res) => {
+router.post('/create-checkout', requireAuth, requireRole(['ria', 'admin']), (req, res) => {
   const planAmount = 2499;
   const gst = Math.round(planAmount * 0.18);
   const totalAmount = planAmount + gst;
@@ -32,16 +32,20 @@ router.post('/create-checkout', requireAuth, (req, res) => {
 
 // Razorpay Webhook listener with HMAC-SHA256 signature verification
 router.post('/webhook', (req, res) => {
-  const secret = process.env.RAZORPAY_KEY_SECRET || 'sampleSecretKey123';
+  const secret = process.env.RAZORPAY_KEY_SECRET;
+  if (!secret && process.env.NODE_ENV === 'production') {
+    return res.status(500).json({ success: false, error: 'Payment webhook secret not configured' });
+  }
+  const signingKey = secret || 'sampleSecretKey123';
   const signature = req.headers['x-razorpay-signature'];
   const body = JSON.stringify(req.body);
 
   const expectedSignature = crypto
-    .createHmac('sha256', secret)
+    .createHmac('sha256', signingKey)
     .update(body)
     .digest('hex');
 
-  const isValid = signature === expectedSignature || process.env.NODE_ENV !== 'production';
+  const isValid = signature === expectedSignature || (process.env.NODE_ENV !== 'production' && !signature);
 
   if (!isValid) {
     return res.status(400).json({ success: false, error: 'Invalid HMAC signature' });
@@ -57,7 +61,7 @@ router.post('/webhook', (req, res) => {
 });
 
 // Upgrade RIA to Pro directly for pilot/testing
-router.post('/upgrade-test', requireAuth, (req, res) => {
+router.post('/upgrade-test', requireAuth, requireRole(['ria', 'admin']), (req, res) => {
   const updated = dbStore.updateUser(req.user.id, { plan: 'pro' });
   const userSafe = { ...updated };
   delete userSafe.passwordHash;

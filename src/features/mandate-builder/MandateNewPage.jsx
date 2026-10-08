@@ -26,10 +26,12 @@ import ShuffleIcon from '@mui/icons-material/Shuffle';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom';
 import { TaxBreakdownCard, AdvanceTaxAlertBanner, calculateIndianGainsTax } from '../tax-engine/index.js';
 
 export const MandateNewPage = () => {
+  const [searchParams] = useSearchParams();
+  const preselectedClientId = searchParams.get('clientId');
   const [clients, setClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState(null);
   const [clientId, setClientId] = useState('');
@@ -37,6 +39,9 @@ export const MandateNewPage = () => {
   const [loadingClients, setLoadingClients] = useState(true);
 
   const [title, setTitle] = useState('');
+  const [rationale, setRationale] = useState(
+    'Disciplined Profit Booking & Volatility Protection: Due to equity market appreciation, your equity exposure drifted beyond your mandate tolerance. Rebalancing strategically books profits in equity and reallocates capital into high-quality debt & liquid assets.'
+  );
   const [stcgAmount, setStcgAmount] = useState(60000);
   const [ltcgAmount, setLtcgAmount] = useState(120000);
   const [cutoffHours, setCutoffHours] = useState(48);
@@ -75,8 +80,15 @@ export const MandateNewPage = () => {
         const data = await res.json();
         if (data.success && data.data && data.data.length > 0) {
           setClients(data.data);
-          // Automated Client Selection: Randomly assigned when drafting is in process
-          assignRandomClient(data.data);
+          const foundPreselected = preselectedClientId && data.data.find((c) => c.id === preselectedClientId);
+          if (foundPreselected) {
+            setSelectedClient(foundPreselected);
+            setClientId(foundPreselected.id);
+            setTitle(`Q1 FY27 Strategic Trade Rebalance — ${foundPreselected.name}`);
+          } else {
+            // Automated Client Selection: Randomly assigned when drafting is in process
+            assignRandomClient(data.data);
+          }
         }
       } catch (err) {
         console.error('[Clients Fetch Error]:', err);
@@ -127,6 +139,7 @@ export const MandateNewPage = () => {
         body: JSON.stringify({
           clientId,
           title,
+          rationale,
           currentAllocation: { equity: 75, debt: 15, gold: 5, cash: 5 },
           proposedAllocation: allocations,
           stcgAmount: Number(stcgAmount) || 0,
@@ -179,7 +192,16 @@ export const MandateNewPage = () => {
           Back to Control Center
         </Button>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-          <Typography variant="h4" component="h1" fontWeight={800} letterSpacing="-0.02em">
+          <Typography
+            variant="h4"
+            component="h1"
+            fontWeight={800}
+            letterSpacing="-0.025em"
+            sx={{
+              fontSize: { xs: '1.4rem', sm: '1.85rem', md: '2.15rem' },
+              lineHeight: 1.25,
+            }}
+          >
             Draft Statutory Rebalance Mandate
           </Typography>
           <Chip
@@ -357,42 +379,63 @@ export const MandateNewPage = () => {
                     <MenuItem value={24}>24 Hours (Next Trading Session 2:30 PM IST)</MenuItem>
                     <MenuItem value={48}>48 Hours (Standard Advisory Cycle Cutoff)</MenuItem>
                   </TextField>
+
+                  <TextField
+                    label="Investment Rationale & Portfolio Advice (Presented to Client)"
+                    required
+                    multiline
+                    rows={3}
+                    fullWidth
+                    value={rationale}
+                    onChange={(e) => setRationale(e.target.value)}
+                    placeholder="Provide professional rationale explaining why these portfolio changes are recommended..."
+                    size="small"
+                    helperText="This statutory justification will be prominently displayed to the client under 'Why is it changing?' before authorization."
+                  />
                 </Box>
 
-                <Divider sx={{ my: 2.5 }} />
+                <Divider sx={{ my: 3 }} />
 
                 {/* 3. Indian Capital Gains Estimation */}
-                <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
-                  3. Indian Capital Gains Estimation
-                </Typography>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="h6" fontWeight={750} sx={{ color: '#0F172A', mb: 0.5 }}>
+                    3. Indian Capital Gains Estimation
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Specify expected short-term and long-term capital gains resulting from this rebalancing round.
+                  </Typography>
+                </Box>
 
-                <Grid container spacing={2}>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField
-                      label="Short-Term Capital Gain (STCG ₹)"
-                      type="number"
-                      fullWidth
-                      required
-                      size="small"
-                      value={stcgAmount}
-                      onChange={(e) => setStcgAmount(e.target.value)}
-                      helperText="Taxed at flat 20% under Section 111A"
-                    />
-                  </Grid>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                    gap: 2.5,
+                    mt: 1,
+                  }}
+                >
+                  <TextField
+                    label="Short-Term Capital Gain (STCG ₹)"
+                    type="number"
+                    fullWidth
+                    required
+                    size="small"
+                    value={stcgAmount}
+                    onChange={(e) => setStcgAmount(e.target.value)}
+                    helperText="Taxed at flat 20% under Section 111A"
+                  />
 
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField
-                      label="Long-Term Capital Gain (LTCG ₹)"
-                      type="number"
-                      fullWidth
-                      required
-                      size="small"
-                      value={ltcgAmount}
-                      onChange={(e) => setLtcgAmount(e.target.value)}
-                      helperText="Taxed at 12.5% beyond ₹1.25L exemption"
-                    />
-                  </Grid>
-                </Grid>
+                  <TextField
+                    label="Long-Term Capital Gain (LTCG ₹)"
+                    type="number"
+                    fullWidth
+                    required
+                    size="small"
+                    value={ltcgAmount}
+                    onChange={(e) => setLtcgAmount(e.target.value)}
+                    helperText="Taxed at 12.5% beyond ₹1.25L exemption"
+                  />
+                </Box>
 
                 <Divider sx={{ my: 2.5 }} />
 

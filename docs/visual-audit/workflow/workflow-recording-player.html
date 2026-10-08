@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinConsent — End-to-End B2B Workflow Recording</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: #0B0F19; color: #F8FAFC; min-height: 100vh; padding: 32px 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header { margin-bottom: 24px; }
+    h1 { font-size: 26px; font-weight: 800; color: #FFFFFF; display: flex; align-items: center; gap: 12px; }
+    .badge { font-size: 12px; font-weight: 700; background: rgba(56, 189, 248, 0.15); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3); padding: 4px 10px; border-radius: 6px; }
+    p.subtitle { color: #94A3B8; font-size: 14px; margin-top: 6px; }
+    .video-card { background: #131B2E; border: 1px solid #1E293B; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.4); margin-bottom: 32px; }
+    video { width: 100%; max-height: 680px; display: block; background: #000; }
+    .video-info { padding: 18px 24px; border-top: 1px solid #1E293B; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .flow-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 24px; }
+    .step-card { background: #131B2E; border: 1px solid #1E293B; border-radius: 12px; padding: 16px; transition: transform 0.2s; }
+    .step-card:hover { transform: translateY(-2px); border-color: #38BDF8; }
+    .step-num { font-size: 11px; font-weight: 800; color: #10B981; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .step-title { font-size: 14px; font-weight: 700; color: #FFFFFF; margin-bottom: 4px; }
+    .step-desc { font-size: 12px; color: #94A3B8; line-height: 1.5; }
+    a.btn { background: #2563EB; color: #fff; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; }
+    a.btn:hover { background: #1D4ED8; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>FinConsent B2B Workflow Recording <span class="badge">Puppeteer 30 FPS</span></h1>
+      <p class="subtitle">Complete B2B SaaS journey: RIA Login → Add Client → Draft Recommendation & Rationale → Review Tax Impact → Client Mobile Magic Link → OTP Authorization → Section 65B Audit Receipt</p>
+    </header>
+
+    <div class="video-card">
+      <video controls autoplay loop muted playsinline>
+        <source src="finconsent-b2b-workflow-recording.webm" type="video/webm" />
+        Your browser does not support the video tag.
+      </video>
+      <div class="video-info">
+        <div>
+          <strong style="color: #F8FAFC;">Format:</strong> WebM (30 FPS, VP9/VP8) &bull;
+          <strong style="color: #F8FAFC;">Duration:</strong> 26 seconds &bull;
+          <strong style="color: #F8FAFC;">Resolution:</strong> 1440 &times; 900
+        </div>
+        <a href="finconsent-b2b-workflow-recording.webm" download class="btn">Download Recording (.webm)</a>
+      </div>
+    </div>
+
+    <h2 style="font-size: 18px; font-weight: 800; color: #F8FAFC; margin-bottom: 12px;">Verified Journey Stages</h2>
+    <div class="flow-steps">
+      <div class="step-card">
+        <div class="step-num">Stage 1 &bull; Flow A</div>
+        <div class="step-title">RIA Workspace & Pro Plan</div>
+        <div class="step-desc">RIA logs in to Prudent Wealth Advisory workspace with active SEBI registration INA000088921.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">Stage 2 &bull; Flow A</div>
+        <div class="step-title">Client Association</div>
+        <div class="step-desc">RIA registers client Priya Sharma with verified PAN and mobile number directly under the advisory firm.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">Stage 3 &bull; Flow B</div>
+        <div class="step-title">Recommendation & Rationale</div>
+        <div class="step-desc">Advisor drafts asset reallocation, pre-computes capital gains taxes (Budget 2024), and enters statutory advice.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">Stage 4 &bull; Flow C</div>
+        <div class="step-title">Client Mobile Review</div>
+        <div class="step-desc">Investor opens frictionless magic link: reviews "What is changing?", "Why?", and tax impact without account friction.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">Stage 5 &bull; Flow C</div>
+        <div class="step-title">OTP Authorization</div>
+        <div class="step-desc">Client accepts statutory declarations and verifies 6-digit cryptographic OTP to seal non-discretionary consent.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">Stage 6 &bull; Flow D</div>
+        <div class="step-title">Section 65B Audit Trail</div>
+        <div class="step-desc">Tamper-evident SHA-256 evidence certificate locked; RIA workspace receives clearance to execute trades externally.</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

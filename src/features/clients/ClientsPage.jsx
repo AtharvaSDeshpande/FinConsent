@@ -19,6 +19,10 @@ import Alert from '@mui/material/Alert';
 import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined';
 import CircularProgress from '@mui/material/CircularProgress';
 import Chip from '@mui/material/Chip';
+import InputAdornment from '@mui/material/InputAdornment';
+import SearchIcon from '@mui/icons-material/Search';
+import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
+import { Link as RouterLink } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../security/AuthContext.jsx';
 
@@ -53,6 +57,19 @@ export const ClientsPage = () => {
       return data.data;
     },
     staleTime: 1000 * 60 * 3, // 3 minutes cache
+  });
+
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredClients = clients.filter((c) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      c.name?.toLowerCase().includes(q) ||
+      c.pan?.toLowerCase().includes(q) ||
+      c.email?.toLowerCase().includes(q) ||
+      c.mobile?.includes(q)
+    );
   });
 
   // TanStack Mutation with Optimistic UI Update
@@ -162,7 +179,30 @@ export const ClientsPage = () => {
         )}
       </Box>
 
-      {queryError && <Alert severity="error" sx={{ mb: 3 }}>{queryError.message}</Alert>}
+      {/* Search & Quick Filter Bar */}
+      <Box sx={{ mb: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+        <TextField
+          size="small"
+          placeholder="Search by client name, PAN, mobile or email..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          sx={{
+            width: { xs: '100%', sm: 380 },
+            bgcolor: '#FFFFFF',
+            '& .MuiOutlinedInput-root': { borderRadius: 2.5 },
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon sx={{ color: '#94A3B8', fontSize: 20 }} />
+              </InputAdornment>
+            ),
+          }}
+        />
+        <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 600 }}>
+          Showing {filteredClients.length} of {clients.length} registered clients
+        </Typography>
+      </Box>
 
       <Card sx={{ borderRadius: 3, border: '1px solid #E2E8F0', boxShadow: '0 1px 3px 0 rgba(15, 23, 42, 0.04)' }}>
         <TableContainer>
@@ -174,23 +214,28 @@ export const ClientsPage = () => {
                 <TableCell sx={{ fontWeight: 700 }}>Registered Mobile</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Email Address</TableCell>
                 <TableCell sx={{ fontWeight: 700 }} align="right">Portfolio Size (₹)</TableCell>
+                {(isRia || isAdmin) && (
+                  <TableCell sx={{ fontWeight: 700 }} align="center">Action</TableCell>
+                )}
               </TableRow>
             </TableHead>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
+                  <TableCell colSpan={isRia || isAdmin ? 6 : 5} align="center" sx={{ py: 6 }}>
                     <CircularProgress size={32} />
                   </TableCell>
                 </TableRow>
-              ) : clients.length === 0 ? (
+              ) : filteredClients.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.secondary' }}>
-                    No client profiles added yet. Click "Add Advisory Client" to onboard your first client.
+                  <TableCell colSpan={isRia || isAdmin ? 6 : 5} align="center" sx={{ py: 6, color: 'text.secondary' }}>
+                    {searchQuery
+                      ? `No clients found matching "${searchQuery}". Clear search to view all.`
+                      : 'No client profiles added yet. Click "Add Advisory Client" to onboard your first client.'}
                   </TableCell>
                 </TableRow>
               ) : (
-                clients.map((client) => (
+                filteredClients.map((client) => (
                   <TableRow key={client.id} hover>
                     <TableCell sx={{ fontWeight: 600 }}>{client.name}</TableCell>
                     <TableCell sx={{ fontFamily: 'JetBrains Mono', fontWeight: 600 }}>
@@ -201,6 +246,30 @@ export const ClientsPage = () => {
                     <TableCell align="right" sx={{ fontWeight: 600 }}>
                       ₹{(client.portfolioValue || 0).toLocaleString('en-IN')}
                     </TableCell>
+                    {(isRia || isAdmin) && (
+                      <TableCell align="center">
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          component={RouterLink}
+                          to={`/mandates/new?clientId=${client.id}`}
+                          startIcon={<AssignmentOutlinedIcon sx={{ fontSize: 14 }} />}
+                          sx={{
+                            textTransform: 'none',
+                            fontWeight: 650,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            py: 0.4,
+                            px: 1.2,
+                            borderColor: '#CBD5E1',
+                            color: '#1E293B',
+                            '&:hover': { borderColor: '#0F172A', bgcolor: '#F8FAFC' },
+                          }}
+                        >
+                          Draft Mandate
+                        </Button>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))
               )}

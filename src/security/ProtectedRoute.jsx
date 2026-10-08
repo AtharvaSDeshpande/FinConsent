@@ -81,7 +81,7 @@ export const ProtectedRoute = ({ children, allowedRoles = [] }) => {
             Role Authentication Required
           </Typography>
 
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
+          <Typography variant="body2" component="div" color="text.secondary" sx={{ mb: 2.5 }}>
             You are currently exploring FinConsent as a{' '}
             <Chip label="GUEST VISITOR" size="small" color="default" sx={{ fontWeight: 700, mx: 0.5 }} />.
             This workflow requires an established authenticated role.

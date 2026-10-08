@@ -93,6 +93,7 @@ router.post('/', requireRole(['ria', 'admin']), (req, res) => {
   const {
     clientId,
     title,
+    rationale,
     currentAllocation,
     proposedAllocation,
     sellBasket = [],
@@ -137,6 +138,7 @@ router.post('/', requireRole(['ria', 'admin']), (req, res) => {
     riaId: req.user.id,
     clientId,
     title,
+    rationale: rationale || 'Trimming appreciated equity positions to rebalance asset allocation into high-quality debt & liquid instruments per risk profile and volatility protection.',
     currentAllocation: currentAllocation || { equity: 70, debt: 20, gold: 5, cash: 5 },
     proposedAllocation: proposedAllocation || { equity: 60, debt: 25, gold: 10, cash: 5 },
     sellBasket,
@@ -208,8 +210,16 @@ router.get('/:id', (req, res) => {
 // Dispatch mandate
 router.post('/:id/dispatch', requireRole(['ria', 'admin']), (req, res) => {
   const mandate = dbStore.findMandateById(req.params.id);
-  if (!mandate || (mandate.riaId !== req.user.id && req.user.role !== 'admin')) {
+  if (!mandate) {
     return res.status(404).json({ success: false, error: 'Mandate not found' });
+  }
+
+  if (mandate.riaId !== req.user.id && req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, error: 'Unauthorized: You can only dispatch mandates belonging to your advisory firm' });
+  }
+
+  if (mandate.status === 'consented' || mandate.status === 'approved') {
+    return res.status(400).json({ success: false, error: 'Cannot re-dispatch an already consented and legally sealed mandate' });
   }
 
   const updated = dbStore.updateMandate(mandate.id, { status: 'in_review' });
@@ -220,7 +230,10 @@ router.post('/:id/dispatch', requireRole(['ria', 'admin']), (req, res) => {
     ipAddress: req.ip || '127.0.0.1',
     userAgent: req.headers['user-agent'] || 'API-Client',
     channel: 'WHATSAPP_EMAIL (SMS Disabled)',
-    metadata: { magicToken: updated.magicToken, clientPhone: 'Registered Mobile' },
+    metadata: {
+      magicTokenHash: updated.magicTokenHash || crypto.createHash('sha256').update(updated.magicToken || '').digest('hex'),
+      clientPhone: 'Registered Mobile',
+    },
   });
 
   res.json({ success: true, data: updated });
@@ -229,11 +242,19 @@ router.post('/:id/dispatch', requireRole(['ria', 'admin']), (req, res) => {
 // Revoke & Regenerate Link (immediately invalidates prior token)
 router.post('/:id/revoke-link', requireRole(['ria', 'admin']), (req, res) => {
   const mandate = dbStore.findMandateById(req.params.id);
-  if (!mandate || (mandate.riaId !== req.user.id && req.user.role !== 'admin')) {
+  if (!mandate) {
     return res.status(404).json({ success: false, error: 'Mandate not found' });
   }
 
-  const oldToken = mandate.magicToken;
+  if (mandate.riaId !== req.user.id && req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, error: 'Unauthorized: You can only revoke links for mandates belonging to your advisory firm' });
+  }
+
+  if (mandate.status === 'consented' || mandate.status === 'approved') {
+    return res.status(400).json({ success: false, error: 'Cannot revoke or regenerate access link for an already consented mandate' });
+  }
+
+  const oldTokenHash = mandate.magicTokenHash;
   const newToken = crypto.randomBytes(32).toString('hex');
   const tokenExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
 
@@ -248,10 +269,10 @@ router.post('/:id/revoke-link', requireRole(['ria', 'admin']), (req, res) => {
     ipAddress: req.ip || '127.0.0.1',
     userAgent: req.headers['user-agent'] || 'API-Client',
     channel: 'SYSTEM_API',
-    metadata: { oldTokenHash: crypto.createHash('sha256').update(oldToken || '').digest('hex'), newTokenIssued: true },
+    metadata: { oldTokenHash, newTokenIssued: true },
   });
 
-  res.json({ success: true, data: updated });
+  res.json({ success: true, data: { ...updated, magicToken: newToken } });
 });
 
 // SEBI Regulation 19 Compliance Dossier (RBAC: RIA, Compliance Officer, Admin)

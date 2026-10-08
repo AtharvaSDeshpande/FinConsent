@@ -1,6 +1,7 @@
 import express from 'express';
 import crypto from 'node:crypto';
 import { dbStore } from '../db/store.js';
+import { otpRequestLimiter, otpVerifyLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
@@ -72,6 +73,7 @@ router.get('/mandates/:token', (req, res) => {
         advanceTaxQuarter: mandate.advanceTaxQuarter,
         advanceTaxAlert: mandate.advanceTaxAlert,
         cutoffTimestamp: mandate.cutoffTimestamp,
+        rationale: mandate.rationale,
       },
       client: {
         name: client ? client.name : 'Valued Client',
@@ -88,13 +90,13 @@ router.get('/mandates/:token', (req, res) => {
 });
 
 // Request 6-digit OTP
-router.post('/mandates/:token/request-otp', (req, res) => {
+router.post('/mandates/:token/request-otp', otpRequestLimiter, (req, res) => {
   const mandate = dbStore.findMandateByToken(req.params.token);
   if (!mandate) {
     return res.status(404).json({ success: false, error: 'Mandate not found' });
   }
 
-  if (mandate.status === 'approved') {
+  if (mandate.status === 'approved' || mandate.status === 'consented') {
     return res.status(400).json({ success: false, error: 'This mandate is already approved and locked.' });
   }
 
@@ -118,17 +120,23 @@ router.post('/mandates/:token/request-otp', (req, res) => {
     },
   });
 
-  res.json({
+  const responsePayload = {
     success: true,
     message: 'SMS communication disabled by policy. 6-digit statutory verification OTP delivered via In-App Secure Display & Registered Email.',
     channel: 'EMAIL_IN_APP',
     maskedMobile: `******${mobile.slice(-4)}`,
-    demoOtp: otp, // For ease of automated testing and in-app display
-  });
+  };
+
+  // Only expose demoOtp in non-production environments
+  if (process.env.NODE_ENV !== 'production') {
+    responsePayload.demoOtp = otp;
+  }
+
+  res.json(responsePayload);
 });
 
 // Verify 6-digit OTP and Statutory Consent
-router.post('/mandates/:token/verify-otp', (req, res) => {
+router.post('/mandates/:token/verify-otp', otpVerifyLimiter, (req, res) => {
   const { otp, statutoryDeclarationsAccepted } = req.body;
   const mandate = dbStore.findMandateByToken(req.params.token);
 
@@ -136,7 +144,7 @@ router.post('/mandates/:token/verify-otp', (req, res) => {
     return res.status(404).json({ success: false, error: 'Mandate not found' });
   }
 
-  if (mandate.status === 'approved') {
+  if (mandate.status === 'approved' || mandate.status === 'consented') {
     return res.status(400).json({ success: false, error: 'Mandate is already approved and locked.' });
   }
 
@@ -149,18 +157,34 @@ router.post('/mandates/:token/verify-otp', (req, res) => {
 
   const verification = dbStore.verifyOtp(req.params.token, otp);
   if (!verification.valid) {
-    return res.status(400).json({ success: false, error: verification.reason });
+    if (verification.locked) {
+      dbStore.createAuditLog({
+        mandateId: mandate.id,
+        eventType: 'OTP_BRUTE_FORCE_LOCK',
+        ipAddress: req.ip || req.connection?.remoteAddress || '127.0.0.1',
+        userAgent: req.headers['user-agent'] || 'Mobile-Client',
+        metadata: { reason: 'Excessive failed OTP attempts (3/3). Authorization code revoked.' },
+      });
+      return res.status(429).json({
+        success: false,
+        error: verification.reason,
+        locked: true,
+      });
+    }
+
+    return res.status(400).json({
+      success: false,
+      error: verification.reason,
+      remainingAttempts: verification.remainingAttempts,
+    });
   }
 
-  // Lock mandate to Consented & immediately revoke magic token (Criterion 5)
+  // Lock mandate to Consented and preserve for Section 65B receipt
   const updated = dbStore.updateMandate(mandate.id, {
     status: 'consented',
     isApproved: true,
     approvedAt: new Date().toISOString(),
     consentedAt: new Date().toISOString(),
-    isRevoked: true,
-    revokedAt: new Date().toISOString(),
-    magicToken: null, // Immediately revokes magic token upon consent
   });
 
   const otpVerificationId = `otp_ver_${crypto.randomUUID()}`;

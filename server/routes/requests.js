@@ -151,6 +151,17 @@ router.put('/:id', (req, res) => {
     }
   }
 
+  // Authorization: RIA can only update requests belonging to their advisory practice
+  if (req.user.role === 'ria') {
+    const riaClientIds = new Set(dbStore.findClientsByRiaId(req.user.id).map((c) => c.id));
+    const isPermitted = request.userId === req.user.id ||
+                        request.assignedTo === req.user.id ||
+                        (request.clientId && riaClientIds.has(request.clientId));
+    if (!isPermitted) {
+      return res.status(403).json({ success: false, error: 'Unauthorized: Request does not belong to your advisory practice' });
+    }
+  }
+
   const updates = {};
   if (status) updates.status = status;
   if (responseNotes) updates.responseNotes = responseNotes;

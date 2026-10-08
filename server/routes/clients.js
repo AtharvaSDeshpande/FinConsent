@@ -38,6 +38,7 @@ router.post('/', requireRole(['ria', 'admin']), (req, res) => {
 
   const client = dbStore.createClient({
     riaId: req.user.id,
+    firmName: req.user.firmName || 'Registered Investment Advisory',
     name: name.trim(),
     pan: pan.trim().toUpperCase(),
     mobile: mobileClean,

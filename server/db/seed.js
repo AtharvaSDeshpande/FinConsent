@@ -86,6 +86,19 @@ export async function runSeed() {
     plan: 'free',
   });
 
+  const strangerClientUser = dbStore.createUser({
+    id: 'usr_client_stranger',
+    name: 'Stranger Client',
+    email: 'stranger@example.in',
+    passwordHash: defaultPasswordHash,
+    role: 'client',
+    pan: 'XYZAB5678C',
+    mobile: '9820999999',
+    firmName: 'Unaffiliated Investor',
+    clientId: 'cli_stranger_unaffiliated',
+    plan: 'free',
+  });
+
   // Common Indian names for realistic generation
   const firstNames = [
     'Aarav', 'Aditi', 'Alok', 'Amit', 'Ananya', 'Anil', 'Anirudh', 'Arjun', 'Bhavna', 'Chetan',

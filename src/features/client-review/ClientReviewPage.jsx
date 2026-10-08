@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -122,10 +122,46 @@ export const ClientReviewPage = () => {
 
   if (error || !data) {
     return (
-      <Container maxWidth="sm" sx={{ py: 8 }}>
-        <Alert severity="error" sx={{ borderRadius: 3 }}>
-          {error || 'Unable to access trade proposal'}
-        </Alert>
+      <Container maxWidth="sm" sx={{ py: { xs: 4, sm: 8 }, textAlign: 'center' }}>
+        <Card elevation={0} sx={{ p: { xs: 3.5, sm: 5 }, borderRadius: 4, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
+          <Box
+            sx={{
+              width: 56,
+              height: 56,
+              borderRadius: '50%',
+              bgcolor: 'rgba(239, 68, 68, 0.08)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mx: 'auto',
+              mb: 2.5,
+            }}
+          >
+            <ShieldOutlinedIcon sx={{ fontSize: 32, color: '#DC2626' }} />
+          </Box>
+          <Typography variant="h5" fontWeight={800} color="#0F172A" gutterBottom>
+            Proposal Authorization Unavailable
+          </Typography>
+          <Typography variant="body2" color="text.secondary" paragraph sx={{ lineHeight: 1.6 }}>
+            {error || 'Unable to access trade proposal. The link may have been revoked by your investment adviser, expired, or already completed.'}
+          </Typography>
+          <Alert severity="info" sx={{ my: 3, textAlign: 'left', borderRadius: 2.5 }}>
+            <Typography variant="subtitle2" fontWeight={750} gutterBottom>
+              Client Protection Notice
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', lineHeight: 1.5 }}>
+              Under SEBI Regulation 19, no trades may be executed on your account without prior explicit electronic authorization. Your current portfolio positions remain unchanged and secure.
+            </Typography>
+          </Alert>
+          <Button
+            variant="contained"
+            component={RouterLink}
+            to="/dashboard"
+            sx={{ fontWeight: 700, borderRadius: 2.5, px: 3, py: 1.2, bgcolor: '#0F172A', '&:hover': { bgcolor: '#1E293B' } }}
+          >
+            Go to Investor Dashboard
+          </Button>
+        </Card>
       </Container>
     );
   }
@@ -323,12 +359,10 @@ export const ClientReviewPage = () => {
               <TrendingUpOutlinedIcon color="primary" sx={{ mt: 0.3 }} />
               <Box>
                 <Typography variant="subtitle2" fontWeight={750} color="#0F172A" gutterBottom>
-                  Disciplined Profit Booking & Volatility Protection
+                  Adviser Investment Rationale & Rebalance Strategy
                 </Typography>
-                <Typography variant="body2" color="#475569" sx={{ lineHeight: 1.65 }}>
-                  Due to recent market equity appreciation, your equity allocation drifted beyond your intended risk profile.
-                  Rebalancing strategically trims high-gain equity positions to lock in capital gains and reallocates capital into high-quality debt & liquid assets.
-                  This ensures your portfolio remains aligned with your long-term goals while safeguarding accumulated profits.
+                <Typography variant="body2" color="#475569" sx={{ lineHeight: 1.65, whiteSpace: 'pre-line' }}>
+                  {mandate.rationale || 'Due to recent market equity appreciation, your equity allocation drifted beyond your intended risk profile. Rebalancing strategically trims high-gain equity positions to lock in capital gains and reallocates capital into high-quality debt & liquid assets. This ensures your portfolio remains aligned with your long-term goals while safeguarding accumulated profits.'}
                 </Typography>
               </Box>
             </Box>

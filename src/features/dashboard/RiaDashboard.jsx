@@ -111,10 +111,10 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
             <Typography variant="h4" component="h1" fontWeight={800} letterSpacing="-0.025em" color="#0F172A">
-              Adviser Execution Workspace
+              {user?.firmName || 'Prudent Wealth Advisory'}
             </Typography>
             <Chip
-              label={user?.sebiRegNumber ? `SEBI: ${user.sebiRegNumber}` : 'INA000012345 (Active)'}
+              label={user?.sebiRegNumber ? `SEBI: ${user.sebiRegNumber}` : 'INA000088921 (Active)'}
               size="small"
               sx={{
                 fontWeight: 700,
@@ -125,6 +125,9 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
               }}
             />
           </Box>
+          <Typography variant="subtitle2" color="primary.main" fontWeight={700} sx={{ mb: 0.5 }}>
+            {user?.name ? `${user.name} • Registered Investment Adviser Workspace` : 'Adviser Execution Workspace'}
+          </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 740 }}>
             Prepare non-discretionary portfolio rebalances, preview capital gains tax impacts under Finance Act 2024,
             and monitor statutory 48-hour client authorization windows.
@@ -283,7 +286,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
                 <CurrencyRupeeIcon sx={{ fontSize: 16 }} />
               </Box>
             </Box>
-            <Typography variant="h3" fontWeight={800} color="#0F172A" sx={{ fontFamily: 'JetBrains Mono', letterSpacing: '-0.02em' }}>
+            <Typography variant="h3" fontWeight={800} color="#0F172A" sx={{ letterSpacing: '-0.025em' }}>
               ₹{totalTax.toLocaleString('en-IN')}
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block', fontSize: '0.75rem' }}>
@@ -352,7 +355,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
             <Tab label={`Dispatched (${mandates.filter((m) => m.status === 'sent').length})`} value="sent" />
             <Tab label={`In Review (${mandates.filter((m) => m.status === 'viewed').length})`} value="viewed" />
             <Tab label={`Consented (${consentedMandates.length})`} value="consented" />
-            <Tab label="Expired" value="expired" />
+            <Tab label={`Expired (${mandates.filter((m) => m.status === 'expired').length})`} value="expired" />
           </Tabs>
 
           <Button

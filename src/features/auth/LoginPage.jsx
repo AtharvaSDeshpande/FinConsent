@@ -10,15 +10,6 @@ import Divider from '@mui/material/Divider';
 import Chip from '@mui/material/Chip';
 import Link from '@mui/material/Link';
 import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import List from '@mui/material/List';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
-import Avatar from '@mui/material/Avatar';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
@@ -27,26 +18,6 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Logo } from '../../components/brand/Logo.jsx';
 import { useAuth } from '../../security/AuthContext.jsx';
 
-const GoogleGIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" style={{ marginRight: 10, flexShrink: 0 }}>
-    <path
-      fill="#4285F4"
-      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-    />
-    <path
-      fill="#34A853"
-      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-    />
-    <path
-      fill="#FBBC05"
-      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-    />
-    <path
-      fill="#EA4335"
-      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-    />
-  </svg>
-);
 
 const DEMO_PERSONAS = [
   { role: 'guest', label: 'Guest (Public)', email: 'guest@finconsent.in', badge: 'Public' },
@@ -64,19 +35,14 @@ export const LoginPage = () => {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [gisMounted, setGisMounted] = useState(false);
-  const [googleModalOpen, setGoogleModalOpen] = useState(false);
-  const [customGoogleEmail, setCustomGoogleEmail] = useState('');
-  const [customGoogleName, setCustomGoogleName] = useState('');
 
-  const { login, loginWithGoogle, resetToGuest } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
-  const GOOGLE_ACCOUNTS = [
-    { name: 'Dr. Aarav Mehta', email: 'aarav.mehta@gmail.com', role: 'ria', desc: 'SEBI Registered RIA (INA000088921)' },
-    { name: 'Rajesh Khurana', email: 'rajesh.khurana@gmail.com', role: 'client', desc: 'Individual Advisory Client / Investor' },
-    { name: 'Kavita Sharma', email: 'kavita.compliance@gmail.com', role: 'compliance_officer', desc: 'Statutory Compliance Auditor' },
-    { name: 'Sanjay Deshmukh', email: 'sanjay.admin@gmail.com', role: 'admin', desc: 'FinConsent Platform Superuser' },
-  ];
+  const selectedRoleRef = React.useRef(selectedRole);
+  useEffect(() => {
+    selectedRoleRef.current = selectedRole;
+  }, [selectedRole]);
 
   const handleGoogleCredentialResponse = async (response) => {
     setError('');
@@ -84,7 +50,7 @@ export const LoginPage = () => {
     try {
       await loginWithGoogle({
         credential: response.credential,
-        role: selectedRole,
+        role: selectedRoleRef.current || 'ria',
       });
       navigate('/dashboard');
     } catch (err) {
@@ -131,7 +97,11 @@ export const LoginPage = () => {
       const timer = setTimeout(initGoogleGis, 600);
       return () => clearTimeout(timer);
     }
-  }, [selectedRole]);
+  }, []);
+
+  const [mfaRequired, setMfaRequired] = useState(false);
+  const [tempToken, setTempToken] = useState('');
+  const [mfaCode, setMfaCode] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -159,6 +129,39 @@ export const LoginPage = () => {
         throw new Error(data.error || 'Login failed');
       }
 
+      if (data.mfaRequired) {
+        setMfaRequired(true);
+        setTempToken(data.tempToken);
+        setError('');
+        return;
+      }
+
+      login(data.token, data.user);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleMfaVerify = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSubmitting(true);
+
+    try {
+      const res = await fetch('/api/auth/mfa/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tempToken, code: mfaCode }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Invalid two-factor authentication code');
+      }
+
       login(data.token, data.user);
       navigate('/dashboard');
     } catch (err) {
@@ -179,46 +182,6 @@ export const LoginPage = () => {
     setEmail(demoEmail);
     setPassword('Password@123');
     setSelectedRole(role);
-  };
-
-  const handleSelectGoogleAccount = async (acct) => {
-    setGoogleModalOpen(false);
-    setError('');
-    setSubmitting(true);
-    try {
-      await loginWithGoogle({
-        email: acct.email,
-        name: acct.name,
-        googleId: `goog_${acct.email.replace(/[@.]/g, '_')}`,
-        role: selectedRole || acct.role,
-      });
-      navigate('/dashboard');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleCustomGoogleSubmit = async (e) => {
-    e.preventDefault();
-    if (!customGoogleEmail) return;
-    setGoogleModalOpen(false);
-    setError('');
-    setSubmitting(true);
-    try {
-      await loginWithGoogle({
-        email: customGoogleEmail,
-        name: customGoogleName || customGoogleEmail.split('@')[0],
-        googleId: `goog_${Date.now()}`,
-        role: selectedRole,
-      });
-      navigate('/dashboard');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setSubmitting(false);
-    }
   };
 
   return (
@@ -345,76 +308,156 @@ export const LoginPage = () => {
             </Alert>
           )}
 
-          {/* Login Form */}
-          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <TextField
-              label="Registered Email"
-              type="email"
-              fullWidth
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="advisor@firm.in"
-              size="medium"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  bgcolor: 'rgba(15, 23, 42, 0.6)',
-                  borderRadius: 2.5,
-                  color: '#FFFFFF',
-                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.18)' },
-                  '&:hover fieldset': { borderColor: 'rgba(99, 102, 241, 0.6)' },
-                  '&.Mui-focused fieldset': { borderColor: '#6366F1' },
-                },
-                '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.65)' },
-                '& .MuiInputLabel-root.Mui-focused': { color: '#818CF8' },
-              }}
-            />
+          {/* Login Form or MFA Verification Form */}
+          {mfaRequired ? (
+            <Box component="form" onSubmit={handleMfaVerify} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box
+                sx={{
+                  p: 2,
+                  bgcolor: 'rgba(99, 102, 241, 0.1)',
+                  border: '1px solid rgba(99, 102, 241, 0.3)',
+                  borderRadius: 2,
+                }}
+              >
+                <Typography variant="subtitle2" sx={{ color: '#818CF8', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <ShieldOutlinedIcon sx={{ fontSize: 18 }} /> Two-Factor Authentication Required
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', mt: 0.5, display: 'block' }}>
+                  Enter the 6-digit TOTP code from your mobile authenticator app (Google Authenticator / 1Password) or an emergency recovery code.
+                </Typography>
+              </Box>
 
-            <TextField
-              label="Password"
-              type="password"
-              fullWidth
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              size="medium"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  bgcolor: 'rgba(15, 23, 42, 0.6)',
-                  borderRadius: 2.5,
-                  color: '#FFFFFF',
-                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.18)' },
-                  '&:hover fieldset': { borderColor: 'rgba(99, 102, 241, 0.6)' },
-                  '&.Mui-focused fieldset': { borderColor: '#6366F1' },
-                },
-                '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.65)' },
-                '& .MuiInputLabel-root.Mui-focused': { color: '#818CF8' },
-              }}
-            />
+              <TextField
+                id="mfa_code_input"
+                label="6-Digit Verification Code"
+                type="text"
+                fullWidth
+                required
+                autoFocus
+                value={mfaCode}
+                onChange={(e) => setMfaCode(e.target.value.trim())}
+                placeholder="123456"
+                inputProps={{ maxLength: 10, style: { letterSpacing: 4, textAlign: 'center', fontSize: '1.25rem' } }}
+                size="medium"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    bgcolor: 'rgba(15, 23, 42, 0.6)',
+                    borderRadius: 2.5,
+                    color: '#FFFFFF',
+                    '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.18)' },
+                    '&:hover fieldset': { borderColor: 'rgba(99, 102, 241, 0.6)' },
+                    '&.Mui-focused fieldset': { borderColor: '#6366F1' },
+                  },
+                  '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.65)' },
+                  '& .MuiInputLabel-root.Mui-focused': { color: '#818CF8' },
+                }}
+              />
 
-            <Button
-              type="submit"
-              variant="contained"
-              size="large"
-              fullWidth
-              disabled={submitting}
-              startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <LockOutlinedIcon />}
-              sx={{
-                mt: 0.5,
-                py: 1.3,
-                fontSize: '0.98rem',
-                fontWeight: 700,
-                borderRadius: 2.5,
-                background: 'linear-gradient(135deg, #4F46E5 0%, #2563EB 100%)',
-                boxShadow: '0 4px 14px 0 rgba(79, 70, 229, 0.39)',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #4338CA 0%, #1D4ED8 100%)',
-                  boxShadow: '0 6px 20px rgba(79, 70, 229, 0.5)',
-                },
-              }}
-            >
-              {submitting ? 'Authenticating...' : `Sign In as ${selectedRole === 'ria' ? 'RIA' : selectedRole === 'client' ? 'Client' : selectedRole === 'compliance_officer' ? 'Auditor' : 'Admin'}`}
-            </Button>
+              <Button
+                id="mfa_verify_btn"
+                type="submit"
+                variant="contained"
+                size="large"
+                fullWidth
+                disabled={submitting || !mfaCode}
+                startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <LockOutlinedIcon />}
+                sx={{
+                  mt: 0.5,
+                  py: 1.3,
+                  fontSize: '0.98rem',
+                  fontWeight: 700,
+                  borderRadius: 2.5,
+                  background: 'linear-gradient(135deg, #4F46E5 0%, #2563EB 100%)',
+                  boxShadow: '0 4px 14px 0 rgba(79, 70, 229, 0.39)',
+                }}
+              >
+                {submitting ? 'Verifying 2FA...' : 'Verify Code & Enter Workspace'}
+              </Button>
+
+              <Button
+                variant="text"
+                size="small"
+                onClick={() => { setMfaRequired(false); setMfaCode(''); setError(''); }}
+                sx={{ color: 'rgba(255, 255, 255, 0.6)', textTransform: 'none' }}
+              >
+                ← Back to password login
+              </Button>
+            </Box>
+          ) : (
+            <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <TextField
+                id="login_email_input"
+                label="Registered Email"
+                type="email"
+                fullWidth
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="advisor@firm.in"
+                size="medium"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    bgcolor: 'rgba(15, 23, 42, 0.6)',
+                    borderRadius: 2.5,
+                    color: '#FFFFFF',
+                    '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.18)' },
+                    '&:hover fieldset': { borderColor: 'rgba(99, 102, 241, 0.6)' },
+                    '&.Mui-focused fieldset': { borderColor: '#6366F1' },
+                  },
+                  '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.65)' },
+                  '& .MuiInputLabel-root.Mui-focused': { color: '#818CF8' },
+                }}
+              />
+
+              <TextField
+                id="login_password_input"
+                label="Password"
+                type="password"
+                fullWidth
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                size="medium"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    bgcolor: 'rgba(15, 23, 42, 0.6)',
+                    borderRadius: 2.5,
+                    color: '#FFFFFF',
+                    '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.18)' },
+                    '&:hover fieldset': { borderColor: 'rgba(99, 102, 241, 0.6)' },
+                    '&.Mui-focused fieldset': { borderColor: '#6366F1' },
+                  },
+                  '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.65)' },
+                  '& .MuiInputLabel-root.Mui-focused': { color: '#818CF8' },
+                }}
+              />
+
+              <Button
+                id="login_submit_btn"
+                type="submit"
+                variant="contained"
+                size="large"
+                fullWidth
+                disabled={submitting}
+                startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <LockOutlinedIcon />}
+                sx={{
+                  mt: 0.5,
+                  py: 1.3,
+                  fontSize: '0.98rem',
+                  fontWeight: 700,
+                  borderRadius: 2.5,
+                  background: 'linear-gradient(135deg, #4F46E5 0%, #2563EB 100%)',
+                  boxShadow: '0 4px 14px 0 rgba(79, 70, 229, 0.39)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #4338CA 0%, #1D4ED8 100%)',
+                    boxShadow: '0 6px 20px rgba(79, 70, 229, 0.5)',
+                  },
+                }}
+              >
+                {submitting ? 'Authenticating...' : `Sign In as ${selectedRole === 'ria' ? 'RIA' : selectedRole === 'client' ? 'Client' : selectedRole === 'compliance_officer' ? 'Auditor' : 'Admin'}`}
+              </Button>
+            </Box>
+          )}
 
             <Divider
               sx={{
@@ -429,42 +472,27 @@ export const LoginPage = () => {
               OR
             </Divider>
 
-            {/* Unified Google OAuth action */}
+            {/* Official Google Identity Services action */}
             <Box
-              id="g_id_signin_btn"
               sx={{
-                display: gisMounted ? 'flex' : 'none',
+                display: 'flex',
                 justifyContent: 'center',
+                alignItems: 'center',
                 width: '100%',
                 minHeight: 44,
-              }}
-            />
-
-            <Button
-              variant="outlined"
-              fullWidth
-              size="large"
-              onClick={() => setGoogleModalOpen(true)}
-              disabled={submitting}
-              sx={{
-                py: 1.2,
-                borderRadius: 2.5,
-                borderColor: 'rgba(255, 255, 255, 0.2)',
-                color: '#FFFFFF',
-                bgcolor: 'rgba(255, 255, 255, 0.05)',
-                fontWeight: 600,
-                fontSize: '0.92rem',
-                textTransform: 'none',
-                '&:hover': {
-                  bgcolor: 'rgba(255, 255, 255, 0.1)',
-                  borderColor: 'rgba(255, 255, 255, 0.35)',
-                },
+                my: 0.5,
               }}
             >
-              <GoogleGIcon />
-              Continue with Google OAuth
-            </Button>
-          </Box>
+              <Box
+                id="g_id_signin_btn"
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  width: '100%',
+                  minHeight: 44,
+                }}
+              />
+            </Box>
 
           {/* Persona quick switch */}
           <Box
@@ -537,139 +565,6 @@ export const LoginPage = () => {
           </Box>
         </CardContent>
       </Card>
-
-      {/* Google Account Selector Dialog */}
-      <Dialog
-        open={googleModalOpen}
-        onClose={() => setGoogleModalOpen(false)}
-        PaperProps={{
-          sx: {
-            borderRadius: 3.5,
-            p: 1,
-            width: '100%',
-            maxWidth: 440,
-            bgcolor: '#0F172A',
-            color: '#F8FAFC',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
-          },
-        }}
-      >
-        <DialogTitle sx={{ pb: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <GoogleGIcon />
-            <Typography variant="h6" fontWeight={700}>
-              Sign in with Google
-            </Typography>
-          </Box>
-          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', mt: 0.5, display: 'block' }}>
-            Choose an account to continue to <strong>FinConsent</strong> as <strong>{selectedRole.toUpperCase()}</strong>:
-          </Typography>
-        </DialogTitle>
-
-        <DialogContent sx={{ py: 1 }}>
-          <List disablePadding sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            {GOOGLE_ACCOUNTS.map((acct) => (
-              <ListItemButton
-                key={acct.email}
-                onClick={() => handleSelectGoogleAccount(acct)}
-                sx={{
-                  borderRadius: 2.5,
-                  p: 1.5,
-                  bgcolor: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                  '&:hover': {
-                    bgcolor: 'rgba(99, 102, 241, 0.2)',
-                    borderColor: 'rgba(99, 102, 241, 0.5)',
-                  },
-                }}
-              >
-                <ListItemAvatar>
-                  <Avatar sx={{ bgcolor: '#4F46E5', fontWeight: 700, fontSize: '0.9rem' }}>
-                    {acct.name.charAt(0)}
-                  </Avatar>
-                </ListItemAvatar>
-                <ListItemText
-                  primary={
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Typography variant="body2" fontWeight={700} color="#FFFFFF">
-                        {acct.name}
-                      </Typography>
-                      <Chip label={acct.role.toUpperCase()} size="small" sx={{ fontSize: '0.62rem', height: 18 }} />
-                    </Box>
-                  }
-                  secondary={
-                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.65)' }}>
-                      {acct.email}
-                    </Typography>
-                  }
-                />
-              </ListItemButton>
-            ))}
-          </List>
-
-          <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.1)' }}>
-            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>OR USE ANOTHER ACCOUNT</Typography>
-          </Divider>
-
-          <Box component="form" onSubmit={handleCustomGoogleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            <TextField
-              size="small"
-              label="Google Email"
-              type="email"
-              required
-              fullWidth
-              value={customGoogleEmail}
-              onChange={(e) => setCustomGoogleEmail(e.target.value)}
-              placeholder="user@gmail.com"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 2,
-                  color: '#FFFFFF',
-                  bgcolor: 'rgba(255, 255, 255, 0.05)',
-                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.15)' },
-                },
-                '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.6)' },
-              }}
-            />
-            <TextField
-              size="small"
-              label="Full Name"
-              fullWidth
-              value={customGoogleName}
-              onChange={(e) => setCustomGoogleName(e.target.value)}
-              placeholder="e.g. Anand Rathi"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 2,
-                  color: '#FFFFFF',
-                  bgcolor: 'rgba(255, 255, 255, 0.05)',
-                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.15)' },
-                },
-                '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.6)' },
-              }}
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              sx={{
-                borderRadius: 2,
-                mt: 0.5,
-                fontWeight: 700,
-                bgcolor: '#4F46E5',
-                '&:hover': { bgcolor: '#4338CA' },
-              }}
-            >
-              Authenticate & Continue
-            </Button>
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setGoogleModalOpen(false)} sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-            Cancel
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

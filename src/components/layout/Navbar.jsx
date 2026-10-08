@@ -84,7 +84,9 @@ export const Navbar = () => {
 
   const getRoleBadgeText = () => {
     if (isGuest) return 'Guest Visitor';
-    if (user?.plan === 'pro') return 'Pro RIA';
+    if (role === 'ria') {
+      return user?.firmName ? user.firmName : (user?.plan === 'pro' ? 'Pro RIA' : 'RIA Adviser');
+    }
     return roleDef?.shortLabel || role.toUpperCase();
   };
 
@@ -392,10 +394,10 @@ export const Navbar = () => {
                   }}
                 >
                   {role === 'client'
-                    ? (user.name || 'Client')
+                    ? (user?.name || 'Client')
                     : role === 'compliance_officer'
-                    ? (user.name || 'Compliance')
-                    : (user.sebiRegNumber || user.name || 'RIA Profile')}
+                    ? (user?.name || 'Compliance')
+                    : (user?.name || user?.firmName || user?.sebiRegNumber || 'RIA Profile')}
                 </Button>
                 <IconButton
                   onClick={handleLogout}

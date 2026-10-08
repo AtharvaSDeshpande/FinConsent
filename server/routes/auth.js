@@ -1,9 +1,11 @@
 import express from 'express';
 import { Buffer } from 'node:buffer';
 import { dbStore } from '../db/store.js';
-import { hashPassword, comparePassword } from '../auth/passwords.js';
-import { signToken } from '../auth/jwt.js';
+import { hashPassword, comparePassword, validatePasswordStrength } from '../auth/passwords.js';
+import { signToken, verifyToken } from '../auth/jwt.js';
 import { requireAuth } from '../auth/middleware.js';
+import { authRateLimiter } from '../middleware/rateLimiter.js';
+import { generateMfaSecret, verifyTotp } from '../auth/mfa.js';
 
 const router = express.Router();
 
@@ -23,12 +25,18 @@ function parseGoogleCredential(credential) {
 }
 
 // Register User (RIA, Compliance Officer, Client, Admin)
-router.post('/register', async (req, res) => {
+router.post('/register', authRateLimiter, async (req, res) => {
   try {
     const { name, email, password, role = 'ria', firmName, sebiRegNumber, complianceEmail } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ success: false, error: 'Name, email, and password are required' });
+    }
+
+    // Enterprise Password Complexity Enforcement
+    const pwdCheck = validatePasswordStrength(password);
+    if (!pwdCheck.valid) {
+      return res.status(400).json({ success: false, error: pwdCheck.error });
     }
 
     if (role === 'ria') {
@@ -56,11 +64,14 @@ router.post('/register', async (req, res) => {
       sebiRegNumber: sebiRegNumber ? sebiRegNumber.toUpperCase() : undefined,
       complianceEmail: complianceEmail || email,
       plan: 'free',
+      mfaEnabled: false,
     });
 
     const token = signToken({ userId: user.id });
     const userSafe = { ...user };
     delete userSafe.passwordHash;
+    delete userSafe.mfaSecret;
+    delete userSafe.mfaPendingSecret;
 
     res.status(201).json({ success: true, token, user: userSafe });
   } catch (err) {
@@ -69,7 +80,7 @@ router.post('/register', async (req, res) => {
 });
 
 // Login User
-router.post('/login', async (req, res) => {
+router.post('/login', authRateLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -86,11 +97,176 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ success: false, error: 'Invalid email or password' });
     }
 
-    const token = signToken({ userId: user.id });
+    // MFA Challenge for enrolled RIA / Staff accounts
+    if (user.mfaEnabled) {
+      const tempToken = signToken({ userId: user.id, mfaPending: true }, '5m');
+      return res.json({
+        success: true,
+        mfaRequired: true,
+        tempToken,
+        message: 'Two-factor authentication required to complete login.',
+      });
+    }
+
+    const token = signToken({ userId: user.id, mfaVerified: false });
     const userSafe = { ...user };
     delete userSafe.passwordHash;
+    delete userSafe.mfaSecret;
+    delete userSafe.mfaPendingSecret;
 
     res.json({ success: true, token, user: userSafe });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// MFA Setup Endpoint (Authenticated RIA/Staff user)
+router.post('/mfa/setup', requireAuth, (req, res) => {
+  try {
+    const { secret, backupCodes, otpauthUrl } = generateMfaSecret(req.user.email);
+    dbStore.updateUser(req.user.id, { mfaPendingSecret: secret });
+
+    res.json({
+      success: true,
+      secret,
+      otpauthUrl,
+      backupCodes,
+      message: 'MFA setup initiated. Scan QR or enter key, then verify code to activate.',
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// MFA Enable Endpoint (Verify code and commit MFA enrollment)
+router.post('/mfa/enable', requireAuth, (req, res) => {
+  try {
+    const { code, backupCodes } = req.body;
+    if (!code) {
+      return res.status(400).json({ success: false, error: '6-digit verification code is required' });
+    }
+
+    const user = dbStore.findUserById(req.user.id);
+    if (!user || !user.mfaPendingSecret) {
+      return res.status(400).json({ success: false, error: 'No pending MFA setup found. Call /setup first.' });
+    }
+
+    const isValid = verifyTotp(code, user.mfaPendingSecret);
+    if (!isValid) {
+      return res.status(400).json({ success: false, error: 'Invalid verification code. Please check your authenticator app.' });
+    }
+
+    const updated = dbStore.updateUser(user.id, {
+      mfaEnabled: true,
+      mfaSecret: user.mfaPendingSecret,
+      mfaPendingSecret: null,
+      backupCodes: backupCodes || [],
+    });
+
+    const userSafe = { ...updated };
+    delete userSafe.passwordHash;
+    delete userSafe.mfaSecret;
+    delete userSafe.mfaPendingSecret;
+
+    res.json({
+      success: true,
+      message: 'Two-factor authentication has been successfully activated for your account.',
+      user: userSafe,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// MFA Verify Endpoint (Completes 2FA login challenge)
+router.post('/mfa/verify', authRateLimiter, (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const bodyToken = req.body.tempToken;
+    const tempToken = bodyToken || (authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : null);
+    const { code } = req.body;
+
+    if (!tempToken || !code) {
+      return res.status(400).json({ success: false, error: 'Temporary login token and 6-digit MFA code are required' });
+    }
+
+    const decoded = verifyToken(tempToken);
+    if (!decoded || !decoded.userId || !decoded.mfaPending) {
+      return res.status(401).json({ success: false, error: 'Invalid or expired MFA authentication challenge session' });
+    }
+
+    const user = dbStore.findUserById(decoded.userId);
+    if (!user || !user.mfaEnabled || !user.mfaSecret) {
+      return res.status(400).json({ success: false, error: 'MFA is not configured for this account' });
+    }
+
+    const isTotpValid = verifyTotp(code, user.mfaSecret);
+    const backupCodeIndex = (user.backupCodes || []).indexOf(String(code).toUpperCase());
+    const isBackupValid = backupCodeIndex !== -1;
+
+    if (!isTotpValid && !isBackupValid) {
+      return res.status(401).json({ success: false, error: 'Invalid two-factor authentication code' });
+    }
+
+    // Burn used backup code
+    if (isBackupValid) {
+      const remainingCodes = [...user.backupCodes];
+      remainingCodes.splice(backupCodeIndex, 1);
+      dbStore.updateUser(user.id, { backupCodes: remainingCodes });
+    }
+
+    // Issue full session token with mfaVerified flag
+    const token = signToken({ userId: user.id, mfaVerified: true });
+    const userSafe = { ...user };
+    delete userSafe.passwordHash;
+    delete userSafe.mfaSecret;
+    delete userSafe.mfaPendingSecret;
+
+    res.json({
+      success: true,
+      token,
+      user: userSafe,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Change Password Endpoint
+router.post('/change-password', requireAuth, async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ success: false, error: 'Current password and new password are required' });
+    }
+
+    const user = dbStore.findUserById(req.user.id);
+    const valid = await comparePassword(oldPassword, user.passwordHash);
+    if (!valid) {
+      return res.status(401).json({ success: false, error: 'Current password is incorrect' });
+    }
+
+    const strength = validatePasswordStrength(newPassword);
+    if (!strength.valid) {
+      return res.status(400).json({ success: false, error: strength.error });
+    }
+
+    const newHash = await hashPassword(newPassword);
+    dbStore.updateUser(user.id, { passwordHash: newHash });
+
+    res.json({ success: true, message: 'Password updated successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Logout & Session Revocation Endpoint
+router.post('/logout', requireAuth, (req, res) => {
+  try {
+    if (req.token) {
+      dbStore.revokeToken(req.token);
+    }
+    res.json({ success: true, message: 'Session successfully revoked and logged out' });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -121,11 +297,9 @@ router.post('/google', async (req, res) => {
       });
     }
 
-    // Check if user already exists
     let user = dbStore.findUserByEmail(email) || (googleId ? dbStore.findUserByGoogleId(googleId) : null);
 
     if (user) {
-      // Ensure existing user is updated with the latest Google profile information & role
       const updates = {};
       if (googleId) updates.googleId = googleId;
       if (name && name.trim()) updates.name = name.trim();
@@ -134,7 +308,6 @@ router.post('/google', async (req, res) => {
       }
       user = dbStore.updateUser(user.id, updates);
     } else {
-      // Auto-provision user with selected role
       const defaultFirm = role === 'compliance_officer'
         ? 'Independent Compliance Office'
         : role === 'client'
@@ -150,12 +323,15 @@ router.post('/google', async (req, res) => {
         sebiRegNumber: role === 'ria' ? 'INA000088921' : undefined,
         complianceEmail: email,
         plan: 'free',
+        mfaEnabled: false,
       });
     }
 
     const token = signToken({ userId: user.id });
     const userSafe = { ...user };
     delete userSafe.passwordHash;
+    delete userSafe.mfaSecret;
+    delete userSafe.mfaPendingSecret;
 
     res.json({
       success: true,
@@ -173,6 +349,8 @@ router.post('/google', async (req, res) => {
 router.get('/me', requireAuth, (req, res) => {
   const userSafe = { ...req.user };
   delete userSafe.passwordHash;
+  delete userSafe.mfaSecret;
+  delete userSafe.mfaPendingSecret;
   const activeMandates = dbStore.countActiveMandates(req.user.id);
   const quotaLimit = req.user.plan === 'pro' ? Infinity : 3;
 
@@ -204,13 +382,29 @@ router.put('/profile', requireAuth, (req, res) => {
   }
   if (firmName) updates.firmName = firmName;
   if (complianceEmail) updates.complianceEmail = complianceEmail;
-  if (role && ['ria', 'compliance_officer', 'admin', 'client'].includes(role)) {
-    updates.role = role;
+  if (role && role !== req.user.role) {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Unauthorized: Self-modification of account role is prohibited. Contact platform administration.',
+      });
+    }
+    if (['ria', 'compliance_officer', 'admin', 'client'].includes(role)) {
+      updates.role = role;
+    }
   }
+
+  // Prevent tampering with MFA fields via generic profile update
+  delete updates.mfaEnabled;
+  delete updates.mfaSecret;
+  delete updates.mfaPendingSecret;
+  delete updates.backupCodes;
 
   const updated = dbStore.updateUser(req.user.id, updates);
   const userSafe = { ...updated };
   delete userSafe.passwordHash;
+  delete userSafe.mfaSecret;
+  delete userSafe.mfaPendingSecret;
   res.json({ success: true, user: userSafe });
 });
 
