@@ -12,7 +12,20 @@ class FinConsentStore {
     this.requests = new Map();
     this.auditLogs = [];
     this.otps = new Map(); // token -> { otp, expiresAt, destination, channel }
+    this.activeMagicTokens = new Map(); // mandateId -> rawToken (transient in-memory rail for authorized RIA dispatch)
     this.isSeeding = false;
+  }
+
+  getActiveMagicToken(id) {
+    return this.activeMagicTokens.get(id);
+  }
+
+  setActiveMagicToken(id, token) {
+    if (token) {
+      this.activeMagicTokens.set(id, token);
+    } else {
+      this.activeMagicTokens.delete(id);
+    }
   }
 
   // Load existing records from MongoDB Atlas into in-memory store
@@ -52,6 +65,9 @@ class FinConsentStore {
           }
           if (!m.magicTokenHash && m.magicToken) {
             m.magicTokenHash = crypto.createHash('sha256').update(m.magicToken).digest('hex');
+          }
+          if (m.magicToken) {
+            this.activeMagicTokens.set(m.id, m.magicToken);
           }
           delete m.magicToken;
           this.mandates.set(m.id, m);
@@ -103,6 +119,7 @@ class FinConsentStore {
         delete firstMandate.magicToken;
         firstMandate.cutoffTimestamp = new Date(Date.now() + 48 * 3600 * 1000).toISOString();
         firstMandate.tokenExpiresAt = new Date(Date.now() + 48 * 3600 * 1000).toISOString();
+        this.activeMagicTokens.set(firstMandate.id, 'demo-token');
       }
 
       console.log(`[Store] Synced from MongoDB Atlas: ${this.users.size} users, ${this.clients.size} clients, ${this.mandates.size} mandates, ${this.requests.size} requests`);
@@ -226,6 +243,12 @@ class FinConsentStore {
 
     this.mandates.set(id, storedMandate);
 
+    if (rawMagicToken && mandateData.magicToken !== null) {
+      this.activeMagicTokens.set(id, rawMagicToken);
+    } else {
+      this.activeMagicTokens.delete(id);
+    }
+
     if (!this.isSeeding && mongoose.connection.readyState === 1) {
       MandateModel.create(storedMandate).catch((err) => console.warn('[Mongo Sync Error]', err.message));
     }
@@ -233,7 +256,7 @@ class FinConsentStore {
     // Return object with transient magicToken for the caller
     return {
       ...storedMandate,
-      magicToken: rawMagicToken,
+      magicToken: mandateData.magicToken === null ? null : rawMagicToken,
     };
   }
 
@@ -299,6 +322,9 @@ class FinConsentStore {
     } else if (found && (rawToken === 'demo-token' || rawToken === 'sample-token')) {
       found.cutoffTimestamp = new Date(Date.now() + 48 * 3600 * 1000).toISOString();
       found.tokenExpiresAt = new Date(Date.now() + 48 * 3600 * 1000).toISOString();
+      this.activeMagicTokens.set(found.id, rawToken);
+    } else if (found && rawToken) {
+      this.activeMagicTokens.set(found.id, rawToken);
     }
     return found;
   }
@@ -313,10 +339,14 @@ class FinConsentStore {
       transientMagicToken = copy.magicToken;
       if (transientMagicToken) {
         copy.magicTokenHash = crypto.createHash('sha256').update(transientMagicToken).digest('hex');
+        this.activeMagicTokens.set(id, transientMagicToken);
       } else {
         copy.magicTokenHash = null;
+        this.activeMagicTokens.delete(id);
       }
       delete copy.magicToken;
+    } else {
+      transientMagicToken = this.activeMagicTokens.get(id);
     }
 
     const updated = { ...mandate, ...copy, updatedAt: new Date().toISOString() };

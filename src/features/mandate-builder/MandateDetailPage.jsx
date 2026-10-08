@@ -82,7 +82,16 @@ export const MandateDetailPage = () => {
       });
       const data = await res.json();
       if (data.success) {
-        fetchMandate();
+        if (data.data) {
+          setMandate((prev) => ({
+            ...prev,
+            ...data.data,
+            client: prev?.client || data.data.client,
+            ria: prev?.ria || data.data.ria,
+            auditLogs: prev?.auditLogs || data.data.auditLogs,
+          }));
+        }
+        await fetchMandate();
         setOpenMagicModal(true);
       }
     } catch (err) {
@@ -100,7 +109,16 @@ export const MandateDetailPage = () => {
     });
     const result = await res.json();
     if (result.success) {
-      fetchMandate();
+      if (result.data) {
+        setMandate((prev) => ({
+          ...prev,
+          ...result.data,
+          client: prev?.client || result.data.client,
+          ria: prev?.ria || result.data.ria,
+          auditLogs: prev?.auditLogs || result.data.auditLogs,
+        }));
+      }
+      await fetchMandate();
     }
   };
 
@@ -218,7 +236,9 @@ export const MandateDetailPage = () => {
     );
   }
 
-  const clientMagicUrl = `${window.location.origin}/m/${mandate.magicToken}`;
+  const clientMagicUrl = mandate?.magicToken
+    ? `${window.location.origin}/m/${mandate.magicToken}`
+    : '';
 
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 2.5, md: 4 } }}>
@@ -380,8 +400,8 @@ export const MandateDetailPage = () => {
               </Typography>
 
               <Box sx={{ p: 1.5, bgcolor: '#F8FAFC', borderRadius: 2, border: '1px solid #E2E8F0', mb: 2.5 }}>
-                <Typography variant="caption" sx={{ wordBreak: 'break-all', display: 'block', fontFamily: 'JetBrains Mono', color: '#334155', fontSize: '0.78rem' }}>
-                  {clientMagicUrl}
+                <Typography variant="caption" sx={{ wordBreak: 'break-all', display: 'block', fontFamily: 'JetBrains Mono', color: clientMagicUrl ? '#334155' : '#94A3B8', fontSize: '0.78rem' }}>
+                  {clientMagicUrl || (mandate.status === 'draft' ? 'Draft proposal — click "Dispatch Mandate Link" above to issue client magic link' : 'Generating client magic link...')}
                 </Typography>
               </Box>
 
@@ -393,6 +413,7 @@ export const MandateDetailPage = () => {
                     size="small"
                     startIcon={copiedLink ? <CheckIcon sx={{ fontSize: 16 }} /> : <ContentCopyIcon sx={{ fontSize: 16 }} />}
                     onClick={handleCopyLink}
+                    disabled={!mandate?.magicToken}
                     fullWidth
                     sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2 }}
                   >
@@ -404,6 +425,7 @@ export const MandateDetailPage = () => {
                     size="small"
                     startIcon={<WhatsAppIcon sx={{ fontSize: 16 }} />}
                     onClick={handleWhatsAppShare}
+                    disabled={!mandate?.magicToken}
                     fullWidth
                     sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2 }}
                   >
@@ -415,8 +437,9 @@ export const MandateDetailPage = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
-                  component={RouterLink}
-                  to={`/m/${mandate.magicToken}`}
+                  component={mandate?.magicToken ? RouterLink : 'button'}
+                  to={mandate?.magicToken ? `/m/${mandate.magicToken}` : undefined}
+                  disabled={!mandate?.magicToken}
                   target="_blank"
                   endIcon={<OpenInNewIcon sx={{ fontSize: 15 }} />}
                   sx={{ textTransform: 'none', fontWeight: 650, borderRadius: 2 }}

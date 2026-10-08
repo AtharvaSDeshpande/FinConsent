@@ -4,6 +4,7 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 
 export const WhatsAppShareButton = ({ mandate, magicUrl }) => {
   const handleWhatsApp = () => {
+    if (!magicUrl) return;
     const text = encodeURIComponent(
       `Hello, please review your statutory trade rebalance proposal "${mandate.title}".\n\n` +
       `Estimated Pre-computed Tax Impact: ₹${(mandate.taxPayable || 0).toLocaleString('en-IN')}\n\n` +
@@ -19,6 +20,7 @@ export const WhatsAppShareButton = ({ mandate, magicUrl }) => {
       color="success"
       startIcon={<WhatsAppIcon />}
       onClick={handleWhatsApp}
+      disabled={!magicUrl}
     >
       Share via WhatsApp
     </Button>

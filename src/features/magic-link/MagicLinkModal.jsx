@@ -22,9 +22,12 @@ export const MagicLinkModal = ({ open, onClose, mandate, onRevokeAndRegenerate }
 
   if (!mandate) return null;
 
-  const magicUrl = `${window.location.origin}/m/${mandate.magicToken}`;
+  const magicUrl = mandate.magicToken
+    ? `${window.location.origin}/m/${mandate.magicToken}`
+    : '';
 
   const handleCopy = () => {
+    if (!magicUrl) return;
     navigator.clipboard.writeText(magicUrl);
     setCopied(true);
     setMessage('Magic link copied to clipboard!');
@@ -59,7 +62,7 @@ export const MagicLinkModal = ({ open, onClose, mandate, onRevokeAndRegenerate }
         <TextField
           label="256-bit Tokenized Magic URL"
           fullWidth
-          value={magicUrl}
+          value={magicUrl || 'Generating client magic link...'}
           InputProps={{
             readOnly: true,
             endAdornment: (
@@ -68,6 +71,7 @@ export const MagicLinkModal = ({ open, onClose, mandate, onRevokeAndRegenerate }
                   onClick={handleCopy}
                   size="small"
                   variant="contained"
+                  disabled={!magicUrl}
                   startIcon={copied ? <CheckIcon /> : <ContentCopyIcon />}
                 >
                   {copied ? 'Copied' : 'Copy'}

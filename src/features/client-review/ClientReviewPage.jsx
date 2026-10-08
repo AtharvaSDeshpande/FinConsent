@@ -46,6 +46,11 @@ export const ClientReviewPage = () => {
 
   useEffect(() => {
     const fetchProposal = async () => {
+      if (!token || token === 'undefined') {
+        setError('Invalid or missing mandate token. Please request an active authorization link from your Registered Investment Adviser.');
+        setLoading(false);
+        return;
+      }
       try {
         const res = await fetch(`/api/public/mandates/${token}`);
         const result = await res.json();

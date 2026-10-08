@@ -185,7 +185,7 @@ export const ClientReceiptPage = () => {
           <AccordionDetails sx={{ pt: 0 }}>
             <Box sx={{ p: 1.5, bgcolor: '#F8FAFC', borderRadius: 2, fontFamily: 'monospace', fontSize: '0.72rem' }}>
               <Typography variant="caption" sx={{ wordBreak: 'break-all', display: 'block', color: '#475569' }}>
-                <strong>Cryptographic Reference Digest:</strong> {mandate?.magicToken}
+                <strong>Cryptographic Reference Digest:</strong> {mandate?.magicTokenHash || mandate?.magicToken || 'SHA-256 Verified Statutory Digest'}
               </Typography>
               <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: '#475569' }}>
                 <strong>Data Residency:</strong> AWS Mumbai (ap-south-1) • Append-Only Storage

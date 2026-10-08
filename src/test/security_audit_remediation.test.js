@@ -176,6 +176,68 @@ describe('FinConsent Security Remediation Verification Suite', () => {
       expect(inStore.magicToken).toBeUndefined();
       expect(inStore.magicTokenHash).toBe(crypto.createHash('sha256').update(legacyToken).digest('hex'));
     });
+
+    it('1.8: Dispatched mandate issues active 256-bit magicToken (never undefined) while persistent store retains only SHA-256 hash', () => {
+      const draftMandate = dbStore.createMandate({
+        riaId: testRiaUser.id,
+        clientId: testClientUser.id,
+        title: 'Draft Mandate For Dispatch Test',
+        status: 'draft',
+      });
+
+      // Dispatch mandate
+      const rawToken = crypto.randomBytes(32).toString('hex');
+      const dispatched = dbStore.updateMandate(draftMandate.id, {
+        status: 'in_review',
+        magicToken: rawToken,
+      });
+
+      // Dispatched result returned to RIA has valid 256-bit token string
+      expect(dispatched.magicToken).toBeDefined();
+      expect(dispatched.magicToken).not.toBe('undefined');
+      expect(dispatched.magicToken.length).toBe(64);
+      expect(dispatched.magicToken).toBe(rawToken);
+
+      // Persistent store MUST not hold raw token
+      const inStore = dbStore.findMandateById(draftMandate.id);
+      expect(inStore.magicToken).toBeUndefined();
+      expect(inStore.magicTokenHash).toBe(crypto.createHash('sha256').update(rawToken).digest('hex'));
+
+      // Active transient rail provides token to authorized RIA
+      expect(dbStore.getActiveMagicToken(draftMandate.id)).toBe(rawToken);
+
+      // Client can resolve mandate via the dispatched token
+      const clientResolved = dbStore.findMandateByToken(rawToken);
+      expect(clientResolved).toBeDefined();
+      expect(clientResolved.id).toBe(draftMandate.id);
+    });
+
+    it('1.9: Revocation generates fresh active token and cleanses prior token', () => {
+      const initialToken = crypto.randomBytes(32).toString('hex');
+      const testProposal = dbStore.createMandate({
+        riaId: testRiaUser.id,
+        clientId: testClientUser.id,
+        title: 'Lifecycle Verification Proposal',
+        magicToken: initialToken,
+        status: 'sent',
+      });
+
+      expect(dbStore.getActiveMagicToken(testProposal.id)).toBe(initialToken);
+
+      // Revoke and generate fresh
+      const regeneratedToken = crypto.randomBytes(32).toString('hex');
+      const revoked = dbStore.updateMandate(testProposal.id, {
+        magicToken: regeneratedToken,
+      });
+
+      expect(revoked.magicToken).toBe(regeneratedToken);
+      expect(dbStore.getActiveMagicToken(testProposal.id)).toBe(regeneratedToken);
+
+      // Old token invalidated
+      expect(dbStore.findMandateByToken(initialToken)).toBeUndefined();
+      // New token valid
+      expect(dbStore.findMandateByToken(regeneratedToken)).toBeDefined();
+    });
   });
 
   // =========================================================================

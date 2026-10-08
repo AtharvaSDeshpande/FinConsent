@@ -151,7 +151,13 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
                         variant="contained"
                         size="large"
                         endIcon={<ArrowForwardIcon />}
-                        onClick={() => navigate(`/m/${m.magicToken}`)}
+                        onClick={() => {
+                          if (m.magicToken) {
+                            navigate(`/m/${m.magicToken}`);
+                          } else {
+                            navigate(`/mandates/${m.id}`);
+                          }
+                        }}
                         sx={{
                           fontWeight: 750,
                           borderRadius: 2.5,
@@ -302,7 +308,13 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
                           size="small"
                           variant="outlined"
                           startIcon={<ReceiptLongOutlinedIcon sx={{ fontSize: 16 }} />}
-                          onClick={() => navigate(`/m/${m.magicToken}/receipt`)}
+                          onClick={() => {
+                            if (m.magicToken) {
+                              navigate(`/m/${m.magicToken}/receipt`);
+                            } else {
+                              navigate(`/mandates/${m.id}`);
+                            }
+                          }}
                           sx={{
                             borderRadius: 2,
                             textTransform: 'none',

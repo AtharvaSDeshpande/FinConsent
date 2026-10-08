@@ -75,8 +75,14 @@ router.get('/', (req, res) => {
   const enriched = mandates.map((m) => {
     const client = dbStore.findClientById(m.clientId);
     const ria = dbStore.findUserById(m.riaId);
+    let magicToken = dbStore.getActiveMagicToken(m.id);
+    if (!magicToken && (m.status === 'in_review' || m.status === 'sent' || m.status === 'viewed') && !m.isRevoked) {
+      magicToken = crypto.randomBytes(32).toString('hex');
+      dbStore.updateMandate(m.id, { magicToken });
+    }
     return {
       ...m,
+      magicToken: magicToken || undefined,
       clientName: client?.name || 'Advisory Client',
       clientPan: client?.pan,
       clientMobile: client?.mobile,
@@ -192,10 +198,17 @@ router.get('/:id', (req, res) => {
   const ria = dbStore.findUserById(mandate.riaId);
   const auditLogs = dbStore.getAuditLogsForMandate(mandate.id);
 
+  let magicToken = dbStore.getActiveMagicToken(mandate.id);
+  if (!magicToken && (mandate.status === 'in_review' || mandate.status === 'sent' || mandate.status === 'viewed') && !mandate.isRevoked) {
+    magicToken = crypto.randomBytes(32).toString('hex');
+    dbStore.updateMandate(mandate.id, { magicToken });
+  }
+
   res.json({
     success: true,
     data: {
       ...mandate,
+      magicToken: magicToken || undefined,
       client,
       ria: {
         firmName: ria?.firmName || 'Registered Investment Adviser',
@@ -222,7 +235,20 @@ router.post('/:id/dispatch', requireRole(['ria', 'admin']), (req, res) => {
     return res.status(400).json({ success: false, error: 'Cannot re-dispatch an already consented and legally sealed mandate' });
   }
 
-  const updated = dbStore.updateMandate(mandate.id, { status: 'in_review' });
+  let rawMagicToken = dbStore.getActiveMagicToken(mandate.id);
+  if (!rawMagicToken) {
+    rawMagicToken = crypto.randomBytes(32).toString('hex');
+  }
+
+  const tokenExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+  const cutoffTimestamp = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+
+  const updated = dbStore.updateMandate(mandate.id, {
+    status: 'in_review',
+    magicToken: rawMagicToken,
+    tokenExpiresAt,
+    cutoffTimestamp,
+  });
 
   dbStore.createAuditLog({
     mandateId: mandate.id,
@@ -231,12 +257,12 @@ router.post('/:id/dispatch', requireRole(['ria', 'admin']), (req, res) => {
     userAgent: req.headers['user-agent'] || 'API-Client',
     channel: 'WHATSAPP_EMAIL (SMS Disabled)',
     metadata: {
-      magicTokenHash: updated.magicTokenHash || crypto.createHash('sha256').update(updated.magicToken || '').digest('hex'),
+      magicTokenHash: updated.magicTokenHash || crypto.createHash('sha256').update(rawMagicToken).digest('hex'),
       clientPhone: 'Registered Mobile',
     },
   });
 
-  res.json({ success: true, data: updated });
+  res.json({ success: true, data: { ...updated, magicToken: rawMagicToken } });
 });
 
 // Revoke & Regenerate Link (immediately invalidates prior token)
