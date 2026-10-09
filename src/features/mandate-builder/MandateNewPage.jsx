@@ -225,7 +225,7 @@ export const MandateNewPage = () => {
       <Box component="form" onSubmit={handleSubmit}>
         <Grid container spacing={3}>
           {/* Main Proposal Form */}
-          <Grid size={{ xs: 12, md: 7 }}>
+          <Grid item xs={12} md={7} size={{ xs: 12, md: 7 }}>
             <Card sx={{ borderRadius: 3, border: '1px solid #E2E8F0', boxShadow: '0 1px 3px 0 rgba(15, 23, 42, 0.04)' }}>
               <CardContent sx={{ p: { xs: 2.5, sm: 3.5 } }}>
                 {/* 1. Automated Client Selection Section */}
@@ -234,7 +234,7 @@ export const MandateNewPage = () => {
                     <Typography variant="h6" fontWeight={750} color="#0F172A">
                       1. Advisory Client Allocation
                     </Typography>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                       <Button
                         size="small"
                         variant="outlined"
@@ -487,7 +487,7 @@ export const MandateNewPage = () => {
           </Grid>
 
           {/* Right Column: Real-Time Tax Calculator Preview */}
-          <Grid size={{ xs: 12, md: 5 }}>
+          <Grid item xs={12} md={5} size={{ xs: 12, md: 5 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <TaxBreakdownCard
                 stcgAmount={stcgAmount}

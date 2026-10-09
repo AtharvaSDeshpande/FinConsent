@@ -84,9 +84,9 @@ async function runVisualAudit() {
     // 1. GUEST EXPERIENCE (Landing, Login, Register, Public Mandate)
     // ----------------------------------------------------
     console.log('\n--- 1. AUDITING GUEST EXPERIENCE ---');
-    await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle0' });
+    await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded' });
     await setSession(null, null); // clear session
-    await page.reload({ waitUntil: 'networkidle0' });
+    await page.reload({ waitUntil: 'domcontentloaded' });
 
     await snap('01-guest-landing-hero', 'desktop');
     await snap('01-guest-landing-hero', 'mobile');
@@ -97,16 +97,16 @@ async function runVisualAudit() {
     await snap('02-guest-landing-tax-calculator', 'mobile');
 
     // Guest Auth Pages
-    await page.goto(`${BASE_URL}/login`, { waitUntil: 'networkidle0' });
+    await page.goto(`${BASE_URL}/login`, { waitUntil: 'domcontentloaded' });
     await snap('03-guest-login', 'desktop');
     await snap('03-guest-login', 'mobile');
 
-    await page.goto(`${BASE_URL}/register`, { waitUntil: 'networkidle0' });
+    await page.goto(`${BASE_URL}/register`, { waitUntil: 'domcontentloaded' });
     await snap('04-guest-register', 'desktop');
     await snap('04-guest-register', 'mobile');
 
     // Guest views public demo mandate
-    await page.goto(`${BASE_URL}/m/demo-token`, { waitUntil: 'networkidle0' });
+    await page.goto(`${BASE_URL}/m/demo-token`, { waitUntil: 'domcontentloaded' });
     await snap('05-public-mandate-review', 'desktop');
     await snap('05-public-mandate-review', 'mobile');
 
@@ -116,39 +116,39 @@ async function runVisualAudit() {
     console.log('\n--- 2. AUDITING RIA / ADVISER EXPERIENCE ---');
     const riaAuth = await getAuthToken('ria@example.in');
     if (riaAuth) {
-      await page.goto(`${BASE_URL}/dashboard`, { waitUntil: 'networkidle0' });
+      await page.goto(`${BASE_URL}/dashboard`, { waitUntil: 'domcontentloaded' });
       await setSession(riaAuth.token, riaAuth.user);
-      await page.reload({ waitUntil: 'networkidle0' });
+      await page.reload({ waitUntil: 'domcontentloaded' });
 
       await snap('06-ria-dashboard', 'desktop');
       await snap('06-ria-dashboard', 'mobile');
 
       // RIA New Mandate Creation
-      await page.goto(`${BASE_URL}/mandates/new`, { waitUntil: 'networkidle0' });
+      await page.goto(`${BASE_URL}/mandates/new`, { waitUntil: 'domcontentloaded' });
       await snap('07-ria-new-mandate-form', 'desktop');
       await snap('07-ria-new-mandate-form', 'mobile');
 
       // RIA Mandate Detail / Operational Dossier
-      await page.goto(`${BASE_URL}/mandates/man_1`, { waitUntil: 'networkidle0' });
+      await page.goto(`${BASE_URL}/mandates/man_1`, { waitUntil: 'domcontentloaded' });
       await snap('08-ria-mandate-detail', 'desktop');
       await snap('08-ria-mandate-detail', 'mobile');
 
       // RIA Mandate Access-Restricted Institutional Card
-      await page.goto(`${BASE_URL}/mandates/foreign_firm_mandate_999`, { waitUntil: 'networkidle0' });
+      await page.goto(`${BASE_URL}/mandates/foreign_firm_mandate_999`, { waitUntil: 'domcontentloaded' });
       await snap('08b-ria-mandate-access-restricted', 'desktop');
 
       // RIA Clients Directory
-      await page.goto(`${BASE_URL}/clients`, { waitUntil: 'networkidle0' });
+      await page.goto(`${BASE_URL}/clients`, { waitUntil: 'domcontentloaded' });
       await snap('09-ria-client-directory', 'desktop');
       await snap('09-ria-client-directory', 'mobile');
 
       // RIA Requests Hub
-      await page.goto(`${BASE_URL}/requests`, { waitUntil: 'networkidle0' });
+      await page.goto(`${BASE_URL}/requests`, { waitUntil: 'domcontentloaded' });
       await snap('10-ria-requests-hub', 'desktop');
       await snap('10-ria-requests-hub', 'mobile');
 
       // RIA Billing & Quota
-      await page.goto(`${BASE_URL}/settings/billing`, { waitUntil: 'networkidle0' });
+      await page.goto(`${BASE_URL}/settings/billing`, { waitUntil: 'domcontentloaded' });
       await snap('11-ria-billing-quota', 'desktop');
       await snap('11-ria-billing-quota', 'mobile');
     }
@@ -159,36 +159,36 @@ async function runVisualAudit() {
     console.log('\n--- 3. AUDITING INVESTOR / CLIENT EXPERIENCE ---');
     const clientAuth = await getAuthToken('client@example.in');
     if (clientAuth) {
-      await page.goto(`${BASE_URL}/dashboard`, { waitUntil: 'networkidle0' });
+      await page.goto(`${BASE_URL}/dashboard`, { waitUntil: 'domcontentloaded' });
       await setSession(clientAuth.token, clientAuth.user);
-      await page.reload({ waitUntil: 'networkidle0' });
+      await page.reload({ waitUntil: 'domcontentloaded' });
 
       await snap('12-client-dashboard', 'desktop');
       await snap('12-client-dashboard', 'mobile');
 
       // Client Reviewing Proposal
-      await page.goto(`${BASE_URL}/m/demo-token`, { waitUntil: 'networkidle0' });
+      await page.goto(`${BASE_URL}/m/demo-token`, { waitUntil: 'domcontentloaded' });
       await snap('13-client-proposal-review', 'desktop');
       await snap('13-client-proposal-review', 'mobile');
 
       // Client Compliance Receipt View
-      await page.goto(`${BASE_URL}/m/demo-token/receipt`, { waitUntil: 'networkidle0' });
+      await page.goto(`${BASE_URL}/m/demo-token/receipt`, { waitUntil: 'domcontentloaded' });
       await snap('14-client-compliance-receipt', 'desktop');
       await snap('14-client-compliance-receipt', 'mobile');
 
       // Client Inquiries Page
-      await page.goto(`${BASE_URL}/requests`, { waitUntil: 'networkidle0' });
+      await page.goto(`${BASE_URL}/requests`, { waitUntil: 'domcontentloaded' });
       await snap('15-client-inquiries', 'desktop');
       await snap('15-client-inquiries', 'mobile');
 
       // Direct Unauthorized Access Attempts (Should render Access Restricted state)
-      await page.goto(`${BASE_URL}/mandates/new`, { waitUntil: 'networkidle0' });
+      await page.goto(`${BASE_URL}/mandates/new`, { waitUntil: 'domcontentloaded' });
       await snap('16-client-unauthorized-new-mandate', 'desktop');
 
-      await page.goto(`${BASE_URL}/clients`, { waitUntil: 'networkidle0' });
+      await page.goto(`${BASE_URL}/clients`, { waitUntil: 'domcontentloaded' });
       await snap('17-client-unauthorized-clients-registry', 'desktop');
 
-      await page.goto(`${BASE_URL}/settings/billing`, { waitUntil: 'networkidle0' });
+      await page.goto(`${BASE_URL}/settings/billing`, { waitUntil: 'domcontentloaded' });
       await snap('18-client-unauthorized-billing', 'desktop');
     }
 
@@ -198,14 +198,14 @@ async function runVisualAudit() {
     console.log('\n--- 4. AUDITING COMPLIANCE OFFICER EXPERIENCE ---');
     const compAuth = await getAuthToken('compliance@example.in');
     if (compAuth) {
-      await page.goto(`${BASE_URL}/dashboard`, { waitUntil: 'networkidle0' });
+      await page.goto(`${BASE_URL}/dashboard`, { waitUntil: 'domcontentloaded' });
       await setSession(compAuth.token, compAuth.user);
-      await page.reload({ waitUntil: 'networkidle0' });
+      await page.reload({ waitUntil: 'domcontentloaded' });
 
       await snap('19-compliance-dashboard', 'desktop');
       await snap('19-compliance-dashboard', 'mobile');
 
-      await page.goto(`${BASE_URL}/requests`, { waitUntil: 'networkidle0' });
+      await page.goto(`${BASE_URL}/requests`, { waitUntil: 'domcontentloaded' });
       await snap('20-compliance-requests-scrutiny', 'desktop');
       await snap('20-compliance-requests-scrutiny', 'mobile');
     }
@@ -216,9 +216,9 @@ async function runVisualAudit() {
     console.log('\n--- 5. AUDITING SUPER ADMIN EXPERIENCE ---');
     const adminAuth = await getAuthToken('admin@example.in');
     if (adminAuth) {
-      await page.goto(`${BASE_URL}/dashboard`, { waitUntil: 'networkidle0' });
+      await page.goto(`${BASE_URL}/dashboard`, { waitUntil: 'domcontentloaded' });
       await setSession(adminAuth.token, adminAuth.user);
-      await page.reload({ waitUntil: 'networkidle0' });
+      await page.reload({ waitUntil: 'domcontentloaded' });
 
       await snap('21-admin-dashboard', 'desktop');
       await snap('21-admin-dashboard', 'mobile');

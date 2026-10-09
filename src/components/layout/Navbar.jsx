@@ -23,6 +23,12 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import TranslateOutlinedIcon from '@mui/icons-material/TranslateOutlined';
+import Drawer from '@mui/material/Drawer';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { Logo } from '../brand/Logo.jsx';
 import { useAuth } from '../../security/AuthContext.jsx';
@@ -43,6 +49,7 @@ export const Navbar = () => {
   const location = useLocation();
 
   const [langAnchorEl, setLangAnchorEl] = useState(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const handleOpenLangMenu = (e) => setLangAnchorEl(e.currentTarget);
   const handleCloseLangMenu = () => setLangAnchorEl(null);
   const handleSelectLang = (code) => {
@@ -370,7 +377,7 @@ export const Navbar = () => {
                   variant="outlined"
                   size="small"
                   startIcon={<LockOutlinedIcon sx={{ fontSize: 16 }} />}
-                  sx={{ borderRadius: 2, fontWeight: 650, fontSize: '0.8rem' }}
+                  sx={{ borderRadius: 2, fontWeight: 650, fontSize: '0.8rem', whiteSpace: 'nowrap', px: 1.5, minWidth: 'auto' }}
                 >
                   Sign In
                 </Button>
@@ -385,6 +392,7 @@ export const Navbar = () => {
                     fontWeight: 650,
                     fontSize: '0.8rem',
                     bgcolor: '#0F172A',
+                    whiteSpace: 'nowrap',
                     '&:hover': { bgcolor: '#1E293B' },
                   }}
                 >
@@ -392,9 +400,181 @@ export const Navbar = () => {
                 </Button>
               </Box>
             )}
+
+            {/* Mobile Hamburger Toggle Button */}
+            <IconButton
+              id="navbar_mobile_menu_btn"
+              aria-label="open mobile menu"
+              onClick={() => setMobileOpen(true)}
+              size="small"
+              sx={{
+                display: { xs: 'inline-flex', md: 'none' },
+                color: '#0F172A',
+                p: 0.8,
+                borderRadius: 1.5,
+                border: '1px solid #E2E8F0',
+                ml: 0.5,
+              }}
+            >
+              <MenuIcon sx={{ fontSize: 20 }} />
+            </IconButton>
           </Box>
         </Toolbar>
       </Container>
+
+      {/* Responsive Mobile Navigation Drawer */}
+      <Drawer
+        anchor="right"
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        PaperProps={{
+          sx: {
+            width: 290,
+            maxWidth: '85vw',
+            p: 2.5,
+            bgcolor: '#FFFFFF',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+          },
+        }}
+      >
+        <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
+            <Logo size={26} />
+            <IconButton onClick={() => setMobileOpen(false)} size="small" sx={{ color: '#64748B' }}>
+              <CloseIcon sx={{ fontSize: 20 }} />
+            </IconButton>
+          </Box>
+
+          <Box sx={{ mb: 2, display: 'inline-flex', alignItems: 'center', px: 1.2, py: 0.45, borderRadius: '6px', bgcolor: roleStyle.bg, border: '1px solid', borderColor: roleStyle.border, color: roleStyle.color, fontWeight: 700, fontSize: '0.72rem' }}>
+            {getRoleBadgeText()}
+          </Box>
+
+          <Divider sx={{ mb: 2 }} />
+
+          <List disablePadding>
+            {!isGuest ? (
+              <>
+                <ListItem disablePadding sx={{ mb: 0.5 }}>
+                  <ListItemButton
+                    component={RouterLink}
+                    to="/dashboard"
+                    onClick={() => setMobileOpen(false)}
+                    selected={isNavActive('/dashboard')}
+                    sx={{ borderRadius: 2, py: 1 }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 36, color: isNavActive('/dashboard') ? 'primary.main' : '#64748B' }}>
+                      <DashboardOutlinedIcon sx={{ fontSize: 20 }} />
+                    </ListItemIcon>
+                    <ListItemText primary={role === 'client' ? t('nav.mandates') : role === 'compliance_officer' ? t('nav.audit_trail') : t('nav.mandates')} primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: isNavActive('/dashboard') ? 700 : 500 }} />
+                  </ListItemButton>
+                </ListItem>
+
+                <ListItem disablePadding sx={{ mb: 0.5 }}>
+                  <ListItemButton
+                    component={RouterLink}
+                    to="/requests"
+                    onClick={() => setMobileOpen(false)}
+                    selected={isNavActive('/requests')}
+                    sx={{ borderRadius: 2, py: 1 }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 36, color: isNavActive('/requests') ? 'primary.main' : '#64748B' }}>
+                      <AssignmentOutlinedIcon sx={{ fontSize: 20 }} />
+                    </ListItemIcon>
+                    <ListItemText primary={t('nav.requests')} primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: isNavActive('/requests') ? 700 : 500 }} />
+                  </ListItemButton>
+                </ListItem>
+
+                {(isRia || isAdmin || role === 'compliance_officer') && (
+                  <ListItem disablePadding sx={{ mb: 0.5 }}>
+                    <ListItemButton
+                      component={RouterLink}
+                      to="/clients"
+                      onClick={() => setMobileOpen(false)}
+                      selected={isNavActive('/clients')}
+                      sx={{ borderRadius: 2, py: 1 }}
+                    >
+                      <ListItemIcon sx={{ minWidth: 36, color: isNavActive('/clients') ? 'primary.main' : '#64748B' }}>
+                        <PeopleAltOutlinedIcon sx={{ fontSize: 20 }} />
+                      </ListItemIcon>
+                      <ListItemText primary={t('nav.clients')} primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: isNavActive('/clients') ? 700 : 500 }} />
+                    </ListItemButton>
+                  </ListItem>
+                )}
+
+                {(isRia || isAdmin) && (
+                  <ListItem disablePadding sx={{ mb: 0.5 }}>
+                    <ListItemButton
+                      component={RouterLink}
+                      to="/settings/billing"
+                      onClick={() => setMobileOpen(false)}
+                      selected={isNavActive('/settings/billing')}
+                      sx={{ borderRadius: 2, py: 1 }}
+                    >
+                      <ListItemIcon sx={{ minWidth: 36, color: isNavActive('/settings/billing') ? 'primary.main' : '#64748B' }}>
+                        <PaymentOutlinedIcon sx={{ fontSize: 20 }} />
+                      </ListItemIcon>
+                      <ListItemText primary={t('nav.billing')} primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: isNavActive('/settings/billing') ? 700 : 500 }} />
+                    </ListItemButton>
+                  </ListItem>
+                )}
+
+                <ListItem disablePadding sx={{ mb: 0.5 }}>
+                  <ListItemButton
+                    component={RouterLink}
+                    to="/settings/profile"
+                    onClick={() => setMobileOpen(false)}
+                    selected={isNavActive('/settings/profile')}
+                    sx={{ borderRadius: 2, py: 1 }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 36, color: isNavActive('/settings/profile') ? 'primary.main' : '#64748B' }}>
+                      <AccountCircleOutlinedIcon sx={{ fontSize: 20 }} />
+                    </ListItemIcon>
+                    <ListItemText primary={user?.name || 'Profile & Firm'} primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: isNavActive('/settings/profile') ? 700 : 500 }} />
+                  </ListItemButton>
+                </ListItem>
+              </>
+            ) : (
+              <>
+                <ListItem disablePadding sx={{ mb: 0.5 }}>
+                  <ListItemButton component={RouterLink} to="/" onClick={() => setMobileOpen(false)} sx={{ borderRadius: 2, py: 1 }}>
+                    <ListItemText primary="Overview" primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: 600 }} />
+                  </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding sx={{ mb: 0.5 }}>
+                  <ListItemButton component={RouterLink} to="/login" onClick={() => setMobileOpen(false)} sx={{ borderRadius: 2, py: 1 }}>
+                    <ListItemText primary="Sign In" primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: 600 }} />
+                  </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding sx={{ mb: 0.5 }}>
+                  <ListItemButton component={RouterLink} to="/register" onClick={() => setMobileOpen(false)} sx={{ borderRadius: 2, py: 1 }}>
+                    <ListItemText primary="Register RIA" primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: 600, color: 'primary.main' }} />
+                  </ListItemButton>
+                </ListItem>
+              </>
+            )}
+          </List>
+        </Box>
+
+        <Box sx={{ pt: 2, borderTop: '1px solid #E2E8F0' }}>
+          {!isGuest && (
+            <Button
+              fullWidth
+              variant="outlined"
+              color="error"
+              startIcon={<LogoutIcon sx={{ fontSize: 18 }} />}
+              onClick={() => {
+                setMobileOpen(false);
+                handleLogout();
+              }}
+              sx={{ borderRadius: 2, mb: 1, py: 1, fontSize: '0.85rem' }}
+            >
+              Sign Out
+            </Button>
+          )}
+        </Box>
+      </Drawer>
     </AppBar>
   );
 };

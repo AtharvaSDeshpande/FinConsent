@@ -73,6 +73,12 @@ export const LandingPage = () => {
               border: '1px solid rgba(2, 132, 199, 0.25)',
               py: 0.5,
               px: 1,
+              maxWidth: '100%',
+              height: 'auto',
+              '& .MuiChip-label': {
+                whiteSpace: 'normal',
+                py: 0.4,
+              },
             }}
           />
 
@@ -82,8 +88,8 @@ export const LandingPage = () => {
             component="h1"
             sx={{
               fontWeight: 850,
-              fontSize: { xs: '2.1rem', sm: '3.2rem', md: '3.8rem' },
-              lineHeight: 1.15,
+              fontSize: { xs: '1.75rem', sm: '2.75rem', md: '3.5rem' },
+              lineHeight: 1.18,
               letterSpacing: '-0.03em',
               color: '#0F172A',
               maxWidth: 960,
@@ -207,7 +213,7 @@ export const LandingPage = () => {
               { stat: t('landing.stat_speed'), label: t('landing.stat_speed_label') },
               { stat: t('landing.stat_archival'), label: t('landing.stat_archival_label') },
             ].map((item, idx) => (
-              <Grid key={idx} size={{ xs: 6, md: 3 }}>
+              <Grid key={idx} item xs={6} sm={3} size={{ xs: 6, sm: 3 }}>
                 <Paper
                   elevation={0}
                   sx={{
@@ -268,7 +274,7 @@ export const LandingPage = () => {
                 stat: 'Tax Shock: 20% STCG + Interest 234B/C',
               },
             ].map((risk, i) => (
-              <Grid key={i} size={{ xs: 12, md: 4 }}>
+              <Grid key={i} item xs={12} md={4} size={{ xs: 12, md: 4 }}>
                 <Card
                   elevation={0}
                   sx={{
@@ -324,7 +330,7 @@ export const LandingPage = () => {
 
           <Grid container spacing={4}>
             {/* Pillar 1 */}
-            <Grid size={{ xs: 12, md: 4 }}>
+            <Grid item xs={12} md={4} size={{ xs: 12, md: 4 }}>
               <Card elevation={1} sx={{ p: 3.5, borderRadius: 3.5, height: '100%', border: 1, borderColor: 'divider', bgcolor: '#FFFFFF' }}>
                 <Box sx={{ p: 1.2, width: 48, height: 48, borderRadius: 2.5, bgcolor: 'rgba(79, 70, 229, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2.5 }}>
                   <SpeedOutlinedIcon sx={{ color: '#4F46E5', fontSize: 28 }} />
@@ -352,7 +358,7 @@ export const LandingPage = () => {
             </Grid>
 
             {/* Pillar 2 */}
-            <Grid size={{ xs: 12, md: 4 }}>
+            <Grid item xs={12} md={4} size={{ xs: 12, md: 4 }}>
               <Card elevation={1} sx={{ p: 3.5, borderRadius: 3.5, height: '100%', border: 1, borderColor: 'divider', bgcolor: '#FFFFFF' }}>
                 <Box sx={{ p: 1.2, width: 48, height: 48, borderRadius: 2.5, bgcolor: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2.5 }}>
                   <CalculateOutlinedIcon sx={{ color: '#059669', fontSize: 28 }} />
@@ -380,7 +386,7 @@ export const LandingPage = () => {
             </Grid>
 
             {/* Pillar 3 */}
-            <Grid size={{ xs: 12, md: 4 }}>
+            <Grid item xs={12} md={4} size={{ xs: 12, md: 4 }}>
               <Card elevation={1} sx={{ p: 3.5, borderRadius: 3.5, height: '100%', border: 1, borderColor: 'divider', bgcolor: '#FFFFFF' }}>
                 <Box sx={{ p: 1.2, width: 48, height: 48, borderRadius: 2.5, bgcolor: 'rgba(2, 132, 199, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2.5 }}>
                   <ReceiptLongOutlinedIcon sx={{ color: '#0284C7', fontSize: 28 }} />
@@ -445,7 +451,7 @@ export const LandingPage = () => {
                 desc: 'Immutable certificate is generated with SHA-256 digest, preserved for 5 years in AWS Mumbai, and ready for SEBI inspection audit.',
               },
             ].map((step, idx) => (
-              <Grid key={idx} size={{ xs: 12, sm: 6, md: 3 }}>
+              <Grid key={idx} item xs={12} sm={6} md={3} size={{ xs: 12, sm: 6, md: 3 }}>
                 <Paper
                   elevation={0}
                   sx={{
@@ -496,7 +502,7 @@ export const LandingPage = () => {
 
           <Grid container spacing={4} alignItems="stretch">
             {/* Tier 1: Free Sandbox */}
-            <Grid size={{ xs: 12, md: 4 }}>
+            <Grid item xs={12} md={4} size={{ xs: 12, md: 4 }}>
               <Card elevation={0} sx={{ p: 4, borderRadius: 3.5, height: '100%', border: 1, borderColor: 'divider', bgcolor: '#FFFFFF', display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="subtitle2" fontWeight={700} color="text.secondary">
                   STARTER SANDBOX
@@ -536,7 +542,7 @@ export const LandingPage = () => {
             </Grid>
 
             {/* Tier 2: Pro RIA (Recommended) */}
-            <Grid size={{ xs: 12, md: 4 }}>
+            <Grid item xs={12} md={4} size={{ xs: 12, md: 4 }}>
               <Card
                 elevation={4}
                 sx={{
@@ -604,7 +610,7 @@ export const LandingPage = () => {
             </Grid>
 
             {/* Tier 3: Enterprise */}
-            <Grid size={{ xs: 12, md: 4 }}>
+            <Grid item xs={12} md={4} size={{ xs: 12, md: 4 }}>
               <Card elevation={0} sx={{ p: 4, borderRadius: 3.5, height: '100%', border: 1, borderColor: 'divider', bgcolor: '#FFFFFF', display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="subtitle2" fontWeight={700} color="text.secondary">
                   ENTERPRISE & PMS DESK
@@ -695,7 +701,7 @@ export const LandingPage = () => {
                 badge: 'Superuser',
               },
             ].map((p, idx) => (
-              <Grid key={idx} size={{ xs: 12, sm: 6, md: 3 }}>
+              <Grid key={idx} item xs={12} sm={6} md={3} size={{ xs: 12, sm: 6, md: 3 }}>
                 <Card
                   elevation={0}
                   onClick={() => handleQuickTestDrive(p.email)}

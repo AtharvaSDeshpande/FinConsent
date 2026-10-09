@@ -300,7 +300,7 @@ export const MandateChat = ({
                     boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
                   }}
                 >
-                  <Typography variant="body2" sx={{ fontSize: '0.86rem', lineHeight: 1.5, wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
+                  <Typography variant="body2" sx={{ color: isMe ? '#FFFFFF' : '#0F172A', fontSize: '0.86rem', lineHeight: 1.5, wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
                     {m.message}
                   </Typography>
                 </Box>

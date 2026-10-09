@@ -464,7 +464,7 @@ export const ClientReviewPage = () => {
 
           <Grid container spacing={2.5}>
             {/* Current Allocation */}
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid item xs={12} sm={6} size={{ xs: 12, sm: 6 }}>
               <Box sx={{ p: 2.5, bgcolor: '#F8FAFC', borderRadius: 2.5, border: '1px solid', borderColor: '#E2E8F0', height: '100%' }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                   <Typography variant="caption" fontWeight={800} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -493,7 +493,7 @@ export const ClientReviewPage = () => {
             </Grid>
 
             {/* Proposed Target Allocation */}
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid item xs={12} sm={6} size={{ xs: 12, sm: 6 }}>
               <Box sx={{ p: 2.5, bgcolor: 'rgba(16, 185, 129, 0.05)', borderRadius: 2.5, border: '1.5px solid #10B981', height: '100%' }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                   <Typography variant="caption" fontWeight={800} color="#065F46" sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -581,7 +581,7 @@ export const ClientReviewPage = () => {
           </Box>
 
           <Grid container spacing={2} sx={{ mb: 2.5 }}>
-            <Grid size={{ xs: 12, sm: 4 }}>
+            <Grid item xs={12} sm={4} size={{ xs: 12, sm: 4 }}>
               <Box sx={{ p: 2, bgcolor: '#F8FAFC', borderRadius: 2, border: '1px solid #E2E8F0' }}>
                 <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
                   {t('client_review.stcg_title')}
@@ -595,7 +595,7 @@ export const ClientReviewPage = () => {
               </Box>
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 4 }}>
+            <Grid item xs={12} sm={4} size={{ xs: 12, sm: 4 }}>
               <Box sx={{ p: 2, bgcolor: '#F8FAFC', borderRadius: 2, border: '1px solid #E2E8F0' }}>
                 <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
                   {t('client_review.ltcg_title')}
@@ -609,7 +609,7 @@ export const ClientReviewPage = () => {
               </Box>
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 4 }}>
+            <Grid item xs={12} sm={4} size={{ xs: 12, sm: 4 }}>
               <Box sx={{ p: 2, bgcolor: 'rgba(79, 70, 229, 0.06)', borderRadius: 2, border: '1.5px solid #6366F1' }}>
                 <Typography variant="caption" color="primary.main" fontWeight={750} display="block">
                   {t('client_review.estimated_tax_title')}

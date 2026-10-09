@@ -114,7 +114,7 @@ export const AdminDashboard = ({ user, mandates = [], loading = false, error = n
 
       {/* 2. Platform Telemetry Metrics */}
       <Grid container spacing={2.5} sx={{ mb: 3.5 }}>
-        <Grid size={{ xs: 12, sm: 3 }}>
+        <Grid item xs={12} sm={6} md={3} size={{ xs: 12, sm: 6, md: 3 }}>
           <Card elevation={0} sx={{ p: 3, borderRadius: 3.5, bgcolor: '#FFFFFF', border: '1px solid #E2E8F0', height: '100%' }}>
             <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
               Total Rebalance Mandates
@@ -128,7 +128,7 @@ export const AdminDashboard = ({ user, mandates = [], loading = false, error = n
           </Card>
         </Grid>
 
-        <Grid size={{ xs: 12, sm: 3 }}>
+        <Grid item xs={12} sm={6} md={3} size={{ xs: 12, sm: 6, md: 3 }}>
           <Card elevation={0} sx={{ p: 3, borderRadius: 3.5, bgcolor: '#FFFFFF', border: '1px solid #E2E8F0', height: '100%' }}>
             <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
               Consented & Locked
@@ -142,7 +142,7 @@ export const AdminDashboard = ({ user, mandates = [], loading = false, error = n
           </Card>
         </Grid>
 
-        <Grid size={{ xs: 12, sm: 3 }}>
+        <Grid item xs={12} sm={6} md={3} size={{ xs: 12, sm: 6, md: 3 }}>
           <Card elevation={0} sx={{ p: 3, borderRadius: 3.5, bgcolor: '#FFFFFF', border: '1px solid #E2E8F0', height: '100%' }}>
             <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
               Surveillance Windows
@@ -156,7 +156,7 @@ export const AdminDashboard = ({ user, mandates = [], loading = false, error = n
           </Card>
         </Grid>
 
-        <Grid size={{ xs: 12, sm: 3 }}>
+        <Grid item xs={12} sm={6} md={3} size={{ xs: 12, sm: 6, md: 3 }}>
           <Card elevation={0} sx={{ p: 3, borderRadius: 3.5, bgcolor: '#FFFFFF', border: '1px solid #E2E8F0', height: '100%' }}>
             <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
               Infrastructure Status

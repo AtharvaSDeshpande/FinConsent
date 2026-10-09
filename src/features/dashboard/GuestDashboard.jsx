@@ -145,7 +145,7 @@ export const GuestDashboard = () => {
 
         <Grid container spacing={2.5}>
           {personas.map((p) => (
-            <Grid key={p.id} size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid key={p.id} item xs={12} sm={6} md={3} size={{ xs: 12, sm: 6, md: 3 }}>
               <Card
                 elevation={0}
                 sx={{
@@ -217,7 +217,7 @@ export const GuestDashboard = () => {
 
       {/* 3. Statutory Platform Architecture Highlights */}
       <Grid container spacing={3.5} sx={{ mb: 6 }}>
-        <Grid size={{ xs: 12, md: 7 }}>
+        <Grid item xs={12} md={7} size={{ xs: 12, md: 7 }}>
           <Card
             elevation={0}
             sx={{
@@ -310,7 +310,7 @@ export const GuestDashboard = () => {
         </Grid>
 
         {/* Live Tax Calculator Simulator */}
-        <Grid size={{ xs: 12, md: 5 }}>
+        <Grid item xs={12} md={5} size={{ xs: 12, md: 5 }}>
           <Card
             elevation={0}
             sx={{

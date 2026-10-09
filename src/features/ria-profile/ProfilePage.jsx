@@ -134,7 +134,7 @@ export const ProfilePage = () => {
 
       <Grid container spacing={3}>
         {/* Left Column: Language Card & Identity Form */}
-        <Grid size={{ xs: 12, md: 8 }}>
+        <Grid item xs={12} md={8} size={{ xs: 12, md: 8 }}>
           <Stack spacing={3}>
             {/* 1. Language & Localization Card */}
             <Card elevation={2} sx={{ borderRadius: 3, border: 1, borderColor: 'primary.light', bgcolor: '#F8FAFC' }}>
@@ -301,7 +301,7 @@ export const ProfilePage = () => {
         </Grid>
 
         {/* Right Column: Statutory Status Summary */}
-        <Grid size={{ xs: 12, md: 4 }}>
+        <Grid item xs={12} md={4} size={{ xs: 12, md: 4 }}>
           <Card elevation={2} sx={{ borderRadius: 3, border: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
             <CardContent sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>

@@ -403,7 +403,7 @@ export const MandateDetailPage = () => {
 
       <Grid container spacing={3}>
         {/* Left Column: Pre-computed Tax Impact & Client Review Hub */}
-        <Grid size={{ xs: 12, md: 5 }}>
+        <Grid item xs={12} md={5} size={{ xs: 12, md: 5 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <TaxBreakdownCard
               stcgAmount={mandate.stcgAmount}
@@ -501,7 +501,7 @@ export const MandateDetailPage = () => {
         </Grid>
 
         {/* Right Column: Statutory Rationale & Activity / Audit Trail */}
-        <Grid size={{ xs: 12, md: 7 }}>
+        <Grid item xs={12} md={7} size={{ xs: 12, md: 7 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {mandate.rationale && (
               <Card elevation={0} sx={{ p: 3, borderRadius: 3.5, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>

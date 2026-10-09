@@ -355,7 +355,7 @@ export const RequestComposerPage = () => {
                   />
 
                   <Grid container spacing={1.5}>
-                    <Grid size={{ xs: 12, sm: 6 }}>
+                    <Grid item xs={12} sm={6} size={{ xs: 12, sm: 6 }}>
                       <TextField
                         select
                         label="Category"
@@ -372,7 +372,7 @@ export const RequestComposerPage = () => {
                       </TextField>
                     </Grid>
 
-                    <Grid size={{ xs: 12, sm: 6 }}>
+                    <Grid item xs={12} sm={6} size={{ xs: 12, sm: 6 }}>
                       <TextField
                         select
                         label="Priority"
@@ -433,7 +433,7 @@ export const RequestComposerPage = () => {
                         </Box>
 
                         <Grid container spacing={1}>
-                          <Grid size={{ xs: 6, sm: 3 }}>
+                          <Grid item xs={6} sm={3} size={{ xs: 6, sm: 3 }}>
                             <Typography variant="caption" color="text.secondary">Equity %</Typography>
                             <TextField
                               type="number"
@@ -443,7 +443,7 @@ export const RequestComposerPage = () => {
                               onChange={(e) => setFormData({ ...formData, proposedEquityRatio: Number(e.target.value) })}
                             />
                           </Grid>
-                          <Grid size={{ xs: 6, sm: 3 }}>
+                          <Grid item xs={6} sm={3} size={{ xs: 6, sm: 3 }}>
                             <Typography variant="caption" color="text.secondary">Debt %</Typography>
                             <TextField
                               type="number"
@@ -453,7 +453,7 @@ export const RequestComposerPage = () => {
                               onChange={(e) => setFormData({ ...formData, proposedDebtRatio: Number(e.target.value) })}
                             />
                           </Grid>
-                          <Grid size={{ xs: 6, sm: 3 }}>
+                          <Grid item xs={6} sm={3} size={{ xs: 6, sm: 3 }}>
                             <Typography variant="caption" color="text.secondary">Gold %</Typography>
                             <TextField
                               type="number"
@@ -463,7 +463,7 @@ export const RequestComposerPage = () => {
                               onChange={(e) => setFormData({ ...formData, proposedGoldRatio: Number(e.target.value) })}
                             />
                           </Grid>
-                          <Grid size={{ xs: 6, sm: 3 }}>
+                          <Grid item xs={6} sm={3} size={{ xs: 6, sm: 3 }}>
                             <Typography variant="caption" color="text.secondary">Cash %</Typography>
                             <TextField
                               type="number"

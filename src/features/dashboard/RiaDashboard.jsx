@@ -112,7 +112,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3.5, flexWrap: 'wrap', gap: 2 }}>
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
-            <Typography variant="h4" component="h1" fontWeight={800} letterSpacing="-0.025em" color="#0F172A">
+            <Typography variant="h4" component="h1" fontWeight={800} letterSpacing="-0.025em" color="#0F172A" sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }}>
               {user?.firmName || 'Prudent Wealth Advisory'}
             </Typography>
             <Chip
@@ -203,7 +203,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
 
       {/* 3. Metric Summary Cards */}
       <Grid container spacing={2.5} sx={{ mb: 3.5 }}>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid item xs={12} sm={6} md={3} size={{ xs: 12, sm: 6, md: 3 }}>
           <Card
             elevation={0}
             sx={{
@@ -234,7 +234,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
           </Card>
         </Grid>
 
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid item xs={12} sm={6} md={3} size={{ xs: 12, sm: 6, md: 3 }}>
           <Card
             elevation={0}
             sx={{
@@ -265,7 +265,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
           </Card>
         </Grid>
 
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid item xs={12} sm={6} md={3} size={{ xs: 12, sm: 6, md: 3 }}>
           <Card
             elevation={0}
             sx={{
@@ -296,7 +296,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
           </Card>
         </Grid>
 
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid item xs={12} sm={6} md={3} size={{ xs: 12, sm: 6, md: 3 }}>
           <Card
             elevation={0}
             sx={{

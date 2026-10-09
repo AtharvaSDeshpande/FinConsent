@@ -101,7 +101,7 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
               const diffHours = cutoffTime ? Math.max(0, Math.round((cutoffTime - now) / (1000 * 60 * 60))) : null;
 
               return (
-                <Grid size={{ xs: 12 }} key={m.id}>
+                <Grid item xs={12} size={{ xs: 12 }} key={m.id}>
                   <Card
                     elevation={0}
                     sx={{
@@ -178,7 +178,7 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
                     <Divider sx={{ my: 2 }} />
 
                     <Grid container spacing={2}>
-                      <Grid size={{ xs: 12, sm: 4 }}>
+                      <Grid item xs={12} sm={4} size={{ xs: 12, sm: 4 }}>
                         <Typography variant="caption" color="text.secondary" fontWeight={650}>
                           {t('dashboard.client_proposed_mix')}
                         </Typography>
@@ -187,7 +187,7 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
                         </Typography>
                       </Grid>
 
-                      <Grid size={{ xs: 12, sm: 4 }}>
+                      <Grid item xs={12} sm={4} size={{ xs: 12, sm: 4 }}>
                         <Typography variant="caption" color="text.secondary" fontWeight={650}>
                           {t('dashboard.client_precomputed_tax')}
                         </Typography>
@@ -196,7 +196,7 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
                         </Typography>
                       </Grid>
 
-                      <Grid size={{ xs: 12, sm: 4 }}>
+                      <Grid item xs={12} sm={4} size={{ xs: 12, sm: 4 }}>
                         <Typography variant="caption" color="text.secondary" fontWeight={650}>
                           {t('dashboard.client_statutory_safeguard')}
                         </Typography>
@@ -340,7 +340,7 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
 
       {/* 4. INVESTOR RIGHTS & ADVISOR INQUIRY CARDS */}
       <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 7 }}>
+        <Grid item xs={12} md={7} size={{ xs: 12, md: 7 }}>
           <Card elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#F8FAFC', height: '100%' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, mb: 1.5 }}>
               <VerifiedUserOutlinedIcon sx={{ color: '#0F172A', fontSize: 22 }} />
@@ -362,7 +362,7 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
           </Card>
         </Grid>
 
-        <Grid size={{ xs: 12, md: 5 }}>
+        <Grid item xs={12} md={5} size={{ xs: 12, md: 5 }}>
           <Card elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, mb: 1 }}>

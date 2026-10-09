@@ -2,6 +2,15 @@ import { createTheme } from '@mui/material/styles';
 
 export const getTheme = (mode = 'light') =>
   createTheme({
+    breakpoints: {
+      values: {
+        xs: 0,
+        sm: 640,
+        md: 768,
+        lg: 1024,
+        xl: 1280,
+      },
+    },
     palette: {
       mode,
       primary: {
@@ -37,6 +46,7 @@ export const getTheme = (mode = 'light') =>
       background: {
         default: mode === 'light' ? '#F8FAFC' : '#090D16', // Crisp subtle canvas
         paper: mode === 'light' ? '#FFFFFF' : '#111827',
+        subtle: mode === 'light' ? '#F1F5F9' : '#1E293B',
       },
       text: {
         primary: mode === 'light' ? '#0F172A' : '#F8FAFC',
@@ -47,14 +57,59 @@ export const getTheme = (mode = 'light') =>
     },
     typography: {
       fontFamily: "'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-      h1: { fontWeight: 800, letterSpacing: '-0.025em', lineHeight: 1.15 },
-      h2: { fontWeight: 750, letterSpacing: '-0.02em', lineHeight: 1.2 },
-      h3: { fontWeight: 700, letterSpacing: '-0.015em', lineHeight: 1.25 },
-      h4: { fontWeight: 700, letterSpacing: '-0.012em', lineHeight: 1.3 },
-      h5: { fontWeight: 650, letterSpacing: '-0.01em', lineHeight: 1.35 },
-      h6: { fontWeight: 650, letterSpacing: '-0.005em', lineHeight: 1.4 },
-      subtitle1: { fontWeight: 600, letterSpacing: '-0.005em', lineHeight: 1.5 },
-      subtitle2: { fontWeight: 600, letterSpacing: '0em', lineHeight: 1.5 },
+      h1: {
+        fontWeight: 800,
+        letterSpacing: '-0.025em',
+        lineHeight: 1.18,
+        fontSize: '2.25rem',
+        '@media (max-width:640px)': {
+          fontSize: '1.75rem',
+          lineHeight: 1.22,
+        },
+      },
+      h2: {
+        fontWeight: 750,
+        letterSpacing: '-0.02em',
+        lineHeight: 1.22,
+        fontSize: '1.875rem',
+        '@media (max-width:640px)': {
+          fontSize: '1.45rem',
+          lineHeight: 1.25,
+        },
+      },
+      h3: {
+        fontWeight: 700,
+        letterSpacing: '-0.015em',
+        lineHeight: 1.26,
+        fontSize: '1.5rem',
+        '@media (max-width:640px)': {
+          fontSize: '1.25rem',
+          lineHeight: 1.3,
+        },
+      },
+      h4: {
+        fontWeight: 700,
+        letterSpacing: '-0.012em',
+        lineHeight: 1.3,
+        fontSize: '1.25rem',
+        '@media (max-width:640px)': {
+          fontSize: '1.125rem',
+        },
+      },
+      h5: {
+        fontWeight: 650,
+        letterSpacing: '-0.01em',
+        lineHeight: 1.35,
+        fontSize: '1.1rem',
+      },
+      h6: {
+        fontWeight: 650,
+        letterSpacing: '-0.005em',
+        lineHeight: 1.4,
+        fontSize: '0.975rem',
+      },
+      subtitle1: { fontWeight: 600, letterSpacing: '-0.005em', lineHeight: 1.5, fontSize: '0.9375rem' },
+      subtitle2: { fontWeight: 600, letterSpacing: '0em', lineHeight: 1.5, fontSize: '0.85rem' },
       body1: { fontSize: '0.9375rem', lineHeight: 1.6, color: mode === 'light' ? '#1E293B' : '#F1F5F9' },
       body2: { fontSize: '0.875rem', lineHeight: 1.55, color: mode === 'light' ? '#475569' : '#94A3B8' },
       caption: { fontSize: '0.75rem', lineHeight: 1.4, letterSpacing: '0.01em' },
@@ -67,19 +122,35 @@ export const getTheme = (mode = 'light') =>
       MuiButton: {
         styleOverrides: {
           root: {
-            minHeight: 40,
-            padding: '8px 18px',
-            borderRadius: 10,
+            minHeight: 38,
+            padding: '7px 16px',
+            borderRadius: 8,
             boxShadow: 'none',
             fontSize: '0.875rem',
+            fontWeight: 600,
             transition: 'all 0.15s ease-in-out',
             '&:hover': {
-              boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)',
+              boxShadow: '0 2px 6px rgba(15, 23, 42, 0.08)',
               transform: 'translateY(-0.5px)',
             },
             '&:active': {
               transform: 'translateY(0)',
             },
+            '&:focus-visible': {
+              outline: '2px solid #4F46E5',
+              outlineOffset: '2px',
+            },
+          },
+          sizeSmall: {
+            minHeight: 32,
+            padding: '4px 12px',
+            fontSize: '0.8125rem',
+          },
+          sizeLarge: {
+            minHeight: 46,
+            padding: '10px 24px',
+            fontSize: '0.95rem',
+            borderRadius: 10,
           },
           containedPrimary: {
             backgroundColor: '#0F172A',
@@ -91,8 +162,10 @@ export const getTheme = (mode = 'light') =>
           },
           containedSecondary: {
             backgroundColor: '#4F46E5',
+            color: '#FFFFFF',
             '&:hover': {
               backgroundColor: '#4338CA',
+              boxShadow: '0 4px 12px rgba(79, 70, 229, 0.25)',
             },
           },
           outlined: {
@@ -100,7 +173,7 @@ export const getTheme = (mode = 'light') =>
             color: '#0F172A',
             '&:hover': {
               borderColor: '#94A3B8',
-              backgroundColor: 'rgba(241, 245, 249, 0.6)',
+              backgroundColor: 'rgba(241, 245, 249, 0.7)',
             },
           },
         },
@@ -119,11 +192,12 @@ export const getTheme = (mode = 'light') =>
       MuiCard: {
         styleOverrides: {
           root: {
-            borderRadius: 14,
+            borderRadius: 12,
             border: '1px solid',
             borderColor: '#E2E8F0',
-            boxShadow: '0 1px 3px rgba(15, 23, 42, 0.03), 0 1px 2px rgba(15, 23, 42, 0.02)',
+            boxShadow: '0 1px 3px rgba(15, 23, 42, 0.03), 0 4px 12px rgba(15, 23, 42, 0.02)',
             backgroundImage: 'none',
+            transition: 'box-shadow 0.2s ease, border-color 0.2s ease',
           },
         },
       },
@@ -138,7 +212,7 @@ export const getTheme = (mode = 'light') =>
         styleOverrides: {
           root: {
             borderColor: '#F1F5F9',
-            padding: '14px 18px',
+            padding: '12px 16px',
             fontSize: '0.875rem',
           },
           head: {
@@ -176,13 +250,17 @@ export const getTheme = (mode = 'light') =>
       MuiOutlinedInput: {
         styleOverrides: {
           root: {
-            borderRadius: 10,
+            borderRadius: 8,
             backgroundColor: '#FFFFFF',
             '& .MuiOutlinedInput-notchedOutline': {
               borderColor: '#CBD5E1',
+              transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
             },
             '&:hover .MuiOutlinedInput-notchedOutline': {
               borderColor: '#94A3B8',
+            },
+            '&.Mui-focused': {
+              boxShadow: '0 0 0 3px rgba(79, 70, 229, 0.1)',
             },
             '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
               borderColor: '#4F46E5',
@@ -191,6 +269,7 @@ export const getTheme = (mode = 'light') =>
           },
           input: {
             fontSize: '0.875rem',
+            padding: '10px 14px',
           },
         },
       },
@@ -206,7 +285,7 @@ export const getTheme = (mode = 'light') =>
       MuiTabs: {
         styleOverrides: {
           root: {
-            minHeight: 44,
+            minHeight: 42,
           },
           indicator: {
             backgroundColor: '#0F172A',
@@ -221,13 +300,50 @@ export const getTheme = (mode = 'light') =>
             textTransform: 'none',
             fontWeight: 600,
             fontSize: '0.85rem',
-            minHeight: 44,
-            padding: '8px 16px',
+            minHeight: 42,
+            padding: '6px 14px',
             color: '#64748B',
             '&.Mui-selected': {
               color: '#0F172A',
               fontWeight: 700,
             },
+          },
+        },
+      },
+      MuiLinearProgress: {
+        styleOverrides: {
+          root: {
+            borderRadius: 4,
+            height: 6,
+            backgroundColor: '#E2E8F0',
+          },
+          bar: {
+            borderRadius: 4,
+          },
+        },
+      },
+      MuiAlert: {
+        styleOverrides: {
+          root: {
+            borderRadius: 10,
+            fontSize: '0.875rem',
+            border: '1px solid',
+          },
+          standardInfo: {
+            borderColor: 'rgba(2, 132, 199, 0.25)',
+            backgroundColor: 'rgba(2, 132, 199, 0.06)',
+          },
+          standardSuccess: {
+            borderColor: 'rgba(5, 150, 105, 0.25)',
+            backgroundColor: 'rgba(5, 150, 105, 0.06)',
+          },
+          standardWarning: {
+            borderColor: 'rgba(217, 119, 6, 0.25)',
+            backgroundColor: 'rgba(217, 119, 6, 0.06)',
+          },
+          standardError: {
+            borderColor: 'rgba(220, 38, 38, 0.25)',
+            backgroundColor: 'rgba(220, 38, 38, 0.06)',
           },
         },
       },
