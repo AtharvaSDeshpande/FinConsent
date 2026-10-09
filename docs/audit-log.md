@@ -1,508 +1,230 @@
-# Evidence-Based Security Audit & Final Hardening Verification Report: FinConsent
+# FinConsent Audit Trail Specification, Event Model & Regulatory Evidence Architecture
 
-**Date**: 2026-10-08 (Updated: 2026-10-08T12:51 IST)  
-**Scope**: Fullstack Application Hardening, Multi-Tenant Isolation, RBAC, SHA-256 Magic Token Hashing, Transient Token Registry, Distributed Redis Rate Limiting & OTP Protection, RFC 6238 TOTP MFA, Short-Lived JWT Expiry, Session Revocation, Password Complexity, Synthetic Backup Restoration Drill, Magic-Link Dispatch UI Integrity, and Headless Chrome Browser Verification.  
-**Auditor**: Fullstack-Builder Security Verification Subsystem  
-**Application**: FinConsent (SEBI Statutory Trade Authorization & Tax Consent B2B SaaS)  
-
----
-
-## 1. Executive Summary & Verdict
-
-### Final Security Verdict: **READY**
-
-> **Certification Summary**:  
-> Every security condition, technical gap, and hardening recommendation identified in the baseline security audit has been resolved, programmatically implemented, and verified with zero regressions.
-> 
-> 1. **Raw magic-link bearer tokens are no longer stored in plaintext**: Replaced with one-way SHA-256 hashes (`magicTokenHash`) with automatic backwards-compatible migration for legacy records.
-> 2. **Production HTTPS/TLS enforcement**: Application configured with `trust proxy: 1`, automated production HTTPS redirection, Helmet HSTS (1-year `Strict-Transport-Security`), and Secure/HttpOnly/SameSite cookies.
-> 3. **Distributed rate limiting & OTP state**: Built a cluster-shared distributed state adapter (`SharedStateStore`) providing synchronized sliding-window rate limiting, OTP attempt tracking/lockout, and token revocation across multiple application instances.
-> 4. **Automated JWT expiration testing**: Implemented automated test asserting short-lived JWT expiration (`1s` TTL rejected with HTTP 401 upon expiry).
-> 5. **Synthetic backup restoration drill verified**: Performed non-destructive point-in-time restore simulation on MongoDB Atlas verifying schema integrity, index preservation, tenant isolation, and cryptographic audit hash chain continuity (1,460 audit log records verified with 0 broken links).
-> 6. **Two-Factor Authentication (MFA) for RIA/Staff accounts**: Implemented RFC 6238 TOTP MFA with secure onboarding, server-side enforcement, and bypass protection, while preserving the frictionless zero-login client trade approval workflow.
-> 7. **Enterprise password complexity enforced**: Mandates minimum 8 characters, uppercase, lowercase, numbers, and special symbols.
-> 8. **Session revocation**: Implemented distributed blacklist verifying instant session invalidation on logout.
-> 9. **Magic-link dispatch integrity hardened**: Resolved `/m/undefined` exposure through `activeMagicTokens` transient in-memory registry; plaintext token available only to authorized RIA/admin during active dispatch window; never persisted to MongoDB; all frontend components guarded against absent/undefined token state.
-> 
-> **Verification Metrics**:
-> - **Vitest Automated Test Suite**: **84 / 84 tests passing (9/9 test suites passed)**.
-> - **Puppeteer Browser Security Scenarios**: **11 / 11 attack & workflow scenarios passed** with **24 screenshots captured**.
-> - **Production Bundle**: `npm run build` compiled cleanly (Exit code: 0).
-> - **Latest Commit**: `fd0cdaa` — *fix: resolve dispatch mandate link showing as /m/undefined*
+**Statutory Compliance, Tamper-Evident SHA-256 Ledger, and Section 65B Electronic Evidence Standard**  
+**Document Classification:** Technical & Regulatory Specification  
+**Governing Regulations:** SEBI (Investment Advisers) Regulations, 2013 (Regulation 19) | Section 65B, Indian Evidence Act, 1872 / IT Act, 2000 | DPDP Act, 2023  
+**Data Residency:** AWS Asia Pacific (Mumbai) `ap-south-1` (AWS Mumbai)  
+**Cryptographic Primitives:** AES-256-GCM Dual Envelope Encryption | PBKDF2 Key Derivation | SHA-256 Hash Chaining
 
 ---
 
-## 2. Remediated Conditions Evidence Matrix
+## 1. Executive Summary & Purpose
 
-| Baseline Audit Condition | Remediation Fix Implemented | Automated Test / Regression Suite | Result | Concrete Implementation Evidence |
-|---|---|---|---|---|
-| **Raw magic-link DB token**<br>*(Plaintext bearer token persisted in database)* | SHA-256 one-way hashing on creation (`magicTokenHash`); incoming tokens hashed before DB lookup; automated backwards-compatible migration for legacy records. | `security_audit_remediation.test.js`<br>(Tests 1.1 – 1.6) | **PASS** | `server/db/store.js:275–315`<br>`server/db/models.js:58`<br>Plaintext token stripped before DB persistence. |
-| **HTTPS / TLS Enforcement**<br>*(Reverse proxy headers & in-transit security)* | `app.set('trust proxy', 1)`; production HTTPS redirection guard; Helmet HSTS (`maxAge: 31536000`, `includeSubDomains: true`, `preload: true`). | `security_audit_remediation.test.js`<br>(Tests 2.1 – 2.4) | **PASS** | `server/index.js:33–48`<br>HTTP requests in production redirected to HTTPS; HSTS header emitted. |
-| **Distributed Rate Limiting**<br>*(In-memory limiter vulnerable to multi-instance desync)* | `SharedStateStore` adapter (`server/db/sharedState.js`) synchronizing sliding-window request timestamps and OTP state across server instances. | `security_audit_remediation.test.js`<br>(Tests 5.1 – 5.4)<br>Puppeteer Scenario 11 | **PASS** | `server/middleware/rateLimiter.js:20–45`<br>`server/db/sharedState.js:68–110`<br>Cross-instance hit tracking; 35/35 burst blocked (HTTP 429). |
-| **JWT Expiration Tests**<br>*(Missing automated test for short-lived expiration)* | Automated test issuing 1-second JWT, asserting validity before expiry, waiting 1,100ms, and asserting HTTP 401 rejection. | `security_audit_remediation.test.js`<br>(Tests 3.1 – 3.5) | **PASS** | `src/test/security_audit_remediation.test.js:82–125`<br>Verifies expired, malformed, and wrong-signature tokens fail. |
-| **Backup Restoration**<br>*(Unverified automated backup restoration)* | Non-destructive synthetic restoration test script (`scripts/verify-backup-restore.mjs`) restoring 1,004 users, 204 clients, 354 mandates, and 1,460 audit logs. | `scripts/verify-backup-restore.mjs`<br>(Drill execution: 1,865ms) | **PASS** | Verified application connectivity, index rebuilds, cross-tenant isolation, and SHA-256 hash chains post-restore. |
-| **RIA / Staff MFA**<br>*(Single-factor auth risk for RIA advisory accounts)* | RFC 6238 TOTP MFA for RIAs (`server/auth/mfa.js`); temporary auth tokens require `mfaVerified`; zero impact to client magic-link workflow. | `security_audit_remediation.test.js`<br>(Tests 4.1 – 4.5)<br>Puppeteer Scenario 9 | **PASS** | `server/routes/auth.js:101–165`<br>`LoginPage.jsx:315–385`<br>Bypass attempts blocked with HTTP 401. |
-| **Password Policy**<br>*(Missing complexity enforcement and automated tests)* | Password validator (`validatePasswordStrength`) requiring min 8 chars, uppercase, lowercase, numbers, and special symbols. | `security_audit_remediation.test.js`<br>(Tests 6.1 – 6.6) | **PASS** | `server/auth/passwords.js:31–58`<br>`server/routes/auth.js:36–40`<br>Weak passwords rejected with HTTP 400. |
-| **Session Security & Revocation**<br>*(Revoked sessions could continue until JWT expiry)* | Distributed session revocation blacklist (`SharedStateStore.revokeToken`); checked by `requireAuth` middleware on every protected request. | `security_audit_remediation.test.js`<br>(Test 3.4)<br>Puppeteer Scenario 10 | **PASS** | `server/auth/middleware.js:42–46`<br>`server/routes/auth.js:188–198`<br>Logged-out tokens rejected with HTTP 401. |
-| **Magic-Link Dispatch Integrity**<br>*(Dispatch link rendering as `/m/undefined` in RIA UI)* | `activeMagicTokens` Map in `FinConsentStore` stores raw token transiently in RAM only; `POST /dispatch` returns token directly; `GET /mandates` and `GET /mandates/:id` inject active token for RIA/admin; all frontend components guard against absent token. | `security_audit_remediation.test.js`<br>(Tests 1.7 – 1.9) | **PASS** | `server/db/store.js` (activeMagicTokens registry)<br>`server/routes/mandates.js` (dispatch/enrichment)<br>`MandateDetailPage.jsx`, `MagicLinkModal.jsx`, `ClientDashboard.jsx`<br>Commit `fd0cdaa`. |
+In Indian wealth management, non-discretionary Registered Investment Advisers (RIAs) are subject to stringent regulatory accountability under **Regulation 19 of the SEBI (Investment Advisers) Regulations, 2013**. Under this statute, advisers must maintain a verifiable, sequential, and tamper-resistant record of all client interactions, investment advice tendered, and explicit client trade authorizations for a mandatory minimum period of **5 years (1,825 days)**.
+
+Furthermore, under **Section 65B of the Indian Evidence Act, 1872** (and corresponding provisions of the Information Technology Act, 2000), digital records and electronic consent are inadmissible as legal evidence unless produced under strict evidentiary conditions demonstrating device identity, network origin, synchronized timestamping, and end-to-end cryptographic integrity.
+
+This document defines the **FinConsent Audit Trail Architecture**: its actor taxonomy, immutable event catalog, data models, state transition controls, cryptographic chaining mechanisms, and evidentiary dossier outputs. It also establishes an explicit boundary between **implemented production capabilities** and **forward-looking recommendations**.
 
 ---
 
-## 3. Puppeteer End-to-End Browser Security Verification
+## 2. Actor Taxonomy & Authorization Boundaries
 
-All 11 security scenarios were executed against the live application running on Chrome via Puppeteer (`scripts/e2e-security-verification.mjs`).
+Every entry in the FinConsent audit ledger is tied to an authenticated or cryptographically identified actor:
 
-```text
-========================================================================================
-PUPPETEER E2E SECURITY VERIFICATION MATRIX (11 / 11 PASSED)
-========================================================================================
+| Actor ID | Actor Role | System Identity Example | Permitted Auditable Actions |
+|---|---|---|---|
+| **`sebi-ria`** | Registered Investment Adviser | Suresh Narayanan (`ria@example.in`), SEBI Reg `INA000018421` | Formulate mandate, dispatch link, revoke link, post chat clarification, export compliance dossier. |
+| **`hni-client`** | Advisory Client / Investor | Rohan Mehta (`client@example.in`), Client ID `cli_1` | Unlock mandate with PAN+DOB password, post chat question, request OTP, submit statutory consent. |
+| **`compliance_officer`** | Chief Compliance Officer | Vikramaditya Roy (`compliance@example.in`) | Inspect practice mandates, verify SHA-256 audit chaining, review advisory requests, export Section 65B certificate. |
+| **`admin`** | Platform Super Administrator | Neha Singhania (`admin@example.in`) | System health review, cross-tenant disaster recovery verification, user governance. |
+| **`system`** | Automated Engine Subsystem | Internal System Clock & Crypto Engine | 48-hour cutoff expiration, sliding-window rate limit engagement, OTP brute-force lockout, session revocation. |
+
+---
+
+## 3. Immutable Auditable Event Catalog
+
+The FinConsent backend commits an immutable audit record for each of the following lifecycle, security, and authorization events:
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                              AUDITABLE EVENT CATALOG                                   │
+├───────────────────────────────┬────────────────────────────────────────────────────────┤
+│ Event Type Identifier         │ Operational Trigger & Meaning                          │
+├───────────────────────────────┼────────────────────────────────────────────────────────┤
+│ `MANDATE_CREATED`             │ RIA drafts rebalance recommendation & computes tax.    │
+│ `MANDATE_DISPATCHED`          │ 256-bit magic link issued; 48-hour cutoff initiated.   │
+│ `MANDATE_VIEWED`              │ Client opens public mandate URL; IP & User-Agent logged│
+│ `PASSWORD_UNLOCKED`           │ Client successfully enters PAN+DOB password on mobile. │
+│ `PASSWORD_FAILED`             │ Incorrect password entered; failed attempt logged.     │
+│ `PASSWORD_LOCKOUT`            │ 5 consecutive incorrect passwords; 15-min lockout.     │
+│ `CHAT_MESSAGE_SENT`           │ In-app clarification message posted (RIA or Client).   │
+│ `OTP_GENERATED`               │ 6-digit statutory OTP generated with 5-minute TTL.     │
+│ `OTP_VERIFIED`                │ Client submits matching 6-digit OTP code.              │
+│ `OTP_LOCKOUT`                 │ 3 consecutive incorrect OTPs; token burned & locked.   │
+│ `CONSENTED`                   │ Explicit statutory declarations accepted; mandate locked│
+│ `LINK_REVOKED`                │ RIA cancels link manually before consent due to drift. │
+│ `MANDATE_EXPIRED`             │ 48-hour market execution window elapses without consent│
+│ `AUTH_LOGIN`                  │ RIA/Staff logs in via credentials or Google OAuth.     │
+│ `AUTH_LOGOUT`                 │ User logs out; active JWT added to revoked blacklist.  │
+│ `MFA_CHALLENGE`               │ TOTP challenge presented to RIA user.                  │
+│ `MFA_VERIFIED`                │ Valid RFC 6238 TOTP entered; full session token issued.│
+│ `CROSS_TENANT_ACCESS_BLOCKED` │ Attempted access to foreign client/mandate rejected 403│
+└───────────────────────────────┴────────────────────────────────────────────────────────┘
 ```
 
-### Scenario 1: Normal RIA Workflow
-- **User / Role**: `ria@example.in` / Role: `ria` (Suresh Narayanan - Prudent Wealth Advisory)
-- **Workflow**: RIA Login → Scoped Dashboard → Client Directory → Rebalance Mandate Creation → Proposal Dispatch.
-- **HTTP Status**: 201 Created / 200 OK
-- **Evidence**:
-  - Mandate created with pre-computed STCG/LTCG tax liability.
-  - Raw magic token generated once in memory, hashed to SHA-256 for database persistence, and dispatched to client.
-
-![01 RIA Dashboard](docs/visual-audit/security/01-ria-dashboard.png)
-*Figure 1.1: Authenticated RIA Dashboard showing portfolio overview and statutory trade mandates.*
-
-![02 RIA Clients](docs/visual-audit/security/02-ria-clients.png)
-*Figure 1.2: RIA Client Directory scoped strictly to Prudent Wealth Advisory clients.*
-
-![03 RIA Mandate Created](docs/visual-audit/security/03-ria-mandate-created.png)
-*Figure 1.3: Rebalance recommendation mandate drafted with STCG/LTCG pre-computation.*
-
-![04 RIA Mandate Dispatched](docs/visual-audit/security/04-ria-mandate-dispatched.png)
-*Figure 1.4: Mandate successfully dispatched with active 48-hour statutory cutoff window.*
-
 ---
 
-### Scenario 2: Normal Client Workflow (Magic Link Consent)
-- **User / Role**: Anonymous Client Bearer (Zero-Login Token)
-- **Workflow**: Client opens link → reviews proposal details & tax impact → requests OTP → enters 6-digit OTP → mandate sealed to `consented`.
-- **HTTP Status**: 200 OK
-- **Evidence**: Section 65B Indian Evidence Act compliant receipt generated with SHA-256 hash.
+## 4. Audit Record Schema & Cryptographic Ledger Architecture
 
-![05 Client Consent View](docs/visual-audit/security/05-client-consent-view.png)
-*Figure 2.1: Client zero-login mobile proposal review showing advance tax impact and trade allocations.*
+### 4.1 Audit Record Data Schema
 
-![06 Client OTP Modal](docs/visual-audit/security/06-client-otp-modal.png)
-*Figure 2.2: Statutory 6-digit OTP verification modal requiring explicit regulatory declarations.*
+Every audit entry conforms to a deterministic JSON schema stored in the `audit_logs` collection:
 
-![07 Client Consented Success](docs/visual-audit/security/07-client-consented-success.png)
-*Figure 2.3: Official Section 65B Indian Evidence Act compliant receipt with SHA-256 audit hash.*
-
----
-
-### Scenario 3: Unauthorized Client Access Boundaries
-- **User / Role**: `client@example.in` / Role: `client` (Rohan Mehta)
-- **Attack Vector**: Authenticated client persona attempts to navigate to RIA advisor dashboard, mandate creation form, and firm billing configuration.
-- **Expected & Actual Result**: UI `ProtectedRoute` displays access restricted card; API calls to `/api/billing/*` return HTTP 403 Forbidden.
-
-![08 Client Denied Advisor Dashboard](docs/visual-audit/security/08-client-denied-advisor-dashboard.png)
-*Figure 3.1: Client attempting `/dashboard` is automatically scoped to client view with zero advisor controls.*
-
-![09 Client Denied Mandate Creation](docs/visual-audit/security/09-client-denied-mandate-creation.png)
-*Figure 3.2: Client attempting `/mandates/new` receives "Access Restricted - Role Client Not Permitted" barrier.*
-
-![10 Client Denied Billing Settings](docs/visual-audit/security/10-client-denied-billing-settings.png)
-*Figure 3.3: Client attempting `/settings/billing` is blocked from commercial and payment settings.*
-
----
-
-### Scenario 4: Cross-RIA Multi-Tenant Isolation
-- **User / Role**: `ria@example.in` (Tenant A: Prudent Wealth Advisory) attempting access to Tenant B resources (`usr_ria_stranger`, Client `cli_201`, Mandate `man_stranger_101`).
-- **Attack Vector**: Direct API calls to retrieve foreign client profile, mandate record, and compliance dossier.
-- **Expected & Actual Result**: All foreign endpoints return HTTP 403 Forbidden; zero cross-tenant data leakage.
-
-![11 Cross-RIA Denied Foreign Client](docs/visual-audit/security/11-cross-ria-denied-foreign-client.png)
-*Figure 4.1: Cross-tenant client profile query rejected with HTTP 403 Forbidden.*
-
-![12 Cross-RIA Denied Foreign Mandate](docs/visual-audit/security/12-cross-ria-denied-foreign-mandate.png)
-*Figure 4.2: Foreign mandate lookup rejected with HTTP 403 Forbidden.*
-
-![13 Cross-RIA Denied Foreign Dossier](docs/visual-audit/security/13-cross-ria-denied-foreign-dossier.png)
-*Figure 4.3: Foreign compliance audit dossier query rejected with HTTP 403 Forbidden.*
-
----
-
-### Scenario 5: Direct URL & IDOR Parameter Tampering
-- **User / Role**: Unauthenticated or cross-tenant attacker tampering with mandate UUIDs in browser URL (`/mandates/man_tampered_attack_uuid_999`).
-- **Expected & Actual Result**: Server returns HTTP 404/403; UI displays "Mandate Not Found or Unauthorized" card.
-
-![14 Tampered ID Access Denied](docs/visual-audit/security/14-tampered-id-access-denied.png)
-*Figure 5.1: Tampered mandate ID returns safe error page without disclosing database schema.*
-
----
-
-### Scenario 6: UI Action Visibility for Client Role
-- **User / Role**: `client@example.in` / Role: `client`
-- **Verification**: Ensure navigation bar and layout render strictly client-permitted actions: Mandate Approvals, Support, Profile. No "Draft Mandate", "Client Directory", or "Billing" buttons appear.
-
-![15 Client Navigation No RIA Controls](docs/visual-audit/security/15-client-navigation-no-ria-controls.png)
-*Figure 6.1: Client navigation bar strictly sanitized with zero RIA administration actions.*
-
----
-
-### Scenario 7: Revoked / Expired Magic Link Rejection
-- **User / Role**: Anonymous bearer presenting an expired or revoked magic-link token (`/m/revoked_token_attacker_probe_777`).
-- **Expected & Actual Result**: Server hashes token, queries `magicTokenHash`, detects revocation or expiration, returns HTTP 404 Not Found.
-
-![16 Revoked Magic Link Error](docs/visual-audit/security/16-revoked-magic-link-error.png)
-*Figure 7.1: Revoked magic-link presentation cleanly rejected with statutory expiration banner.*
-
----
-
-### Scenario 8: OTP Brute-Force Lockout & Consent Bypass
-- **User / Role**: Attacker presenting invalid OTP codes against a live client mandate proposal.
-- **Workflow**:
-  - Failure 1: Decrements remaining attempts to 2.
-  - Failure 2: Decrements remaining attempts to 1.
-  - Failure 3: Triggers immediate lockout (`locked: true`), destroys active OTP, returns HTTP 429 Too Many Requests.
-  - Bypass Attempt: Attacker attempts to forge direct `PUT /api/mandates/:id` with `status: consented`. Blocked with HTTP 404/403.
-
-![17 OTP Lockout After 3 Failures](docs/visual-audit/security/17-otp-lockout-after-3-failures.png)
-*Figure 8.1: Client modal after 3 incorrect OTP entries: "Security Lockout: Maximum OTP verification attempts exceeded (3/3)."*
-
-![18 Unauthorized Consent Bypass Blocked](docs/visual-audit/security/18-unauthorized-consent-bypass-blocked.png)
-*Figure 8.2: Attempted direct status manipulation rejected; mandate status remains in review.*
-
----
-
-### Scenario 9: RIA Two-Factor Authentication (MFA) & Bypass Protection
-- **User / Role**: RIA account with TOTP MFA enabled (`mfa.advisor.*@firm.in`).
-- **Workflow**:
-  - Step 1: Primary authentication (Email + Password). API returns `200 OK` with `mfaRequired: true` and short-lived temporary token.
-  - Step 2: Browser renders Two-Factor Authentication Challenge Card.
-  - Step 3: Attacker enters invalid code (`000000`). Rejected with "Invalid two-factor authentication code" (HTTP 401).
-  - Step 4: Attacker attempts to call protected API (`POST /api/mandates`) using temporary token. Rejected with HTTP 401 Unauthorized (`mfaVerified: false`).
-  - Step 5: Legitimate advisor inputs valid RFC 6238 TOTP code. Full session token issued; browser enters authenticated RIA workspace.
-
-![19 RIA MFA Challenge](docs/visual-audit/security/19-ria-mfa-challenge.png)
-*Figure 9.1: Two-Factor Authentication Challenge Card displayed immediately after primary credentials.*
-
-![20 RIA MFA Invalid Rejected](docs/visual-audit/security/20-ria-mfa-invalid-rejected.png)
-*Figure 9.2: Incorrect 6-digit TOTP code rejected with security error banner.*
-
-![21 RIA MFA Bypass Rejected](docs/visual-audit/security/21-ria-mfa-bypass-rejected.png)
-*Figure 9.3: Direct API bypass attempt with unverified temporary token rejected with HTTP 401.*
-
-![22 RIA MFA Verified Dashboard](docs/visual-audit/security/22-ria-mfa-verified-dashboard.png)
-*Figure 9.4: Authenticated RIA workspace unlocked upon valid TOTP verification.*
-
----
-
-### Scenario 10: Revoked Session & Distributed Token Blacklist
-- **User / Role**: RIA account logging out via `POST /api/auth/logout`.
-- **Attack Vector**: Attacker obtains previous JWT token and attempts to access `/api/mandates` or load `/dashboard`.
-- **Expected & Actual Result**: Token is recorded in distributed blacklist (`dbStore.revokeToken`). Protected API returns HTTP 401 Unauthorized; browser UI renders "Session has been revoked / logged out" banner.
-
-![23 Revoked Session Blocked](docs/visual-audit/security/23-revoked-session-blocked.png)
-*Figure 10.1: Revoked session presentation blocked with HTTP 401 and UI logout banner.*
-
----
-
-### Scenario 11: Cross-Instance Distributed Rate Limiting & Brute-Force Lockout
-- **User / Role**: Distributed attacker attempting credential stuffing / brute-force against `/api/auth/login`.
-- **Workflow**: 35 rapid sequential requests dispatched with `x-test-rate-limit: true`.
-- **Expected & Actual Result**: Sliding-window rate limiter engages; 35 / 35 requests blocked with HTTP 429 Too Many Requests (`Retry-After: 60`).
-
-![24 Distributed Rate Limit Blocked](docs/visual-audit/security/24-distributed-rate-limit-blocked.png)
-*Figure 11.1: Authentication rate limiter enforces distributed sliding-window threshold.*
-
----
-
-## 4. Deep-Dive Security Architecture & Technical Verification
-
-### 4.1 Secure Magic-Link Token Storage Architecture
-
-```text
-CLIENT LINK DISPATCH:
-  Raw Token (crypto.randomBytes(32).toString('hex'))
-        │
-        ▼
-  SHA-256 Digest (crypto.createHash('sha256').update(rawToken).digest('hex'))
-        │
-        ▼
-  Stored in MongoDB Atlas as `magicTokenHash`
-  (Plaintext bearer token is deleted from persistent document)
-
-CLIENT LINK PRESENTATION:
-  Incoming URL: https://finconsent.in/m/{rawToken}
-        │
-        ▼
-  SHA-256 Digest generated from incoming {rawToken}
-        │
-        ▼
-  Lookup: Mandate.findOne({ magicTokenHash: tokenHash })
-        │
-        ├── Legacy fallback: If not found, lookup by plaintext `magicToken`
-        │   and immediately migrate record to `magicTokenHash`.
-        │
-        ▼
-  Validate Expiration (cutoffHours / 48-hour statutory window)
-        ▼
-  Validate Status (not revoked, not expired)
-        ▼
-  Authorize Client Scope
-```
-
-**Implementation in `server/db/store.js`**:
-```javascript
-// Mandate creation stores SHA-256 hash
-const magicToken = crypto.randomBytes(32).toString('hex');
-const magicTokenHash = crypto.createHash('sha256').update(magicToken).digest('hex');
-const record = { ...mandateData, magicTokenHash };
-delete record.magicToken; // Plaintext token never persisted
-
-// Lookup hashes incoming token
-findMandateByToken(rawToken) {
-  const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
-  let mandate = this.mandates.find((m) => m.magicTokenHash === tokenHash);
-  if (!mandate) {
-    // Legacy migration fallback
-    mandate = this.mandates.find((m) => m.magicToken === rawToken);
-    if (mandate) {
-      mandate.magicTokenHash = tokenHash;
-      delete mandate.magicToken;
-    }
+```json
+{
+  "id": "aud_7a9c8e12-3456-4789-a012-b3456789cdef",
+  "riaId": "usr_ria_1",
+  "clientId": "cli_1",
+  "mandateId": "man_faad6087-e53c-493c-9c8d-3553dedb1f71",
+  "eventType": "CONSENTED",
+  "timestamp": "2026-10-08T10:28:45.123Z",
+  "timestampIST": "08/10/2026, 3:58:45 pm",
+  "ipAddress": "49.36.110.12",
+  "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15",
+  "channel": "EMAIL_IN_APP_OTP",
+  "payloadHash": "7f3d99e526a0b2341258ef8a90123456789abcdef0123456789abcdef0123456",
+  "prevHash": "e92a71bc88349021578ef2190123456789abcdef0123456789abcdef01234567",
+  "metadata": {
+    "certificate": {
+      "receiptId": "REC-MAN_FAAD6087-M1K89Z",
+      "clientName": "Rohan Mehta",
+      "clientPan": "ABCDE1234F",
+      "riaFirmName": "Prudent Wealth Advisory",
+      "riaSebiReg": "INA000018421",
+      "taxPayable": 11440,
+      "stcgTax": 11000,
+      "ltcgTax": 0,
+      "cessAmount": 440
+    },
+    "statutoryDeclarations": [
+      "SEBI (Investment Advisers) Regulations, 2013 (Regulation 19) Prior Informed Consent",
+      "Acceptance of Pre-Computed Union Budget 2024 Capital Gains Tax Liability",
+      "Section 65B Electronic Evidence Admissibility Declaration"
+    ]
   }
-  return mandate;
 }
 ```
 
+### 4.2 Append-Only Forward SHA-256 Hash Chaining
+
+To prevent unauthorized manipulation, retroactive record alteration, or silent record deletion, each audit entry incorporates a forward cryptographic hash link:
+
+$$\text{payloadHash}_N = \text{SHA-256}(\text{prevHash}_{N-1} \parallel \text{timestamp}_N \parallel \text{eventType}_N \parallel \text{payloadString}_N)$$
+
+Where:
+- $\text{prevHash}_0$ is the genesis hash: `0000000000000000000000000000000000000000000000000000000000000000`.
+- Altering any historical log record invalidates every subsequent hash in the sequence, rendering tampering immediately detectable during regulatory audits.
+
 ---
 
-### 4.2 Production HTTPS/TLS & Reverse-Proxy Hardening
+## 5. Security & Verification Lifecycle Events
 
-```text
-Internet
-   │
-   ▼  [HTTPS / Port 443 with TLS 1.3]
-AWS ALB / Cloudflare / Nginx (TLS Termination)
-   │  Adds X-Forwarded-For, X-Forwarded-Proto: https
-   ▼
-FinConsent Express Application (Port 5000)
-   │  app.set('trust proxy', 1)
-   │  Enforces req.secure || req.headers['x-forwarded-proto'] === 'https'
-   │  Emits Helmet HSTS: max-age=31536000; includeSubDomains; preload
-   ▼
-MongoDB Atlas (TLS Encrypted Connection)
+### 5.1 Mandate Password Protection & Access Events
+1. **Pre-Unlock Access:** When a client opens `/m/:token`, the server commits `MANDATE_VIEWED` logging client IP and User-Agent. Only minimal non-sensitive metadata (firm name, advisor name, client name) is emitted. Trade baskets and tax calculations remain encrypted at rest.
+2. **Password Verification:** The client enters the normalized password (`Last 4 PAN digits + DOB in DDMMYYYY`, e.g., `123414081978` for Rohan Mehta), triggering PBKDF2 key derivation and AES-256-GCM DEK unwrapping.
+   - On success: The server records `PASSWORD_UNLOCKED`, resets failed attempt counters, and issues a 2-hour signed JWT (`x-unlock-token`).
+   - On failure: The server records `PASSWORD_FAILED`. If 5 consecutive failures occur within 15 minutes, `PASSWORD_LOCKOUT` engages, returning `HTTP 429 Too Many Requests`.
+
+### 5.2 Mandate Chat Rail vs. Statutory Consent
+FinConsent includes an in-app clarification rail. Every message posted by the client or advisor generates a `CHAT_MESSAGE_SENT` audit record.
+> **STATUTORY BOUNDARY NOTICE:** Under SEBI Regulation 19, informal chat messages **DO NOT CONSTITUTE TRADE CONSENT**. A client typing "looks good" or "proceed" in the chat cannot authorize transactions. Statutory consent requires explicit declaration acceptance followed by 6-digit OTP verification.
+
+### 5.3 6-Digit OTP Verification & Brute-Force Defense
+1. **Generation:** When the client taps "Authorize Rebalance", `OTP_GENERATED` is logged with a 5-minute TTL. (Due to the application's SMS policy, delivery is executed via secure in-app display and registered email).
+2. **Verification & Lockout:** The client inputs the 6-digit code.
+   - If incorrect: Counter decrements (3 attempts max).
+   - If 3rd attempt fails: `OTP_LOCKOUT` is committed, the token is permanently burned, and subsequent requests return `HTTP 429 Too Many Requests`.
+3. **Consent Commitment:** Upon valid OTP submission and verified declaration acceptance, the mandate status transitions to `consented`, the magic token is revoked, and `CONSENTED` is committed to the ledger with the Section 65B certificate digest.
+
+### 5.4 Cross-Tenant Isolation Enforcement
+When an advisor or client attempts to query a record belonging to another advisory practice, the server logs a `CROSS_TENANT_ACCESS_BLOCKED` security event and returns `HTTP 403 Forbidden`. Foreign client names, PANs, or portfolio contents are never disclosed.
+
+---
+
+## 6. Section 65B Electronic Evidence Dossier Generation
+
+Upon consent, the platform compiles an official electronic compliance certificate:
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│             SEBI REGULATION 19 / SECTION 65B ELECTRONIC COMPLIANCE DOSSIER             │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ Receipt Identifier: REC-MAN_FAAD6087-M1K89Z                                            │
+│ Mandate Reference:  Tactical Equity Rebalance & Tax-Efficient Realignment              │
+│ Status:             LEGALLY SEALED & LOCKED (CONSENTED)                                │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ Advisory Practice:  Prudent Wealth Advisory (SEBI Reg: INA000018421)                   │
+│ Lead Adviser:       Suresh Narayanan                                                   │
+│ Client Name:        Rohan Mehta                                                        │
+│ Client Masked PAN:  AB*****4F                                                          │
+│ Timestamp (IST):    08/10/2026, 3:58:45 pm                                             │
+│ Client IP Address:  49.36.110.12                                                       │
+│ Client User-Agent:  Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X)            │
+│ Authorization Mode: 6-Digit OTP Verification + Mandatory Statutory Checkboxes           │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ Pre-Computed Tax Summary (Union Budget 2024 Regime):                                   │
+│ • Net Short-Term Capital Gains (STCG @ 20%):     ₹55,000  (Tax: ₹11,000)               │
+│ • Net Long-Term Capital Gains (LTCG @ 12.5%):    ₹1,25,000 (Exempt under Sec 112A)     │
+│ • Health & Education Cess (4%):                  ₹440                                  │
+│ • Total Estimated Tax Liability:                 ₹11,440                               │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ SHA-256 Electronic Evidence Hash:                                                      │
+│ 7f3d99e526a0b2341258ef8a90123456789abcdef0123456789abcdef0123456                       │
+│ Data Sovereignty Certification: AWS Asia Pacific (Mumbai) ap-south-1                  │
+└────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Implementation in `server/index.js`**:
-```javascript
-app.set('trust proxy', 1);
+Advisers and compliance officers can view and print this certificate via the **Compliance Dossier Modal** (`ComplianceDossierModal.jsx`) or download it for statutory submission.
 
-if (process.env.NODE_ENV === 'production') {
-  app.use((req, res, next) => {
-    const isHttps = req.secure || req.headers['x-forwarded-proto'] === 'https';
-    if (!isHttps) {
-      return res.redirect(301, `https://${req.headers.host}${req.url}`);
-    }
-    next();
-  });
-}
+---
 
-app.use(
-  helmet.hsts({
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true,
-  })
-);
+## 7. Operational & Security Testing Evidence Matrix
+
+The audit trail integrity has been verified across historical automated test runs and synthetic restoration drills:
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                        EVIDENCED AUDIT & SECURITY TEST RESULTS                         │
+├─────────────────────────────────────────┬────────┬─────────────────────────────────────┤
+│ Verification Suite / Test File          │ Status │ Auditable Scope & Assertions        │
+├─────────────────────────────────────────┼────────┼─────────────────────────────────────┤
+│ `taxCalculator.test.js`                 │ PASS   │ 8 tests verifying Budget 2024 tax   │
+│                                         │        │ calculations & advance tax alert.   │
+├─────────────────────────────────────────┼────────┼─────────────────────────────────────┤
+│ `acceptance.test.js`                    │ PASS   │ 4 tests verifying 256-bit magic     │
+│                                         │        │ token, 48h cutoff, & hash chaining. │
+├─────────────────────────────────────────┼────────┼─────────────────────────────────────┤
+│ `security_hardening.test.js`            │ PASS   │ 15 tests verifying tenant isolation,│
+│                                         │        │ IDOR prevention, & OTP lockout.     │
+├─────────────────────────────────────────┼────────┼─────────────────────────────────────┤
+│ `security_audit_remediation.test.js`    │ PASS   │ 24 tests verifying SHA-256 token    │
+│                                         │        │ hashing, MFA, rate limits, session  │
+│                                         │        │ revocation, & backup restore drill. │
+├─────────────────────────────────────────┼────────┼─────────────────────────────────────┤
+│ `dispatch_print_testing.test.js`        │ PASS   │ 14 tests verifying password derive, │
+│                                         │        │ PAN+DOB normalization & unlock rail.│
+├─────────────────────────────────────────┼────────┼─────────────────────────────────────┤
+│ `api_regressions_and_contract_audit.js` │ PASS   │ 44 tests verifying all 44 API routes│
+│                                         │        │ and auth/audit serialization.       │
+├─────────────────────────────────────────┼────────┼─────────────────────────────────────┤
+│ `scripts/verify-backup-restore.mjs`     │ PASS   │ Synthetic restoration drill of      │
+│                                         │        │ 1,460 audit logs; 0 broken chains.  │
+└─────────────────────────────────────────┴────────┴─────────────────────────────────────┘
 ```
 
 ---
 
-### 4.3 Distributed Rate Limiting & State Synchronization
+## 8. Capability Distinction: Implemented vs. Recommended
 
-```text
-                  ┌── Application Worker 1
-Incoming Request ─┼── Application Worker 2
-                  └── Application Worker 3
-                           │
-                           ▼
-             SharedStateStore (Redis / Cluster Adapter)
-             ┌─────────────────────────────────────────┐
-             │ - Sliding Window Rate Limit Timestamps  │
-             │ - Token-Scoped OTP Attempt Tracking     │
-             │ - OTP Brute-Force Lockout (3 attempts)  │
-             │ - Session Revocation Token Blacklist    │
-             └─────────────────────────────────────────┘
-```
+To ensure transparency during regulatory and client technical reviews, the following matrix explicitly delineates **currently implemented capabilities** from **forward-looking recommendations**:
 
-**Fail-Safe Architecture**:
-- In production, when `REQUIRE_REDIS=true`, `SharedStateStore` mandates an active Redis connection and fails closed if Redis is unreachable.
-- Development and test environments run with the high-performance local cluster adapter with zero external setup required.
-
----
-
-### 4.4 Synthetic Backup Restoration Drill Verification
-
-To guarantee disaster recovery without risking live investor data, a complete non-destructive backup restoration drill was executed via `scripts/verify-backup-restore.mjs`.
-
-**Restore Verification Drill Results**:
-```text
-================================================================
-   FINCONSENT DATABASE BACKUP & RESTORATION VERIFICATION DRILL   
-================================================================
-[DRILL] Extracting simulated point-in-time snapshot...
-  - Synthetic Users extracted: 1004
-  - Synthetic Clients extracted: 204
-  - Synthetic Mandates extracted: 354
-  - Synthetic Audit Logs extracted: 1460
-
-[DRILL] Executing non-destructive restoration cycle...
-  ✔ Application connectivity restored.
-  ✔ 1004 users restored with valid password hashes.
-  ✔ 204 clients restored with firm scoping intact.
-  ✔ 354 mandates restored with SHA-256 token hashes intact.
-  ✔ 1460 audit log records restored.
-  ✔ Cryptographic hash chain validation: 1460 / 1460 records verified (0 broken chains).
-  ✔ Post-restore tenant isolation verified: Cross-RIA access rejected.
-
-[DRILL COMPLETED] Restoration verified successfully in 1865ms.
-Status: PASS
-```
-
-**Disaster Recovery Specifications**:
-- **Backup Mechanism**: MongoDB Atlas Continuous Cloud Backups with point-in-time recovery (PITR) to the exact second (AWS Mumbai `ap-south-1`).
-- **Recovery Point Objective (RPO)**: <= 1 minute.
-- **Recovery Time Objective (RTO)**: <= 15 minutes.
-- **Access Control**: Restoration privileges restricted strictly to designated Platform SecOps Administrators with hardware MFA.
-- **Verification Schedule**: Automated non-destructive synthetic recovery drill scheduled quarterly.
-
----
-
-### 4.5 Two-Factor Authentication (MFA) Implementation for RIA / Staff Accounts
-
-**Architecture & Differentiation**:
-- **RIA / Advisor / Staff Accounts**: Enforce RFC 6238 TOTP Two-Factor Authentication (Google Authenticator, Microsoft Authenticator, 1Password) upon password verification.
-- **Client Trade Approvals**: Retain the frictionless **Zero-Login Magic Link + 6-Digit OTP Consent Rail**. Clients are never forced into complex account creation or authenticator app setup.
-
-**MFA API Endpoints**:
-- `POST /api/auth/mfa/setup`: Generates 160-bit cryptographically secure base32 secret, backup codes, and `otpauth://` QR URI.
-- `POST /api/auth/mfa/enable`: Validates initial 6-digit TOTP code and commits `mfaEnabled: true`.
-- `POST /api/auth/mfa/verify`: Exchanges temporary auth token (`mfaPending: true`) + valid TOTP code for full JWT session (`mfaVerified: true`).
-- `POST /api/auth/logout`: Revokes active JWT token in distributed blacklist.
-
----
-
-## 5. Automated Test Suite Results
-
-The complete Vitest test suite was executed across all 9 test suites:
-
-```text
- RUN  v3.2.7 C:/antigravity/fullstack-builder/fin-consent
-
- ✓ src/test/taxCalculator.test.js (8 tests)
- ✓ src/test/api.test.js (2 tests)
- ✓ src/test/roles_guest_workflow.test.js (6 tests)
- ✓ src/test/security_audit_remediation.test.js (24 tests)
- ✓ src/test/acceptance.test.js (4 tests)
- ✓ src/test/rbac_requests_sms.test.js (6 tests)
- ✓ src/test/role_experience_and_access_control.test.js (16 tests)
- ✓ src/test/security_hardening.test.js (15 tests)
- ✓ src/test/mandate_createdat_date.test.js (1 test)
-
- Test Files  9 passed (9)
-      Tests  82 passed (82)
-   Duration  22.88s
-```
-
-### Breakdown of New Remediation Tests (`security_audit_remediation.test.js`):
-- **1. SHA-256 Magic Token Hashing, Scoping & Dispatch Integrity**:
-  - `1.1`: Stores SHA-256 hash and does not persist raw plaintext token in database.
-  - `1.2`: Authenticates valid token via hash lookup.
-  - `1.3`: Rejects invalid token with HTTP 404.
-  - `1.4`: Rejects revoked token with HTTP 404.
-  - `1.5`: Cross-recommendation isolation (Token A cannot access Mandate B).
-  - `1.6`: Automatic migration for legacy plaintext records.
-  - `1.7`: Transient registry returns active plaintext token only during authorized dispatch window.
-  - `1.8`: Dispatch response includes a valid non-undefined `magicToken` field.
-  - `1.9`: `magicToken` is absent from persisted MongoDB document (only `magicTokenHash` present).
-- **2. Production HTTPS / TLS Application Protections**:
-  - `2.1`: Configures `trust proxy: 1` for reverse-proxy header handling.
-  - `2.2`: Includes HSTS header with 1-year max-age.
-  - `2.3`: Production redirect for insecure HTTP traffic.
-- **3. Short-Lived JWT Expiration & Revocation**:
-  - `3.1`: Token valid immediately after issuance, rejected with HTTP 401 upon expiration (`1s` TTL test).
-  - `3.2`: Rejects tokens with invalid HMAC signatures.
-  - `3.3`: Rejects malformed JWT strings.
-  - `3.4`: Rejects revoked session tokens after logout.
-- **4. RIA Two-Factor Authentication (MFA)**:
-  - `4.1`: Generates secure RFC 6238 TOTP secret and backup codes.
-  - `4.2`: Enables MFA upon valid TOTP verification.
-  - `4.3`: Returns `mfaRequired: true` upon primary authentication for enrolled users.
-  - `4.4`: Blocks API access when using unverified temporary token (HTTP 401).
-  - `4.5`: Unlocks full session token upon valid TOTP challenge completion.
-- **5. Distributed Rate Limiting & OTP Protection**:
-  - `5.1`: Shared rate limiter synchronizes attempt counts across multiple simulated server instances.
-  - `5.2`: IP rotation cannot bypass OTP brute-force lockout.
-  - `5.3`: Sliding window resets after expiry window.
-- **6. Enterprise Password Complexity Policy**:
-  - `6.1`: Rejects passwords shorter than 8 characters.
-  - `6.2`: Rejects passwords missing uppercase letters.
-  - `6.3`: Rejects passwords missing lowercase letters.
-  - `6.4`: Rejects passwords missing numeric digits.
-  - `6.5`: Rejects passwords missing special characters.
-  - `6.6`: Accepts compliant enterprise passwords.
-
----
-
-## 6. Production Configuration & Secret Management Audit
-
-| Production Control | Status | Validation Evidence |
+| Functional Area | Currently Implemented Capability | Future Recommendation / Roadmap Item |
 |---|---|---|
-| **JWT Secret Enforcement** | **PASS** | `server/auth/jwt.js:3–6`: Fails closed with fatal startup error if `JWT_SECRET` is unset in production. |
-| **Razorpay Webhook Secret** | **PASS** | `server/routes/billing.js:35–38`: Fails closed with HTTP 500 if webhook secret is unset in production. |
-| **Redis Shared State** | **PASS** | `server/db/sharedState.js:21–23`: Fails closed if `REQUIRE_REDIS=true` and `REDIS_URL` is unreachable in production. |
-| **Development Test Bypass** | **PASS** | OTP code bypass `123456` strictly disabled when `NODE_ENV === 'production'`. `demoOtp` stripped from API responses. |
-| **Secure Cookie Flag** | **PASS** | `server/index.js:33–48`: Configured with `secure: true`, `httpOnly: true`, and `sameSite: 'lax'`. |
-| **Synthetic Seeder Isolation** | **PASS** | Seeder only runs when database is unpopulated and `NODE_ENV !== 'production'`. |
-| **Console Log Sanitization** | **PASS** | Zero plaintext passwords, OTPs, or bearer tokens logged in application output. |
-
----
-
-## 7. Final Acceptance Checklist & Conclusion
-
-### Critical Acceptance Criteria
-- [x] Raw magic-link bearer tokens are not unnecessarily stored in plaintext
-- [x] Magic-link lifecycle remains secure (hash lookup, expiration, revocation, scoping)
-- [x] HTTPS/TLS production requirement is enforced and documented
-- [x] Security-critical rate limiting works across multiple instances (`SharedStateStore`)
-- [x] OTP protection works across multiple instances (IP rotation cannot bypass lockout)
-- [x] JWT expiration is automatically tested (1s token expiry test passing)
-- [x] MFA protects RIA/staff accounts (RFC 6238 TOTP)
-- [x] MFA cannot be bypassed (server-side `mfaVerified` enforcement)
-- [x] Backup restoration has been successfully tested (synthetic point-in-time drill verified)
-- [x] No production secrets are exposed or committed
-- [x] Tenant isolation still passes (cross-RIA returns HTTP 403)
-- [x] IDOR/BOLA still passes (all endpoints scoped to authenticated RIA firm)
-- [x] RBAC still passes (client role restricted from advisor actions)
-- [x] Consent state integrity still passes (mandates require statutory OTP verification)
-
-### Verification Suite
-- [x] Full automated test suite passes (84 / 84 tests passing)
-- [x] Security remediation test suite passes (26 / 26 new tests passing, +2 dispatch lifecycle tests)
-- [x] Puppeteer security suite passes (11 / 11 browser scenarios passing)
-- [x] 24 visual audit screenshots captured and embedded
-- [x] Production build passes (`npm run build` exit code 0)
-- [x] Clean git working tree with zero committed credentials
-- [x] Magic-link dispatch integrity verified — no `/m/undefined` exposure (commit `fd0cdaa`)
-
-### Final Verdict: **READY**
-FinConsent is hardened and certified ready for production deployment behind standard cloud infrastructure (AWS ALB TLS termination, AWS Secrets Manager, and AWS ElastiCache for Redis).
-
----
-
-## 8. Change Log
-
-| Date & Time (IST) | Commit | Change Summary |
-|---|---|---|
-| 2026-10-08T11:19 | `1fa8016` | feat(security): remediate all baseline audit conditions — SHA-256 token hashing, HSTS, distributed rate limiting, JWT expiry tests, backup drill, TOTP MFA, password policy, session revocation |
-| 2026-10-08T12:42 | `fd0cdaa` | fix: resolve dispatch mandate link `/m/undefined` — `activeMagicTokens` transient registry, dispatch API enrichment, frontend guards across 7 components, 2 new tests (1.8, 1.9); 84/84 tests pass |
+| **Audit Ledger Storage** | Append-only in-memory and MongoDB Atlas storage with forward SHA-256 hash chaining (`prevHash -> payloadHash`). | Blockchain anchoring (e.g., Polygon/Hyperledger) or WORM (Write Once, Read Many) cloud object storage (AWS S3 Object Lock). |
+| **Electronic Evidence** | Section 65B compliant electronic certificate capturing IP, User-Agent, IST timestamp, and SHA-256 digest. | Integration with an external, licensed Certifying Authority (e.g., eMudhra, (n)Code) for PKI digital signatures. |
+| **Timestamping** | Synchronized server-side NTP timestamping localized to Indian Standard Time (IST). | RFC 3161 compliant external Time Stamping Authority (TSA) cryptographic anchoring. |
+| **OTP Delivery** | In-app secure notification and registered email delivery (SMS disabled by architectural policy). | Production TRAI DLT-registered SMS aggregator gateway onboarding (Twilio / Gupshup / Karix). |
+| **Client Authentication** | Normalized PAN (last 4 digits) + DOB (DDMMYYYY) password derivation triggering PBKDF2 key unwrapping. | Aadhaar eSign / DigiLocker biometric or e-KYC integration. |
+| **Tenant Isolation** | Firm-level scoping in database queries, route protection, and distributed rate limiting. | Separate physical database instances or cryptographic multi-tenancy per RIA firm. |
+| **Regulatory Filing** | Printable and downloadable PDF/HTML compliance dossier for SEBI inspections. | Automated real-time SEBI regulatory compliance portal API dispatch. |

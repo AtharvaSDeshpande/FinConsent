@@ -4,3 +4,4 @@ coverage/
 .env
 credentials.json
 end_users.csv
+~$*.pptx
