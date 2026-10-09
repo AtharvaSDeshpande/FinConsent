@@ -25,8 +25,11 @@ import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import { Link as RouterLink } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../security/AuthContext.jsx';
+import { useI18n } from '../../i18n/I18nContext.jsx';
+import { formatNumber } from '../../i18n/formatters.js';
 
 export const ClientsPage = () => {
+  const { t } = useI18n();
   const queryClient = useQueryClient();
   const [openModal, setOpenModal] = useState(false);
   const [modalError, setModalError] = useState('');
@@ -145,16 +148,16 @@ export const ClientsPage = () => {
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
             <Typography variant="h4" component="h1" fontWeight={800} letterSpacing="-0.02em">
-              Advisory Client Directory
+              {t('clients.title')}
             </Typography>
             {isComplianceOfficer && (
-              <Chip label="AUDIT REGISTRY (READ-ONLY)" size="small" color="info" sx={{ fontWeight: 700 }} />
+              <Chip label={t('clients.audit_badge')} size="small" color="info" sx={{ fontWeight: 700 }} />
             )}
           </Box>
           <Typography variant="body2" color="text.secondary">
             {isComplianceOfficer
-              ? 'Verify client profiles, PAN verification status, and registered contact credentials for statutory audit'
-              : 'Manage client profiles, verified PAN records, and registered mobile numbers for OTP sign-offs'}
+              ? t('clients.subtitle_comp')
+              : t('clients.subtitle_ria')}
           </Typography>
         </Box>
 
@@ -174,7 +177,7 @@ export const ClientsPage = () => {
               boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)',
             }}
           >
-            Add Advisory Client
+            {t('clients.btn_add_client')}
           </Button>
         )}
       </Box>
@@ -183,7 +186,7 @@ export const ClientsPage = () => {
       <Box sx={{ mb: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <TextField
           size="small"
-          placeholder="Search by client name, PAN, mobile or email..."
+          placeholder={t('clients.search_placeholder')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           sx={{
@@ -200,7 +203,7 @@ export const ClientsPage = () => {
           }}
         />
         <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 600 }}>
-          Showing {filteredClients.length} of {clients.length} registered clients
+          {t('clients.showing_count', { filtered: filteredClients.length, total: clients.length })}
         </Typography>
       </Box>
 
@@ -209,13 +212,13 @@ export const ClientsPage = () => {
           <Table>
             <TableHead sx={{ bgcolor: '#F8FAFC' }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 700 }}>Client Name</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>PAN Number</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Registered Mobile</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Email Address</TableCell>
-                <TableCell sx={{ fontWeight: 700 }} align="right">Portfolio Size (₹)</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{t('clients.th_name')}</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{t('clients.th_pan')}</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{t('clients.th_mobile')}</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{t('clients.th_email')}</TableCell>
+                <TableCell sx={{ fontWeight: 700 }} align="right">{t('clients.th_portfolio')}</TableCell>
                 {(isRia || isAdmin) && (
-                  <TableCell sx={{ fontWeight: 700 }} align="center">Action</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }} align="center">{t('clients.th_action')}</TableCell>
                 )}
               </TableRow>
             </TableHead>
@@ -230,8 +233,8 @@ export const ClientsPage = () => {
                 <TableRow>
                   <TableCell colSpan={isRia || isAdmin ? 6 : 5} align="center" sx={{ py: 6, color: 'text.secondary' }}>
                     {searchQuery
-                      ? `No clients found matching "${searchQuery}". Clear search to view all.`
-                      : 'No client profiles added yet. Click "Add Advisory Client" to onboard your first client.'}
+                      ? t('clients.no_clients_found', { query: searchQuery })
+                      : t('clients.no_clients_empty')}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -244,7 +247,7 @@ export const ClientsPage = () => {
                     <TableCell>{client.mobile}</TableCell>
                     <TableCell>{client.email}</TableCell>
                     <TableCell align="right" sx={{ fontWeight: 600 }}>
-                      ₹{(client.portfolioValue || 0).toLocaleString('en-IN')}
+                      ₹{formatNumber(client.portfolioValue || 0)}
                     </TableCell>
                     {(isRia || isAdmin) && (
                       <TableCell align="center">
@@ -266,7 +269,7 @@ export const ClientsPage = () => {
                             '&:hover': { borderColor: '#0F172A', bgcolor: '#F8FAFC' },
                           }}
                         >
-                          Draft Mandate
+                          {t('clients.btn_draft_mandate')}
                         </Button>
                       </TableCell>
                     )}
@@ -280,13 +283,13 @@ export const ClientsPage = () => {
 
       {/* Add Client Modal */}
       <Dialog open={openModal} onClose={() => setOpenModal(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>Onboard Advisory Client</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>{t('clients.modal_title')}</DialogTitle>
         <Box component="form" onSubmit={handleCreateClient}>
           <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
             {modalError && <Alert severity="error">{modalError}</Alert>}
 
             <TextField
-              label="Client Full Name"
+              label={t('clients.fld_name')}
               required
               fullWidth
               value={newClient.name}
@@ -295,7 +298,7 @@ export const ClientsPage = () => {
             />
 
             <TextField
-              label="Permanent Account Number (PAN)"
+              label={t('clients.fld_pan')}
               required
               fullWidth
               value={newClient.pan}
@@ -305,7 +308,7 @@ export const ClientsPage = () => {
             />
 
             <TextField
-              label="Registered Mobile Number (for OTP)"
+              label={t('clients.fld_mobile')}
               required
               fullWidth
               value={newClient.mobile}
@@ -315,7 +318,7 @@ export const ClientsPage = () => {
             />
 
             <TextField
-              label="Email Address"
+              label={t('clients.fld_email')}
               type="email"
               required
               fullWidth
@@ -325,7 +328,7 @@ export const ClientsPage = () => {
             />
 
             <TextField
-              label="Approx. Advisory Portfolio Value (₹)"
+              label={t('clients.fld_portfolio')}
               type="number"
               fullWidth
               value={newClient.portfolioValue}
@@ -334,9 +337,9 @@ export const ClientsPage = () => {
             />
           </DialogContent>
           <DialogActions sx={{ p: 2.5 }}>
-            <Button onClick={() => setOpenModal(false)}>Cancel</Button>
+            <Button onClick={() => setOpenModal(false)}>{t('common.cancel')}</Button>
             <Button type="submit" variant="contained">
-              Save Client Profile
+              {t('clients.btn_save_client')}
             </Button>
           </DialogActions>
         </Box>

@@ -26,9 +26,12 @@ import { TaxBreakdownCard } from '../tax-engine/index.js';
 import { AuditTrailTimeline } from '../audit-trail/index.js';
 import { MagicLinkModal } from '../magic-link/MagicLinkModal.jsx';
 import { ComplianceDossierModal } from '../compliance-dossier/ComplianceDossierModal.jsx';
+import { MandateChat } from '../chat/MandateChat.jsx';
 import { useAuth } from '../../security/AuthContext.jsx';
+import { useI18n } from '../../i18n/I18nContext.jsx';
 
 export const MandateDetailPage = () => {
+  const { t } = useI18n();
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, role, isClient } = useAuth();
@@ -82,10 +85,19 @@ export const MandateDetailPage = () => {
       });
       const data = await res.json();
       if (data.success) {
+        console.log('======================================================');
+        console.log('>>> [MANDATE DISPATCHED - FOR TESTING PURPOSE] <<<');
+        console.log('Mandate:', data.data);
+        console.log('Client Password:', data.data?.password || data.data?.clientPassword);
+        console.log('Magic Link URL:', `${window.location.origin}/m/${data.data?.magicToken}`);
+        console.log('======================================================');
+
         if (data.data) {
           setMandate((prev) => ({
             ...prev,
             ...data.data,
+            password: data.data.password || data.data.clientPassword || prev?.password,
+            clientPassword: data.data.clientPassword || data.data.password || prev?.clientPassword,
             client: prev?.client || data.data.client,
             ria: prev?.ria || data.data.ria,
             auditLogs: prev?.auditLogs || data.data.auditLogs,
@@ -144,7 +156,7 @@ export const MandateDetailPage = () => {
       <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', gap: 2 }}>
         <CircularProgress size={32} sx={{ color: '#0F172A' }} />
         <Typography variant="caption" color="text.secondary">
-          Loading mandate dossier...
+          {t('mandate.loading_dossier')}
         </Typography>
       </Box>
     );
@@ -161,7 +173,7 @@ export const MandateDetailPage = () => {
             size="small"
             sx={{ textTransform: 'none', fontWeight: 600, color: '#64748B', '&:hover': { color: '#0F172A' } }}
           >
-            Back to Control Center
+            {t('mandate.back_to_control')}
           </Button>
         </Box>
 
@@ -198,12 +210,12 @@ export const MandateDetailPage = () => {
 
           <Typography variant="h5" fontWeight={800} color="#0F172A" gutterBottom>
             {error?.toLowerCase().includes('unauthorized')
-              ? 'Mandate Access Restricted'
-              : 'Mandate Record Not Found'}
+              ? t('mandate.restricted_title')
+              : t('mandate.not_found_title')}
           </Typography>
 
           <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 540, mx: 'auto', mb: 3, lineHeight: 1.6 }}>
-            {error || 'The requested mandate could not be retrieved. Under SEBI Investment Advisers Regulations and firm-level data segregation, advisory records are strictly partitioned to protect client confidentiality.'}
+            {error || t('mandate.restricted_desc')}
           </Typography>
 
           <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap">
@@ -220,7 +232,7 @@ export const MandateDetailPage = () => {
                 '&:hover': { bgcolor: '#1E293B' },
               }}
             >
-              Return to Control Center
+              {t('mandate.btn_return_control')}
             </Button>
             <Button
               variant="outlined"
@@ -228,7 +240,7 @@ export const MandateDetailPage = () => {
               to="/mandates/new"
               sx={{ fontWeight: 650, borderRadius: 2.5, borderColor: '#CBD5E1', color: '#334155' }}
             >
-              Draft New Mandate
+              {t('dashboard.draft_mandate_btn')}
             </Button>
           </Stack>
         </Card>
@@ -250,7 +262,7 @@ export const MandateDetailPage = () => {
           size="small"
           sx={{ textTransform: 'none', fontWeight: 600, color: '#64748B', '&:hover': { color: '#0F172A' } }}
         >
-          Back to Mandates Control Center
+          {t('mandate.back_to_control')}
         </Button>
       </Box>
 
@@ -275,7 +287,7 @@ export const MandateDetailPage = () => {
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', mt: 0.5 }}>
               <Typography variant="body2" color="text.secondary">
-                Client: <strong style={{ color: '#0F172A' }}>{mandate.client?.name}</strong>
+                {t('mandate.client_label')}: <strong style={{ color: '#0F172A' }}>{mandate.client?.name}</strong>
               </Typography>
               {mandate.client?.pan && (
                 <Box
@@ -291,20 +303,36 @@ export const MandateDetailPage = () => {
                     fontWeight: 650,
                   }}
                 >
-                  PAN: {mandate.client.pan}
+                  {t('mandate.pan_label')}: {mandate.client.pan}
                 </Box>
               )}
               <Typography variant="caption" color="text.secondary">
-                Mobile: {mandate.client?.mobile}
+                {t('mandate.mobile_label')}: {mandate.client?.mobile}
               </Typography>
             </Box>
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.8 }}>
-              48-Hour Cutoff Deadline: <strong style={{ color: '#334155' }}>{new Date(mandate.cutoffTimestamp).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</strong>
+              {t('mandate.cutoff_deadline')}: <strong style={{ color: '#334155' }}>{new Date(mandate.cutoffTimestamp).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</strong>
             </Typography>
           </Box>
 
           <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-            {role === 'compliance_officer' ? (
+            {isClient ? (
+              mandate.magicToken && (
+                <Button
+                  variant="contained"
+                  component={RouterLink}
+                  to={mandate.status === 'consented' || mandate.status === 'approved' ? `/m/${mandate.magicToken}/receipt` : `/m/${mandate.magicToken}`}
+                  sx={{
+                    fontWeight: 700,
+                    borderRadius: 2.5,
+                    bgcolor: '#0F172A',
+                    '&:hover': { bgcolor: '#1E293B' },
+                  }}
+                >
+                  {mandate.status === 'consented' || mandate.status === 'approved' ? t('dashboard.client_th_receipt') : t('dashboard.client_btn_review_auth')}
+                </Button>
+              )
+            ) : role === 'compliance_officer' ? (
               <Box
                 sx={{
                   px: 1.5,
@@ -319,7 +347,7 @@ export const MandateDetailPage = () => {
                   alignItems: 'center',
                 }}
               >
-                Compliance Audit Mode (Read-Only)
+                {t('mandate.comp_mode_badge')}
               </Box>
             ) : mandate.status === 'draft' ? (
               <Button
@@ -334,7 +362,7 @@ export const MandateDetailPage = () => {
                   '&:hover': { bgcolor: '#1E293B' },
                 }}
               >
-                {dispatching ? 'Dispatching...' : 'Dispatch Mandate Link'}
+                {dispatching ? t('mandate.dispatching') : t('mandate.btn_dispatch_link')}
               </Button>
             ) : (
               <Button
@@ -348,7 +376,7 @@ export const MandateDetailPage = () => {
                   '&:hover': { bgcolor: '#1E293B' },
                 }}
               >
-                Share Magic Link
+                {t('mandate.btn_share_magic')}
               </Button>
             )}
 
@@ -358,7 +386,7 @@ export const MandateDetailPage = () => {
               onClick={() => setOpenDossierModal(true)}
               sx={{ fontWeight: 650, borderRadius: 2.5 }}
             >
-              Regulation 19 Dossier
+              {t('mandate.btn_reg19_dossier')}
             </Button>
           </Box>
         </Box>
@@ -393,17 +421,31 @@ export const MandateDetailPage = () => {
               }}
             >
               <Typography variant="subtitle1" fontWeight={750} color="#0F172A" gutterBottom>
-                Client Mobile Review Rail
+                {t('mandate.client_rail_title')}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.82rem', mb: 2 }}>
-                Investor receives a tokenized, mobile-first view answering 5 plain-English questions with zero jargon.
+                {t('mandate.client_rail_desc')}
               </Typography>
 
-              <Box sx={{ p: 1.5, bgcolor: '#F8FAFC', borderRadius: 2, border: '1px solid #E2E8F0', mb: 2.5 }}>
+              <Box sx={{ p: 1.5, bgcolor: '#F8FAFC', borderRadius: 2, border: '1px solid #E2E8F0', mb: 2 }}>
                 <Typography variant="caption" sx={{ wordBreak: 'break-all', display: 'block', fontFamily: 'JetBrains Mono', color: clientMagicUrl ? '#334155' : '#94A3B8', fontSize: '0.78rem' }}>
-                  {clientMagicUrl || (mandate.status === 'draft' ? 'Draft proposal — click "Dispatch Mandate Link" above to issue client magic link' : 'Generating client magic link...')}
+                  {clientMagicUrl || (mandate.status === 'draft' ? t('mandate.draft_proposal_notice') : t('mandate.generating_link'))}
                 </Typography>
               </Box>
+
+              {!isClient && (mandate.password || mandate.clientPassword) && (
+                <Box sx={{ p: 1.5, mb: 2.5, bgcolor: '#FFFBEB', borderRadius: 2, border: '1px dashed #F59E0B' }}>
+                  <Typography variant="caption" sx={{ fontWeight: 750, color: '#B45309', display: 'block', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                    {t('mandate.testing_password_badge')}
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontFamily: 'JetBrains Mono', fontWeight: 800, color: '#92400E', my: 0.5, letterSpacing: 1.5 }}>
+                    {mandate.password || mandate.clientPassword}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#78350F', display: 'block', fontSize: '0.75rem' }}>
+                    {t('mandate.password_helper_pan', { pan: mandate.client?.pan ? String(mandate.client.pan).replace(/\D/g, '').slice(-4) : '****' })}
+                  </Typography>
+                </Box>
+              )}
 
               <Stack spacing={1.5}>
                 <Box sx={{ display: 'flex', gap: 1 }}>
@@ -417,7 +459,7 @@ export const MandateDetailPage = () => {
                     fullWidth
                     sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2 }}
                   >
-                    {copiedLink ? 'Link Copied!' : 'Copy Proposal Link'}
+                    {copiedLink ? t('mandate.btn_link_copied') : t('mandate.btn_copy_link')}
                   </Button>
                   <Button
                     variant="outlined"
@@ -429,7 +471,7 @@ export const MandateDetailPage = () => {
                     fullWidth
                     sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2 }}
                   >
-                    WhatsApp Client
+                    {t('mandate.btn_whatsapp')}
                   </Button>
                 </Box>
 
@@ -444,14 +486,14 @@ export const MandateDetailPage = () => {
                   endIcon={<OpenInNewIcon sx={{ fontSize: 15 }} />}
                   sx={{ textTransform: 'none', fontWeight: 650, borderRadius: 2 }}
                 >
-                  Preview Client Mobile View
+                  {t('mandate.btn_preview_mobile')}
                 </Button>
               </Stack>
 
               <Box sx={{ mt: 2.5, pt: 2, borderTop: '1px dashed #E2E8F0', display: 'flex', alignItems: 'center', gap: 1 }}>
                 <InfoOutlinedIcon sx={{ fontSize: 16, color: '#64748B' }} />
                 <Typography variant="caption" color="text.secondary">
-                  Mobile OTP authorization is required before this link reaches the 48h cutoff.
+                  {t('mandate.otp_required_notice')}
                 </Typography>
               </Box>
             </Card>
@@ -466,7 +508,7 @@ export const MandateDetailPage = () => {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
                   <TrendingUpOutlinedIcon color="primary" sx={{ fontSize: 22 }} />
                   <Typography variant="subtitle1" fontWeight={750} color="#0F172A">
-                    Adviser Investment Rationale
+                    {t('mandate.adviser_rationale_title')}
                   </Typography>
                 </Box>
                 <Typography variant="body2" color="#475569" sx={{ lineHeight: 1.65, whiteSpace: 'pre-line' }}>
@@ -474,6 +516,15 @@ export const MandateDetailPage = () => {
                 </Typography>
               </Card>
             )}
+            {/* Mandate-Scoped Client-Advisor Chat Communication */}
+            <MandateChat
+              mode="advisor"
+              mandateId={mandate.id}
+              advisorName={user?.name || 'Investment Adviser'}
+              clientName={mandate?.client?.name || 'Client'}
+              firmName={mandate?.ria?.firmName || user?.firmName || 'Advisory Practice'}
+            />
+
             <AuditTrailTimeline logs={mandate.auditLogs || []} />
           </Box>
         </Grid>

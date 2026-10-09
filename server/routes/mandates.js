@@ -2,6 +2,7 @@ import express from 'express';
 import crypto from 'node:crypto';
 import { dbStore } from '../db/store.js';
 import { requireAuth, requireRole } from '../auth/middleware.js';
+import { formatClientPassword } from '../security/mandateCrypto.js';
 
 const router = express.Router();
 router.use(requireAuth);
@@ -76,7 +77,7 @@ router.get('/', (req, res) => {
     const client = dbStore.findClientById(m.clientId);
     const ria = dbStore.findUserById(m.riaId);
     let magicToken = dbStore.getActiveMagicToken(m.id);
-    if (!magicToken && (m.status === 'in_review' || m.status === 'sent' || m.status === 'viewed') && !m.isRevoked) {
+    if (!magicToken && ['in_review', 'sent', 'viewed', 'consented', 'approved'].includes(m.status) && !m.isRevoked) {
       magicToken = crypto.randomBytes(32).toString('hex');
       dbStore.updateMandate(m.id, { magicToken });
     }
@@ -199,9 +200,14 @@ router.get('/:id', (req, res) => {
   const auditLogs = dbStore.getAuditLogsForMandate(mandate.id);
 
   let magicToken = dbStore.getActiveMagicToken(mandate.id);
-  if (!magicToken && (mandate.status === 'in_review' || mandate.status === 'sent' || mandate.status === 'viewed') && !mandate.isRevoked) {
+  if (!magicToken && ['in_review', 'sent', 'viewed', 'consented', 'approved'].includes(mandate.status) && !mandate.isRevoked) {
     magicToken = crypto.randomBytes(32).toString('hex');
     dbStore.updateMandate(mandate.id, { magicToken });
+  }
+
+  let clientPassword = '';
+  if (client && client.pan && client.dob) {
+    clientPassword = formatClientPassword(client.pan, client.dob);
   }
 
   res.json({
@@ -209,6 +215,8 @@ router.get('/:id', (req, res) => {
     data: {
       ...mandate,
       magicToken: magicToken || undefined,
+      password: clientPassword || undefined,
+      clientPassword: clientPassword || undefined,
       client,
       ria: {
         firmName: ria?.firmName || 'Registered Investment Adviser',
@@ -250,6 +258,28 @@ router.post('/:id/dispatch', requireRole(['ria', 'admin']), (req, res) => {
     cutoffTimestamp,
   });
 
+  const client = dbStore.findClientById(mandate.clientId);
+  let clientPassword = '';
+  if (client && client.pan && client.dob) {
+    clientPassword = formatClientPassword(client.pan, client.dob);
+  }
+
+  // Print the mandate along with the password for testing purpose
+  console.log('\n======================================================');
+  console.log('>>> [MANDATE DISPATCHED - FOR TESTING PURPOSE] <<<');
+  console.log(`Mandate ID:      ${updated.id}`);
+  console.log(`Title:           ${updated.title}`);
+  console.log(`Client ID:       ${updated.clientId}`);
+  console.log(`Client Name:     ${client?.name || 'N/A'}`);
+  console.log(`Client PAN:      ${client?.pan || 'N/A'}`);
+  console.log(`Client DOB:      ${client?.dob || 'N/A'}`);
+  console.log(`Client Password: ${clientPassword || 'N/A'}`);
+  console.log(`Magic Token:     ${rawMagicToken}`);
+  console.log(`Client Magic URL: /m/${rawMagicToken}`);
+  console.log('Mandate Object:');
+  console.dir(updated, { depth: null, colors: true });
+  console.log('======================================================\n');
+
   dbStore.createAuditLog({
     mandateId: mandate.id,
     eventType: 'DISPATCHED',
@@ -262,7 +292,15 @@ router.post('/:id/dispatch', requireRole(['ria', 'admin']), (req, res) => {
     },
   });
 
-  res.json({ success: true, data: { ...updated, magicToken: rawMagicToken } });
+  res.json({
+    success: true,
+    data: {
+      ...updated,
+      magicToken: rawMagicToken,
+      password: clientPassword || undefined,
+      clientPassword: clientPassword || undefined,
+    },
+  });
 });
 
 // Revoke & Regenerate Link (immediately invalidates prior token)
@@ -333,6 +371,92 @@ router.get('/:id/dossier', requireRole(['ria', 'compliance_officer', 'admin']), 
       generatedAt: new Date().toISOString(),
     },
   });
+});
+
+// Mandate-scoped chat (RIA & Staff Access)
+router.get('/:id/chat', (req, res) => {
+  const mandate = dbStore.findMandateById(req.params.id);
+  if (!mandate) {
+    return res.status(404).json({ success: false, error: 'Mandate not found' });
+  }
+
+  const isAuthorized =
+    mandate.riaId === req.user.id ||
+    req.user.role === 'compliance_officer' ||
+    req.user.role === 'admin';
+  if (!isAuthorized) {
+    return res.status(403).json({ success: false, error: 'Unauthorized to access this mandate discussion' });
+  }
+
+  const messages = dbStore.getMandateChat(mandate.id);
+  res.json({ success: true, data: messages });
+});
+
+router.post('/:id/chat', requireRole(['ria', 'admin']), (req, res) => {
+  const mandate = dbStore.findMandateById(req.params.id);
+  if (!mandate) {
+    return res.status(404).json({ success: false, error: 'Mandate not found' });
+  }
+
+  if (mandate.riaId !== req.user.id && req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, error: 'Unauthorized to post messages on this mandate' });
+  }
+
+  const { message } = req.body;
+  if (!message || typeof message !== 'string' || message.trim().length === 0) {
+    return res.status(400).json({ success: false, error: 'Message cannot be empty' });
+  }
+
+  if (message.length > 500) {
+    return res.status(400).json({ success: false, error: 'Message exceeds 500 characters limit' });
+  }
+
+  const sanitized = message
+    .trim()
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+
+  const newMsg = dbStore.addMandateChatMessage(mandate.id, {
+    sender: 'ria',
+    senderRole: 'advisor',
+    senderName: req.user.name || req.user.firmName || 'Advisor',
+    message: sanitized,
+  });
+
+  res.status(201).json({ success: true, data: newMsg });
+});
+
+// Update Mandate Endpoint (Rejects direct mutation to consented/approved)
+router.put('/:id', requireRole(['ria', 'admin']), (req, res) => {
+  const mandate = dbStore.findMandateById(req.params.id);
+  if (!mandate) {
+    return res.status(404).json({ success: false, error: 'Mandate not found' });
+  }
+
+  if (mandate.riaId !== req.user.id && req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, error: 'Unauthorized: You can only edit mandates belonging to your advisory practice' });
+  }
+
+  const { status, title, proposedAllocation } = req.body;
+  if (status === 'consented' || status === 'approved') {
+    return res.status(403).json({
+      success: false,
+      error: 'Direct mutation to consented or approved state is prohibited. Statutory consent requires explicit client OTP verification.',
+    });
+  }
+
+  const updates = {};
+  if (title) updates.title = title;
+  if (proposedAllocation) updates.proposedAllocation = proposedAllocation;
+  if (status && ['draft', 'sent', 'viewed', 'in_review', 'revoked'].includes(status)) {
+    updates.status = status;
+  }
+
+  const updated = dbStore.updateMandate(mandate.id, updates);
+  res.json({ success: true, data: updated });
 });
 
 export default router;

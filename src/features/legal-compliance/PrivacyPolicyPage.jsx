@@ -8,25 +8,28 @@ import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import CloudQueueOutlinedIcon from '@mui/icons-material/CloudQueueOutlined';
+import { useI18n } from '../../i18n/I18nContext';
 
 export const PrivacyPolicyPage = () => {
+  const { t } = useI18n();
+
   return (
     <Container maxWidth="md" sx={{ py: 6 }}>
       <Card elevation={2} sx={{ p: { xs: 3, md: 5 }, borderRadius: 3, border: 1, borderColor: 'divider' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
           <ShieldOutlinedIcon color="primary" sx={{ fontSize: 32 }} />
           <Typography variant="h4" component="h1" fontWeight={800}>
-            Privacy Policy
+            {t('legal.privacy_title')}
           </Typography>
         </Box>
         <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-          Compliant with India's Digital Personal Data Protection (DPDP) Act, 2023
+          {t('legal.privacy_sub')}
         </Typography>
 
         <Box sx={{ display: 'flex', gap: 1, my: 2, flexWrap: 'wrap' }}>
           <Chip
-            icon={<CloudQueueOutlinedIcon />}
-            label="Data Residency: AWS Mumbai (ap-south-1)"
+            icon={<ShieldOutlinedIcon />}
+            label={t('legal.badge_dpdp')}
             color="success"
             size="small"
             sx={{ fontWeight: 600 }}

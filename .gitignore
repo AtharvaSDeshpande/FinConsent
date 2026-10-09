@@ -2,3 +2,5 @@ node_modules/
 dist/
 coverage/
 .env
+credentials.json
+end_users.csv

@@ -28,8 +28,10 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom';
 import { TaxBreakdownCard, AdvanceTaxAlertBanner, calculateIndianGainsTax } from '../tax-engine/index.js';
+import { useI18n } from '../../i18n/I18nContext.jsx';
 
 export const MandateNewPage = () => {
+  const { t } = useI18n();
   const [searchParams] = useSearchParams();
   const preselectedClientId = searchParams.get('clientId');
   const [clients, setClients] = useState([]);
@@ -189,7 +191,7 @@ export const MandateNewPage = () => {
           size="small"
           sx={{ mb: 1, textTransform: 'none' }}
         >
-          Back to Control Center
+          {t('mandate.back_to_control')}
         </Button>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
           <Typography
@@ -202,7 +204,7 @@ export const MandateNewPage = () => {
               lineHeight: 1.25,
             }}
           >
-            Draft Statutory Rebalance Mandate
+            {t('mandate.new_title')}
           </Typography>
           <Chip
             icon={<AutoAwesomeIcon sx={{ fontSize: '14px !important' }} />}
@@ -214,7 +216,7 @@ export const MandateNewPage = () => {
           />
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          SEBI Regulation 19 compliant portfolio rebalancing with pre-computed capital gains tax & Advance Tax alerts
+          {t('mandate.new_subtitle')}
         </Typography>
       </Box>
 
@@ -523,7 +525,7 @@ export const MandateNewPage = () => {
                     boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)',
                   }}
                 >
-                  {submitting ? 'Creating Proposal...' : 'Create & Generate Magic Link'}
+                  {submitting ? (t('mandate.dispatching') || 'Creating Proposal...') : (t('mandate.new_btn_dispatch') || 'Create & Generate Magic Link')}
                 </Button>
               </Card>
             </Box>
@@ -541,11 +543,12 @@ export const MandateNewPage = () => {
       >
         <DialogTitle sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
           <WorkspacePremiumIcon color="warning" />
-          {quotaPrompt?.title || 'Monthly Mandate Quota Exceeded'}
+          {quotaPrompt?.title || t('billing.quota_exceeded') || 'Monthly Mandate Quota Exceeded'}
         </DialogTitle>
         <DialogContent dividers>
           <Typography variant="body1" paragraph>
             {quotaPrompt?.message ||
+              t('billing.quota_exceeded_sub') ||
               'You have reached the monthly limit of 3 trade mandates on the Free Plan. Upgrade to Pro RIA to unlock unlimited statutory trade authorizations.'}
           </Typography>
           <Alert severity="warning" sx={{ mb: 2 }}>
@@ -565,7 +568,7 @@ export const MandateNewPage = () => {
         </DialogContent>
         <DialogActions sx={{ p: 2, gap: 1 }}>
           <Button onClick={() => setQuotaModalOpen(false)} color="inherit">
-            Dismiss
+            {t('common.close') || 'Dismiss'}
           </Button>
           <Button
             variant="outlined"
@@ -575,7 +578,7 @@ export const MandateNewPage = () => {
             target="_blank"
             rel="noopener noreferrer"
           >
-            Upgrade via WhatsApp
+            {t('billing.btn_upgrade_whatsapp') || 'Upgrade via WhatsApp'}
           </Button>
           <Button
             variant="contained"
@@ -584,7 +587,7 @@ export const MandateNewPage = () => {
             component={RouterLink}
             to="/settings/billing"
           >
-            Upgrade with Razorpay
+            {t('billing.btn_upgrade_razorpay') || 'Upgrade with Razorpay'}
           </Button>
         </DialogActions>
       </Dialog>

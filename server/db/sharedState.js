@@ -13,6 +13,7 @@ class SharedStateStore {
     this.rateLimits = new Map(); // key -> [timestamps]
     this.otps = new Map(); // tokenKey -> { codeHash, destination, attempts, maxAttempts, isLocked, expiresAt }
     this.revokedTokens = new Map(); // tokenHash -> expiresAt
+    this.passwordAttempts = new Map(); // mandateId -> { attempts, lockedUntil }
     this.isRedisConnected = false;
     this.redisUrl = process.env.REDIS_URL || null;
 
@@ -93,6 +94,44 @@ class SharedStateStore {
 
   resetRateLimit(key) {
     this.rateLimits.delete(key);
+  }
+
+  // --- Mandate Password Brute-Force & Attempt Tracking ---
+  checkPasswordLockout(mandateId) {
+    const entry = this.passwordAttempts.get(mandateId);
+    if (!entry) return { locked: false, attempts: 0 };
+    if (entry.lockedUntil && Date.now() < entry.lockedUntil) {
+      const retryAfter = Math.ceil((entry.lockedUntil - Date.now()) / 1000);
+      return { locked: true, retryAfter, attempts: entry.attempts };
+    }
+    if (entry.lockedUntil && Date.now() >= entry.lockedUntil) {
+      this.passwordAttempts.delete(mandateId);
+      return { locked: false, attempts: 0 };
+    }
+    return { locked: false, attempts: entry.attempts };
+  }
+
+  recordPasswordFailure(mandateId, maxAttempts = 5, lockoutDurationMs = 15 * 60 * 1000) {
+    const entry = this.passwordAttempts.get(mandateId) || { attempts: 0, lockedUntil: null };
+    entry.attempts += 1;
+    if (entry.attempts >= maxAttempts) {
+      entry.lockedUntil = Date.now() + lockoutDurationMs;
+      this.passwordAttempts.set(mandateId, entry);
+      return {
+        locked: true,
+        remainingAttempts: 0,
+        retryAfter: Math.ceil(lockoutDurationMs / 1000),
+      };
+    }
+    this.passwordAttempts.set(mandateId, entry);
+    return {
+      locked: false,
+      remainingAttempts: maxAttempts - entry.attempts,
+    };
+  }
+
+  clearPasswordLockout(mandateId) {
+    this.passwordAttempts.delete(mandateId);
   }
 
   // --- OTP Management Operations ---

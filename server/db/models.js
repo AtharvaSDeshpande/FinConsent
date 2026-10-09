@@ -17,11 +17,11 @@ const UserSchema = new mongoose.Schema(
     sebiRegNumber: { type: String },
     complianceEmail: { type: String },
     plan: { type: String, enum: ['free', 'pro'], default: 'free' },
-    googleId: { type: String, sparse: true },
     mfaEnabled: { type: Boolean, default: false },
     mfaSecret: { type: String, default: null },
     mfaPendingSecret: { type: String, default: null },
     backupCodes: { type: [String], default: [] },
+    preferredLanguage: { type: String, default: 'en' },
     createdAt: { type: Date, default: Date.now },
   },
   { collection: 'users' }
@@ -34,9 +34,12 @@ const ClientSchema = new mongoose.Schema(
     riaId: { type: String, required: true, index: true },
     name: { type: String, required: true },
     pan: { type: String, required: true, index: true },
+    dob: { type: String, required: true }, // Format: YYYY-MM-DD or DD/MM/YYYY
     mobile: { type: String, required: true },
     email: { type: String, required: true },
     portfolioValue: { type: Number, default: 0 },
+    riskProfile: { type: String, default: 'Moderate' },
+    investmentHorizon: { type: String, default: '5+ years' },
     createdAt: { type: Date, default: Date.now },
   },
   { collection: 'clients' }
@@ -51,10 +54,17 @@ const MandateSchema = new mongoose.Schema(
     title: { type: String, required: true },
     status: {
       type: String,
-      enum: ['draft', 'sent', 'viewed', 'consented', 'expired'],
+      enum: ['draft', 'sent', 'viewed', 'in_review', 'consented', 'approved', 'expired', 'revoked'],
       default: 'draft',
       index: true,
     },
+    // Encryption at rest fields (AES-256-GCM + dual envelope)
+    encryptionVersion: { type: Number, default: 1 },
+    encryptedPayload: { type: Object, default: null },
+    serverWrappedDek: { type: Object, default: null },
+    clientWrappedDek: { type: Object, default: null },
+    isPasswordProtected: { type: Boolean, default: true },
+    // Sensitive fields kept only in-memory / decrypted context
     trades: { type: Array, default: [] },
     taxPayable: { type: Number, default: 0 },
     stcgTax: { type: Number, default: 0 },
@@ -64,6 +74,8 @@ const MandateSchema = new mongoose.Schema(
     tokenExpiresAt: { type: Date },
     cutoffTimestamp: { type: Date },
     isRevoked: { type: Boolean, default: false },
+    // Mandate-scoped client-advisor communications
+    chatMessages: { type: Array, default: [] },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
   },

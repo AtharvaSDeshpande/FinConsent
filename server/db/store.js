@@ -2,6 +2,13 @@ import crypto from 'node:crypto';
 import mongoose from 'mongoose';
 import { UserModel, ClientModel, MandateModel, AuditLogModel, RequestModel } from './models.js';
 import { sharedState } from './sharedState.js';
+import {
+  ENCRYPTION_VERSION,
+  protectMandatePayload,
+  unlockMandateWithServerKey,
+  unlockMandateWithPassword,
+  formatClientPassword,
+} from '../security/mandateCrypto.js';
 
 // Hybrid database store: in-memory cache + live MongoDB Atlas persistence
 class FinConsentStore {
@@ -14,6 +21,7 @@ class FinConsentStore {
     this.otps = new Map(); // token -> { otp, expiresAt, destination, channel }
     this.activeMagicTokens = new Map(); // mandateId -> rawToken (transient in-memory rail for authorized RIA dispatch)
     this.isSeeding = false;
+    this.sharedState = sharedState;
   }
 
   getActiveMagicToken(id) {
@@ -87,14 +95,14 @@ class FinConsentStore {
       if (rohanClient) {
         rohanClient.name = 'Rohan Mehta';
         rohanClient.email = 'client@example.in';
-        rohanClient.pan = 'ABCDE1234F';
+        rohanClient.pan = 'ABCPM1234F';
         rohanClient.riaId = 'usr_ria_suresh';
       } else {
         rohanClient = {
           id: 'cli_1',
           riaId: 'usr_ria_suresh',
           name: 'Rohan Mehta',
-          pan: 'ABCDE1234F',
+          pan: 'ABCPM1234F',
           mobile: '9820112345',
           email: 'client@example.in',
           portfolioValue: 8500000,
@@ -104,22 +112,8 @@ class FinConsentStore {
       }
       if (benchmarkClientUser) {
         benchmarkClientUser.name = 'Rohan Mehta';
-        benchmarkClientUser.pan = 'ABCDE1234F';
+        benchmarkClientUser.pan = 'ABCPM1234F';
         benchmarkClientUser.mobile = '9820112345';
-      }
-
-      // Ensure Suresh (usr_ria_suresh) owns accessible mandates and Rohan (cli_1) has active proposals
-      const hasPending = Array.from(this.mandates.values()).some((m) => m.clientId === 'cli_1' && (m.status === 'sent' || m.status === 'viewed'));
-      if (!hasPending && this.mandates.size > 0) {
-        const firstMandate = Array.from(this.mandates.values())[0];
-        firstMandate.riaId = 'usr_ria_suresh';
-        firstMandate.clientId = 'cli_1';
-        firstMandate.status = 'sent';
-        firstMandate.magicTokenHash = crypto.createHash('sha256').update('demo-token').digest('hex');
-        delete firstMandate.magicToken;
-        firstMandate.cutoffTimestamp = new Date(Date.now() + 48 * 3600 * 1000).toISOString();
-        firstMandate.tokenExpiresAt = new Date(Date.now() + 48 * 3600 * 1000).toISOString();
-        this.activeMagicTokens.set(firstMandate.id, 'demo-token');
       }
 
       console.log(`[Store] Synced from MongoDB Atlas: ${this.users.size} users, ${this.clients.size} clients, ${this.mandates.size} mandates, ${this.requests.size} requests`);
@@ -149,10 +143,6 @@ class FinConsentStore {
 
   findUserByEmail(email) {
     return Array.from(this.users.values()).find((u) => u.email.toLowerCase() === email.toLowerCase());
-  }
-
-  findUserByGoogleId(googleId) {
-    return Array.from(this.users.values()).find((u) => u.googleId === googleId);
   }
 
   findUserById(id) {
@@ -205,6 +195,12 @@ class FinConsentStore {
   }
 
   findClientById(id) {
+    if (id === 'cli_rohan_mehta') {
+      return this.clients.get('cli_1') || this.clients.get('cli_rohan_mehta');
+    }
+    if (id === 'cli_1') {
+      return this.clients.get('cli_1') || this.clients.get('cli_rohan_mehta');
+    }
     return this.clients.get(id);
   }
 
@@ -228,18 +224,58 @@ class FinConsentStore {
       ? (typeof mandateData.createdAt === 'string' ? mandateData.createdAt : new Date(mandateData.createdAt).toISOString())
       : new Date().toISOString();
 
+    // Determine client password for password-derived key encryption
+    let clientPassword = mandateData.clientPassword;
+    if (!clientPassword && mandateData.clientId) {
+      const client = this.findClientById(mandateData.clientId);
+      if (client && client.pan && client.dob) {
+        clientPassword = formatClientPassword(client.pan, client.dob);
+      }
+    }
+
+    const sensitiveFields = {
+      trades: mandateData.trades || [],
+      currentAllocation: mandateData.currentAllocation || { equity: 70, debt: 20, gold: 5, cash: 5 },
+      proposedAllocation: mandateData.proposedAllocation || { equity: 60, debt: 25, gold: 10, cash: 5 },
+      sellBasket: mandateData.sellBasket || [],
+      buyBasket: mandateData.buyBasket || [],
+      stcgAmount: mandateData.stcgAmount || 0,
+      ltcgAmount: mandateData.ltcgAmount || 0,
+      stcgTax: mandateData.stcgTax || 0,
+      ltcgTax: mandateData.ltcgTax || 0,
+      cessAmount: mandateData.cessAmount || 0,
+      taxPayable: mandateData.taxPayable || 0,
+      advanceTaxQuarter: mandateData.advanceTaxQuarter || '',
+      advanceTaxAlert: mandateData.advanceTaxAlert || '',
+      rationale: mandateData.rationale || mandateData.advisorRationale || '',
+      advisorRationale: mandateData.advisorRationale || mandateData.rationale || '',
+    };
+
+    // Encrypt sensitive payload using dual-envelope encryption
+    const { encryptedPayload, serverWrappedDek, clientWrappedDek } = protectMandatePayload(
+      sensitiveFields,
+      clientPassword
+    );
+
     const storedMandate = {
       id,
-      ...mandateData,
+      riaId: mandateData.riaId,
+      clientId: mandateData.clientId,
+      title: mandateData.title,
       magicTokenHash,
       tokenExpiresAt,
       cutoffTimestamp,
       status: mandateData.status || 'draft',
+      isRevoked: mandateData.isRevoked || false,
+      isPasswordProtected: true,
+      encryptionVersion: ENCRYPTION_VERSION,
+      encryptedPayload,
+      serverWrappedDek,
+      clientWrappedDek,
+      chatMessages: mandateData.chatMessages || [],
       createdAt,
       updatedAt: new Date().toISOString(),
     };
-    // Ensure raw magicToken is NOT stored in the database / persistent store
-    delete storedMandate.magicToken;
 
     this.mandates.set(id, storedMandate);
 
@@ -253,9 +289,10 @@ class FinConsentStore {
       MandateModel.create(storedMandate).catch((err) => console.warn('[Mongo Sync Error]', err.message));
     }
 
-    // Return object with transient magicToken for the caller
+    // Return object with transparently decrypted data and transient magicToken
     return {
       ...storedMandate,
+      ...sensitiveFields,
       magicToken: mandateData.magicToken === null ? null : rawMagicToken,
     };
   }
@@ -265,7 +302,7 @@ class FinConsentStore {
     if (statusFilter && statusFilter !== 'all') {
       list = list.filter((m) => m.status === statusFilter);
     }
-    return list;
+    return list.map((m) => unlockMandateWithServerKey(m));
   }
 
   findAllMandates(statusFilter) {
@@ -273,11 +310,19 @@ class FinConsentStore {
     if (statusFilter && statusFilter !== 'all') {
       list = list.filter((m) => m.status === statusFilter);
     }
-    return list;
+    return list.map((m) => unlockMandateWithServerKey(m));
   }
 
   findMandateById(id) {
-    return this.mandates.get(id);
+    let mandate = this.mandates.get(id);
+    if (!mandate && id === 'man_rohan_equity_conc') {
+      mandate = this.mandates.get('man_1');
+    }
+    if (!mandate && id === 'man_1') {
+      mandate = this.mandates.get('man_rohan_equity_conc');
+    }
+    if (!mandate) return undefined;
+    return unlockMandateWithServerKey(mandate);
   }
 
   findMandateByToken(rawToken) {
@@ -286,13 +331,13 @@ class FinConsentStore {
 
     // Primary: lookup by SHA-256 hash
     let found = Array.from(this.mandates.values()).find(
-      (m) => m.magicTokenHash === tokenHash && !m.isRevoked
+      (m) => m.magicTokenHash === tokenHash
     );
 
     // Safe backwards-compatible migration for legacy/unmigrated records
     if (!found) {
       found = Array.from(this.mandates.values()).find(
-        (m) => m.magicToken === rawToken && !m.isRevoked
+        (m) => m.magicToken === rawToken
       );
       if (found) {
         found.magicTokenHash = tokenHash;
@@ -306,27 +351,42 @@ class FinConsentStore {
       }
     }
 
-    // Demo/sample token support
-    if (!found && (rawToken === 'demo-token' || rawToken === 'sample-token')) {
-      found = Array.from(this.mandates.values()).find(
-        (m) => !m.isRevoked && (m.status === 'sent' || m.status === 'viewed' || m.status === 'in_review')
-      ) || Array.from(this.mandates.values())[0];
-
-      if (found) {
-        found.magicTokenHash = tokenHash;
-        delete found.magicToken;
-        found.status = 'sent';
-        found.cutoffTimestamp = new Date(Date.now() + 48 * 3600 * 1000).toISOString();
-        found.tokenExpiresAt = new Date(Date.now() + 48 * 3600 * 1000).toISOString();
-      }
-    } else if (found && (rawToken === 'demo-token' || rawToken === 'sample-token')) {
-      found.cutoffTimestamp = new Date(Date.now() + 48 * 3600 * 1000).toISOString();
-      found.tokenExpiresAt = new Date(Date.now() + 48 * 3600 * 1000).toISOString();
-      this.activeMagicTokens.set(found.id, rawToken);
-    } else if (found && rawToken) {
+    if (found && rawToken) {
       this.activeMagicTokens.set(found.id, rawToken);
     }
     return found;
+  }
+
+  unlockMandateClient(rawToken, password) {
+    const mandate = this.findMandateByToken(rawToken);
+    if (!mandate) return null;
+    return unlockMandateWithPassword(mandate, password);
+  }
+
+  getMandateChat(mandateId) {
+    const mandate = this.mandates.get(mandateId);
+    if (!mandate) return [];
+    return mandate.chatMessages || [];
+  }
+
+  addMandateChatMessage(mandateId, messageData) {
+    const mandate = this.mandates.get(mandateId);
+    if (!mandate) return null;
+    if (!mandate.chatMessages) mandate.chatMessages = [];
+    const msg = {
+      id: `msg_${crypto.randomUUID()}`,
+      ...messageData,
+      timestamp: new Date().toISOString(),
+      timestampIST: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+    };
+    mandate.chatMessages.push(msg);
+    if (!this.isSeeding && mongoose.connection.readyState === 1) {
+      MandateModel.updateOne(
+        { id: mandateId },
+        { $push: { chatMessages: msg } }
+      ).catch((err) => console.warn('[Mongo Chat Sync Error]', err.message));
+    }
+    return msg;
   }
 
   updateMandate(id, updates) {

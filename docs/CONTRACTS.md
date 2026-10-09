@@ -170,3 +170,23 @@ Each screen's page component is exported from its feature module (`src/features/
 3. JWT tokens signed with secure server secret (`JWT_SECRET`).
 4. Audit log entries are strictly append-only: no endpoint or service allows update or deletion.
 5. All secrets configured via `.env` with `.env.example` committed.
+
+---
+
+## 7. Localization (i18n & l10n) Architecture & Standards
+
+- **Supported Languages (8 total)**:
+  * English (`en`) — Default
+  * Hindi (`hi`) — हिन्दी
+  * Tamil (`ta`) — தமிழ்
+  * Bengali (`bn`) — বাংলা
+  * Gujarati (`gu`) — ગુજરાતી
+  * German (`de`) — Deutsch
+  * Japanese (`ja`) — 日本語
+  * Korean (`ko`) — 한국어
+- **Language Preference Management**:
+  * Users can select and change their active language through Profile (`/settings/profile`) via `PUT /api/auth/profile` (`preferredLanguage`), and the selection persists in `localStorage` and the database.
+- **Strict English-Only Numbers & Dynamic Data Guarantee**:
+  * Localization applies exclusively to static interface text (labels, headers, buttons, disclaimers).
+  * ALL numbers, currencies (INR), percentages, dates, and dynamic records (client names, stock names, ISINs, rationale, tokens, audit hashes) remain strictly in English numerals (`0-9`) and characters.
+

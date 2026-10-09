@@ -29,9 +29,12 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { StatutoryBadge } from '../../components/brand/StatutoryBadge.jsx';
 import { ComplianceDossierModal } from '../compliance-dossier/ComplianceDossierModal.jsx';
+import { useI18n } from '../../i18n/I18nContext.jsx';
+import { formatCurrency } from '../../i18n/formatters.js';
 
 export const ComplianceDashboard = ({ user, mandates = [], loading = false, error = null }) => {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedMandate, setSelectedMandate] = useState(null);
   const [dossierData, setDossierData] = useState(null);
@@ -73,17 +76,16 @@ export const ComplianceDashboard = ({ user, mandates = [], loading = false, erro
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.8 }}>
             <Typography variant="h4" component="h1" fontWeight={800} letterSpacing="-0.025em" color="#0F172A">
-              Statutory Compliance & Audit Center
+              {t('dashboard.comp_title')}
             </Typography>
             <Chip
-              label="REGULATION 19 SUPERVISORY CONSOLE"
+              label={t('dashboard.comp_badge')}
               size="small"
               sx={{ fontWeight: 800, fontSize: '0.72rem', bgcolor: 'rgba(2, 132, 199, 0.1)', color: '#0369A1', border: '1px solid rgba(2, 132, 199, 0.25)' }}
             />
           </Box>
           <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 760 }}>
-            Regulatory surveillance workspace for SEBI Compliance Officers. Scrutinize non-discretionary consent records,
-            audit Section 65B Indian Evidence Act hash chains, and export certified PDF compliance dossiers.
+            {t('dashboard.comp_desc')}
           </Typography>
         </Box>
 
@@ -104,7 +106,7 @@ export const ComplianceDashboard = ({ user, mandates = [], loading = false, erro
               boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)',
             }}
           >
-            Scrutinize Requests Queue
+            {t('dashboard.comp_btn_requests')}
           </Button>
 
           <Button
@@ -120,7 +122,7 @@ export const ComplianceDashboard = ({ user, mandates = [], loading = false, erro
               '&:hover': { borderColor: '#0F172A', bgcolor: '#F8FAFC' },
             }}
           >
-            Audit Client Registry
+            {t('dashboard.comp_btn_clients')}
           </Button>
         </Box>
       </Box>
@@ -131,7 +133,7 @@ export const ComplianceDashboard = ({ user, mandates = [], loading = false, erro
           <Card elevation={0} sx={{ p: 3, borderRadius: 3.5, bgcolor: '#FFFFFF', border: '1px solid #E2E8F0', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
               <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                Verified Statutory Consents
+                {t('dashboard.comp_stat_verified')}
               </Typography>
               <Box sx={{ p: 0.8, borderRadius: 2, bgcolor: '#ECFDF5', color: '#059669', display: 'flex' }}>
                 <CheckCircleOutlineIcon sx={{ fontSize: 18 }} />
@@ -141,7 +143,7 @@ export const ComplianceDashboard = ({ user, mandates = [], loading = false, erro
               {verifiedCount}
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-              Locked with 6-digit Mobile OTP per SEBI Reg 19
+              {t('dashboard.comp_stat_verified_sub')}
             </Typography>
           </Card>
         </Grid>
@@ -150,7 +152,7 @@ export const ComplianceDashboard = ({ user, mandates = [], loading = false, erro
           <Card elevation={0} sx={{ p: 3, borderRadius: 3.5, bgcolor: '#FFFFFF', border: '1px solid #E2E8F0', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
               <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                Active Window Surveillance
+                {t('dashboard.comp_stat_surveillance')}
               </Typography>
               <Box sx={{ p: 0.8, borderRadius: 2, bgcolor: '#EFF6FF', color: '#2563EB', display: 'flex' }}>
                 <FingerprintIcon sx={{ fontSize: 18 }} />
@@ -160,7 +162,7 @@ export const ComplianceDashboard = ({ user, mandates = [], loading = false, erro
               {pendingCount}
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-              Mandates within 48h market cutoff window
+              {t('dashboard.comp_stat_surveillance_sub')}
             </Typography>
           </Card>
         </Grid>
@@ -169,17 +171,17 @@ export const ComplianceDashboard = ({ user, mandates = [], loading = false, erro
           <Card elevation={0} sx={{ p: 3, borderRadius: 3.5, bgcolor: '#FFFFFF', border: '1px solid #E2E8F0', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
               <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                Tax Compliance Disclosures
+                {t('dashboard.comp_stat_tax')}
               </Typography>
               <Box sx={{ p: 0.8, borderRadius: 2, bgcolor: '#F5F3FF', color: '#7C3AED', display: 'flex' }}>
                 <CloudDoneOutlinedIcon sx={{ fontSize: 18 }} />
               </Box>
             </Box>
             <Typography variant="h3" fontWeight={850} color="#0F172A" sx={{ fontFamily: 'JetBrains Mono' }}>
-              ₹{totalTaxCalculated.toLocaleString('en-IN')}
+              {formatCurrency(totalTaxCalculated)}
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-              Section 111A/112A pre-computed disclosures on record
+              {t('dashboard.comp_stat_tax_sub')}
             </Typography>
           </Card>
         </Grid>
@@ -192,16 +194,16 @@ export const ComplianceDashboard = ({ user, mandates = [], loading = false, erro
             <FingerprintIcon sx={{ color: '#0F172A', fontSize: 28 }} />
             <Box>
               <Typography variant="subtitle2" fontWeight={800} color="#0F172A">
-                Section 65B Electronic Evidence Trail • SHA-256 Hash Chained
+                {t('dashboard.comp_hash_title')}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Data Residency: AWS Mumbai (ap-south-1) • Append-Only Storage • 5-Year Statutory Retention Window Active
+                {t('dashboard.comp_hash_desc')}
               </Typography>
             </Box>
           </Box>
 
           <Chip
-            label="HASH INTEGRITY VERIFIED (100%)"
+            label={t('dashboard.comp_hash_badge')}
             size="small"
             sx={{ fontWeight: 800, bgcolor: '#ECFDF5', color: '#065F46', border: '1px solid #A7F3D0' }}
           />
@@ -215,10 +217,10 @@ export const ComplianceDashboard = ({ user, mandates = [], loading = false, erro
         <Box sx={{ p: 2.5, borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1.5 }}>
           <Box>
             <Typography variant="h6" fontWeight={800} color="#0F172A">
-              Statutory Mandate Audit Register ({filteredMandates.length})
+              {t('dashboard.comp_register_title', { count: filteredMandates.length })}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              Immutable register of client rebalancing authorizations across all advisory firms
+              {t('dashboard.comp_register_desc')}
             </Typography>
           </Box>
 
@@ -237,11 +239,11 @@ export const ComplianceDashboard = ({ user, mandates = [], loading = false, erro
               },
             }}
           >
-            <Tab label="All Records" value="all" />
-            <Tab label="Verified Consents" value="consented" />
-            <Tab label="Active Cutoffs" value="sent" />
-            <Tab label="Drafts" value="draft" />
-            <Tab label="Expired" value="expired" />
+            <Tab label={t('dashboard.comp_tab_all')} value="all" />
+            <Tab label={t('dashboard.comp_tab_consented')} value="consented" />
+            <Tab label={t('dashboard.comp_tab_active')} value="sent" />
+            <Tab label={t('dashboard.comp_tab_drafts')} value="draft" />
+            <Tab label={t('dashboard.comp_tab_expired')} value="expired" />
           </Tabs>
         </Box>
 
@@ -249,11 +251,11 @@ export const ComplianceDashboard = ({ user, mandates = [], loading = false, erro
           <Table>
             <TableHead sx={{ bgcolor: '#F8FAFC' }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 700, fontSize: '0.8rem' }}>Mandate Title & Client</TableCell>
-                <TableCell sx={{ fontWeight: 700, fontSize: '0.8rem' }}>Advisory Firm & INA</TableCell>
-                <TableCell sx={{ fontWeight: 700, fontSize: '0.8rem' }}>Tax Impact</TableCell>
-                <TableCell sx={{ fontWeight: 700, fontSize: '0.8rem' }}>Statutory Status</TableCell>
-                <TableCell sx={{ fontWeight: 700, fontSize: '0.8rem' }} align="center">Compliance Dossier</TableCell>
+                <TableCell sx={{ fontWeight: 700, fontSize: '0.8rem' }}>{t('dashboard.comp_th_mandate')}</TableCell>
+                <TableCell sx={{ fontWeight: 700, fontSize: '0.8rem' }}>{t('dashboard.comp_th_firm')}</TableCell>
+                <TableCell sx={{ fontWeight: 700, fontSize: '0.8rem' }}>{t('dashboard.comp_th_tax')}</TableCell>
+                <TableCell sx={{ fontWeight: 700, fontSize: '0.8rem' }}>{t('dashboard.comp_th_status')}</TableCell>
+                <TableCell sx={{ fontWeight: 700, fontSize: '0.8rem' }} align="center">{t('dashboard.comp_th_dossier')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -266,7 +268,7 @@ export const ComplianceDashboard = ({ user, mandates = [], loading = false, erro
               ) : filteredMandates.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.secondary' }}>
-                    No mandate records found matching this audit filter.
+                    {t('dashboard.comp_no_records')}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -292,10 +294,10 @@ export const ComplianceDashboard = ({ user, mandates = [], loading = false, erro
 
                     <TableCell>
                       <Typography variant="body2" fontWeight={750} color="#4F46E5">
-                        ₹{(m.taxPayable || 0).toLocaleString('en-IN')}
+                        {formatCurrency(m.taxPayable || 0)}
                       </Typography>
                       <Typography variant="caption" color="text.secondary" display="block">
-                        STCG: ₹{(m.stcgAmount || 0).toLocaleString('en-IN')}
+                        STCG: {formatCurrency(m.stcgAmount || 0)}
                       </Typography>
                     </TableCell>
 
@@ -319,7 +321,7 @@ export const ComplianceDashboard = ({ user, mandates = [], loading = false, erro
                           '&:hover': { borderColor: '#0F172A', bgcolor: '#F8FAFC' },
                         }}
                       >
-                        Scrutinize Dossier
+                        {t('dashboard.comp_btn_scrutinize')}
                       </Button>
                     </TableCell>
                   </TableRow>

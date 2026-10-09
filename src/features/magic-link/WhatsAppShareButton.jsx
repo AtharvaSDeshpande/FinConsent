@@ -1,16 +1,20 @@
 import React from 'react';
 import Button from '@mui/material/Button';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import { useI18n } from '../../i18n/I18nContext';
 
 export const WhatsAppShareButton = ({ mandate, magicUrl }) => {
+  const { t, formatCurrency } = useI18n();
+
   const handleWhatsApp = () => {
     if (!magicUrl) return;
-    const text = encodeURIComponent(
-      `Hello, please review your statutory trade rebalance proposal "${mandate.title}".\n\n` +
-      `Estimated Pre-computed Tax Impact: ₹${(mandate.taxPayable || 0).toLocaleString('en-IN')}\n\n` +
-      `Review and authorize via secure magic link:\n${magicUrl}\n\n` +
-      `SEBI Reg. 19 Non-Discretionary Mandate.`
-    );
+    const formattedTax = formatCurrency(mandate.taxPayable || 0);
+    const msg = t('magic_link.whatsapp_msg_template', {
+      title: mandate.title || 'Mandate',
+      tax: formattedTax,
+      url: magicUrl,
+    });
+    const text = encodeURIComponent(msg);
     window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
   };
 
@@ -22,7 +26,9 @@ export const WhatsAppShareButton = ({ mandate, magicUrl }) => {
       onClick={handleWhatsApp}
       disabled={!magicUrl}
     >
-      Share via WhatsApp
+      {t('magic_link.whatsapp_btn')}
     </Button>
   );
 };
+
+export default WhatsAppShareButton;

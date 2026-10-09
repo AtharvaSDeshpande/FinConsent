@@ -3,7 +3,7 @@ import app from '../../server/index.js';
 import { runSeed } from '../../server/db/seed.js';
 import { dbStore } from '../../server/db/store.js';
 
-describe('RBAC, Live Requests API, Google OAuth & SMS Deprecation Suite', () => {
+describe('RBAC, Live Requests API, Google Removal & SMS Deprecation Suite', () => {
   let server;
   let baseUrl;
   let riaToken;
@@ -69,8 +69,8 @@ describe('RBAC, Live Requests API, Google OAuth & SMS Deprecation Suite', () => 
     expect(data.smsService).toContain('Disabled');
   });
 
-  it('3. Google OAuth endpoint authenticates and returns valid JWT with role assignment', async () => {
-    const res = await fetch(`${baseUrl}/api/auth/google`, {
+  it('3. Google OAuth endpoint is permanently removed (404) and credentials auth succeeds', async () => {
+    const googleRes = await fetch(`${baseUrl}/api/auth/google`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -80,12 +80,21 @@ describe('RBAC, Live Requests API, Google OAuth & SMS Deprecation Suite', () => 
         googleId: 'g_oauth_test_12345',
       }),
     });
-    expect(res.status).toBe(200);
-    const data = await res.json();
-    expect(data.success).toBe(true);
-    expect(data.token).toBeDefined();
-    expect(data.user.email).toBe('investor.google@wealthadvisory.in');
-    expect(data.user.role).toBe('client');
+    expect(googleRes.status).toBe(404);
+
+    const loginRes = await fetch(`${baseUrl}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: 'ria@example.in',
+        password: 'Password@123',
+      }),
+    });
+    expect(loginRes.status).toBe(200);
+    const loginData = await loginRes.json();
+    expect(loginData.success).toBe(true);
+    expect(loginData.token).toBeDefined();
+    expect(loginData.user.email).toBe('ria@example.in');
   });
 
   it('4. RBAC: Client role is forbidden (403) from creating trade mandates (restricted to RIA/Admin)', async () => {

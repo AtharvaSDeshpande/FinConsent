@@ -28,9 +28,12 @@ import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
 import TrendingUpOutlinedIcon from '@mui/icons-material/TrendingUpOutlined';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { StatutoryBadge } from '../../components/brand/StatutoryBadge.jsx';
+import { useI18n } from '../../i18n/I18nContext.jsx';
+import { formatCurrency, formatDate } from '../../i18n/formatters.js';
 
 export const ClientDashboard = ({ user, mandates = [], loading = false, error = null }) => {
   const navigate = useNavigate();
+  const { t } = useI18n();
 
   // Filter client's pending items vs completed archive
   const pendingMandates = mandates.filter((m) => m.status === 'sent' || m.status === 'viewed' || m.status === 'draft');
@@ -42,11 +45,11 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
       <Box sx={{ mb: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1, flexWrap: 'wrap' }}>
           <Typography variant="h4" component="h1" fontWeight={800} letterSpacing="-0.025em" color="#0F172A">
-            {`Welcome, ${user?.name || 'Valued Investor'}`}
+            {t('dashboard.client_welcome', { name: user?.name || 'Valued Investor' })}
           </Typography>
           <Chip
             icon={<ShieldOutlinedIcon sx={{ fontSize: '15px !important', color: '#047857' }} />}
-            label="SEBI Reg. 19 Non-Discretionary Investor Account"
+            label={t('dashboard.client_account_badge')}
             sx={{
               fontWeight: 700,
               fontSize: '0.75rem',
@@ -57,8 +60,7 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
           />
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 720 }}>
-          Here are your statutory portfolio rebalancing proposals and tax impact reviews prepared by your Registered Investment Adviser.
-          No trade orders can be executed without your explicit review and mobile OTP authorization.
+          {t('dashboard.client_dashboard_desc')}
         </Typography>
       </Box>
 
@@ -69,7 +71,7 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography variant="h6" fontWeight={800} color="#0F172A">
-              Pending Rebalance Authorizations
+              {t('dashboard.client_pending_heading')}
             </Typography>
             <Chip
               label={pendingMandates.length}
@@ -119,12 +121,12 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
                       <Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.8 }}>
                           <Typography variant="caption" sx={{ color: '#4F46E5', fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                            Action Required • Statutory Rebalance
+                            {t('dashboard.client_action_required')}
                           </Typography>
                           {diffHours !== null && (
                             <Chip
                               icon={<AccessTimeOutlinedIcon sx={{ fontSize: '13px !important' }} />}
-                              label={`${diffHours} hours remaining`}
+                              label={t('dashboard.client_hours_remaining', { hours: diffHours })}
                               size="small"
                               sx={{
                                 height: 20,
@@ -142,7 +144,7 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
                           {m.title}
                         </Typography>
                         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                          Prepared by: <strong>{m.riaFirmName || 'Advisory Firm'}</strong> (SEBI INA: {m.riaSebiReg || 'INA000088921'})
+                          {t('dashboard.client_prepared_by')} <strong>{m.riaFirmName || 'Advisory Firm'}</strong> (SEBI INA: {m.riaSebiReg || 'INA000088921'})
                         </Typography>
                       </Box>
 
@@ -169,7 +171,7 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
                           boxShadow: '0 4px 14px rgba(15, 23, 42, 0.2)',
                         }}
                       >
-                        Review & Authorize
+                        {t('dashboard.client_btn_review_auth')}
                       </Button>
                     </Box>
 
@@ -178,29 +180,29 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
                     <Grid container spacing={2}>
                       <Grid size={{ xs: 12, sm: 4 }}>
                         <Typography variant="caption" color="text.secondary" fontWeight={650}>
-                          PROPOSED PORTFOLIO MIX
+                          {t('dashboard.client_proposed_mix')}
                         </Typography>
                         <Typography variant="body2" fontWeight={750} color="#0F172A" sx={{ mt: 0.3 }}>
-                          Equity: {m.proposedAllocation?.equity || 60}% • Debt: {m.proposedAllocation?.debt || 25}% • Gold: {m.proposedAllocation?.gold || 10}%
+                          {t('mandate.equity')}: {m.proposedAllocation?.equity || 60}% • {t('mandate.debt')}: {m.proposedAllocation?.debt || 25}% • {t('mandate.gold')}: {m.proposedAllocation?.gold || 10}%
                         </Typography>
                       </Grid>
 
                       <Grid size={{ xs: 12, sm: 4 }}>
                         <Typography variant="caption" color="text.secondary" fontWeight={650}>
-                          PRE-COMPUTED TAX OBLIGATION
+                          {t('dashboard.client_precomputed_tax')}
                         </Typography>
                         <Typography variant="body2" fontWeight={800} color="#4F46E5" sx={{ mt: 0.3 }}>
-                          ₹{(m.taxPayable || 0).toLocaleString('en-IN')} (FY 2026-27)
+                          {formatCurrency(m.taxPayable || 0)} (FY 2026-27)
                         </Typography>
                       </Grid>
 
                       <Grid size={{ xs: 12, sm: 4 }}>
                         <Typography variant="caption" color="text.secondary" fontWeight={650}>
-                          STATUTORY SAFEGUARD
+                          {t('dashboard.client_statutory_safeguard')}
                         </Typography>
                         <Typography variant="body2" fontWeight={650} color="#059669" sx={{ mt: 0.3, display: 'flex', alignItems: 'center', gap: 0.5 }}>
                           <CheckCircleOutlineIcon sx={{ fontSize: 16 }} />
-                          Verified 6-Digit Mobile OTP Required
+                          {t('dashboard.client_otp_required_label')}
                         </Typography>
                       </Grid>
                     </Grid>
@@ -237,11 +239,10 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
               <CheckCircleIcon sx={{ fontSize: 30 }} />
             </Box>
             <Typography variant="h6" fontWeight={800} color="#0F172A" gutterBottom>
-              All Clear — No Portfolios Awaiting Authorization
+              {t('dashboard.client_all_clear_title')}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 500, mx: 'auto', lineHeight: 1.6 }}>
-              Your holdings are currently in balance with your agreed investment advisory strategy.
-              When your SEBI Registered Investment Adviser drafts a tactical rebalancing proposal, it will appear here for your review and consent.
+              {t('dashboard.client_all_clear_desc')}
             </Typography>
           </Card>
         )}
@@ -250,13 +251,13 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
       {/* 3. PRIORITY 2: HISTORICAL AUTHORIZATIONS & STATUTORY RECEIPTS */}
       <Box sx={{ mb: 5 }}>
         <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 2 }}>
-          Authorized Mandate Archive & Certificates ({consentedMandates.length})
+          {t('dashboard.client_archive_title', { count: consentedMandates.length })}
         </Typography>
 
         {consentedMandates.length === 0 ? (
           <Card elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0', bgcolor: '#FFFFFF', textAlign: 'center' }}>
             <Typography variant="body2" color="text.secondary">
-              No historical authorizations on record yet. Once you authorize a proposal with Mobile OTP, the official SEBI Regulation 19 certificate will be securely archived here.
+              {t('dashboard.client_no_archive')}
             </Typography>
           </Card>
         ) : (
@@ -265,11 +266,11 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
               <Table>
                 <TableHead sx={{ bgcolor: '#F8FAFC' }}>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 700, fontSize: '0.8rem' }}>Proposal Title</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: '0.8rem' }}>Investment Adviser</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: '0.8rem' }}>Acknowledged Tax (₹)</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: '0.8rem' }}>Consent Status</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: '0.8rem' }} align="center">Compliance Receipt</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: '0.8rem' }}>{t('dashboard.client_th_proposal')}</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: '0.8rem' }}>{t('dashboard.client_th_adviser')}</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: '0.8rem' }}>{t('dashboard.client_th_tax')}</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: '0.8rem' }}>{t('dashboard.client_th_status')}</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: '0.8rem' }} align="center">{t('dashboard.client_th_receipt')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -280,7 +281,7 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
                           {m.title}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          Authorized on {new Date(m.updatedAt || m.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          {t('dashboard.client_authorized_on', { date: formatDate(m.updatedAt || m.createdAt) })}
                         </Typography>
                       </TableCell>
 
@@ -295,7 +296,7 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
 
                       <TableCell>
                         <Typography variant="body2" fontWeight={750} color="#4F46E5">
-                          ₹{(m.taxPayable || 0).toLocaleString('en-IN')}
+                          {formatCurrency(m.taxPayable || 0)}
                         </Typography>
                       </TableCell>
 
@@ -325,7 +326,7 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
                             '&:hover': { borderColor: '#0F172A', bgcolor: '#F8FAFC' },
                           }}
                         >
-                          View Certificate
+                          {t('dashboard.client_btn_view_cert')}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -344,18 +345,18 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, mb: 1.5 }}>
               <VerifiedUserOutlinedIcon sx={{ color: '#0F172A', fontSize: 22 }} />
               <Typography variant="subtitle1" fontWeight={750} color="#0F172A">
-                Your Statutory Protections under SEBI Regulations
+                {t('dashboard.client_rights_title')}
               </Typography>
             </Box>
             <Stack spacing={1.2}>
               <Typography variant="caption" color="#334155" sx={{ display: 'block', lineHeight: 1.5 }}>
-                • <strong>Prior Consent Mandatory:</strong> Under Regulation 19 of the SEBI (Investment Advisers) Regulations, 2013, an adviser cannot place trade orders without your prior informed electronic consent.
+                • {t('dashboard.client_right_1')}
               </Typography>
               <Typography variant="caption" color="#334155" sx={{ display: 'block', lineHeight: 1.5 }}>
-                • <strong>No Unplanned Tax Surprises:</strong> Capital gains taxes under Section 111A and Section 112A are computed prior to trade dispatch to give you complete visibility before approval.
+                • {t('dashboard.client_right_2')}
               </Typography>
               <Typography variant="caption" color="#334155" sx={{ display: 'block', lineHeight: 1.5 }}>
-                • <strong>Immutable Legal Proof:</strong> All OTP sign-offs are archived with SHA-256 tamper-evident integrity for a statutory retention window of 5 years.
+                • {t('dashboard.client_right_3')}
               </Typography>
             </Stack>
           </Card>
@@ -367,11 +368,11 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, mb: 1 }}>
                 <HelpOutlineOutlinedIcon sx={{ color: '#4F46E5', fontSize: 22 }} />
                 <Typography variant="subtitle1" fontWeight={750} color="#0F172A">
-                  Have a Question for Your Adviser?
+                  {t('dashboard.client_question_title')}
                 </Typography>
               </Box>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2, lineHeight: 1.5 }}>
-                Need clarification regarding an asset reallocation thesis, tax implication, or financial objective? Submit an official advisory inquiry.
+                {t('dashboard.client_question_desc')}
               </Typography>
             </Box>
 
@@ -389,7 +390,7 @@ export const ClientDashboard = ({ user, mandates = [], loading = false, error = 
                 '&:hover': { borderColor: '#0F172A', bgcolor: '#F8FAFC' },
               }}
             >
-              Submit Inquiry to Adviser
+              {t('dashboard.client_btn_submit_inquiry')}
             </Button>
           </Card>
         </Grid>

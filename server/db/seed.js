@@ -8,9 +8,22 @@ export async function runSeed() {
   console.log('[Seed] Initiating realistic platform database seeder...');
   const startTime = Date.now();
 
+  // 1. Strict Production Safeguard
+  const activeEnv = process.env.NODE_ENV || 'development';
+  if (activeEnv === 'production') {
+    throw new Error('[Safety Abort] Database wipe and re-seeding is strictly prohibited in production environment.');
+  }
+
   // Ensure DB connection is initialized if MONGODB_URI is configured
   if (process.env.MONGODB_URI && mongoose.connection.readyState !== 1) {
     await connectDB();
+  }
+
+  if (mongoose.connection.readyState === 1) {
+    const dbName = mongoose.connection.name || '';
+    if (dbName.toLowerCase().includes('prod') && activeEnv !== 'test') {
+      throw new Error(`[Safety Abort] Targeted database name '${dbName}' appears to be production. Aborting wipe.`);
+    }
   }
 
   // Deterministic bcrypt hash for 'Password@123'
@@ -26,7 +39,17 @@ export async function runSeed() {
   dbStore.requests.clear();
   dbStore.auditLogs.length = 0;
 
-  // 1. Primary Benchmark Accounts for all roles
+  // Helper for dates in past N days
+  const pastDate = (daysAgo, hourOffset = 0) => {
+    const d = new Date();
+    d.setDate(d.getDate() - daysAgo);
+    d.setHours(d.getHours() - hourOffset);
+    return d.toISOString();
+  };
+
+  // 2. Primary Benchmark Organizations & Accounts
+
+  // RIA 1: Prudent Wealth Advisory (Suresh Narayanan)
   const ria1 = dbStore.createUser({
     id: 'usr_ria_suresh',
     name: 'Suresh Narayanan',
@@ -36,21 +59,25 @@ export async function runSeed() {
     firmName: 'Prudent Wealth Advisory',
     sebiRegNumber: 'INA000088921',
     complianceEmail: 'compliance@prudentwealth.in',
-    plan: 'free',
+    plan: 'pro',
+    createdAt: pastDate(180),
   });
 
+  // RIA 2: Artha Capital Advisors (Meera Iyer)
   const ria2 = dbStore.createUser({
     id: 'usr_ria_meera',
     name: 'Meera Iyer',
     email: 'pro.ria@example.in',
     passwordHash: defaultPasswordHash,
     role: 'ria',
-    firmName: 'Apex Multi-Family Office',
+    firmName: 'Artha Capital Advisors',
     sebiRegNumber: 'INA000099412',
-    complianceEmail: 'audit@apexfo.com',
+    complianceEmail: 'audit@arthacapital.in',
     plan: 'pro',
+    createdAt: pastDate(150),
   });
 
+  // Statutory Compliance Officer: Sentinel Compliance Partners
   const complianceOfficer = dbStore.createUser({
     id: 'usr_compliance_officer',
     name: 'Vikramaditya Roy',
@@ -61,8 +88,10 @@ export async function runSeed() {
     sebiRegNumber: 'INA000010999',
     complianceEmail: 'compliance@example.in',
     plan: 'pro',
+    createdAt: pastDate(200),
   });
 
+  // Platform Super Admin
   const adminUser = dbStore.createUser({
     id: 'usr_admin_neha',
     name: 'Neha Singhania',
@@ -72,34 +101,385 @@ export async function runSeed() {
     firmName: 'FinConsent Platform Governance',
     complianceEmail: 'admin@finconsent.in',
     plan: 'pro',
+    createdAt: pastDate(240),
   });
 
+  // Client User account for Rohan Mehta (direct investor portal login)
   const clientUser = dbStore.createUser({
     id: 'usr_client_rohan',
     name: 'Rohan Mehta',
     email: 'client@example.in',
     passwordHash: defaultPasswordHash,
     role: 'client',
-    pan: 'ABCDE1234F',
+    pan: 'ABCPM1234F',
     mobile: '9820112345',
     firmName: 'Individual Investor',
+    clientId: 'cli_1',
     plan: 'free',
+    createdAt: pastDate(120),
   });
 
-  const strangerClientUser = dbStore.createUser({
-    id: 'usr_client_stranger',
-    name: 'Stranger Client',
-    email: 'stranger@example.in',
-    passwordHash: defaultPasswordHash,
-    role: 'client',
-    pan: 'XYZAB5678C',
-    mobile: '9820999999',
-    firmName: 'Unaffiliated Investor',
-    clientId: 'cli_stranger_unaffiliated',
-    plan: 'free',
+  // 3. Primary Benchmark Clients for RIA 1 (Prudent Wealth Advisory)
+  const clientRohan = dbStore.createClient({
+    id: 'cli_1',
+    riaId: ria1.id,
+    name: 'Rohan Mehta',
+    pan: 'ABCPM1234F',
+    dob: '1978-08-14', // Password: 123414081978
+    mobile: '9820112345',
+    email: 'rohan.mehta@investor.in',
+    portfolioValue: 18500000, // ₹1.85 Cr
+    riskProfile: 'Moderate-High',
+    investmentHorizon: '7+ years',
+    createdAt: pastDate(90),
   });
 
-  // Common Indian names for realistic generation
+  const clientAnanya = dbStore.createClient({
+    id: 'cli_ananya_kapoor',
+    riaId: ria1.id,
+    name: 'Ananya Kapoor',
+    pan: 'ABCPK5678K',
+    dob: '1983-11-22', // Password: 567822111983
+    mobile: '9820256789',
+    email: 'ananya.kapoor@investor.in',
+    portfolioValue: 34000000, // ₹3.40 Cr
+    riskProfile: 'Moderate',
+    investmentHorizon: '10+ years',
+    createdAt: pastDate(85),
+  });
+
+  const clientVikram = dbStore.createClient({
+    id: 'cli_vikram_shah',
+    riaId: ria1.id,
+    name: 'Vikram Shah',
+    pan: 'ABCPS9012S',
+    dob: '1972-02-05', // Password: 901205021972
+    mobile: '9820390123',
+    email: 'vikram.shah@investor.in',
+    portfolioValue: 67500000, // ₹6.75 Cr
+    riskProfile: 'Moderate-High',
+    investmentHorizon: '5–7 years',
+    createdAt: pastDate(80),
+  });
+
+  // 4. Primary Benchmark Clients for RIA 2 (Artha Capital Advisors)
+  const clientNikhil = dbStore.createClient({
+    id: 'cli_nikhil_bansal',
+    riaId: ria2.id,
+    name: 'Nikhil Bansal',
+    pan: 'XYZPB3456B',
+    dob: '1985-06-18', // Password: 345618061985
+    mobile: '9830434567',
+    email: 'nikhil.bansal@investor.in',
+    portfolioValue: 22000000, // ₹2.20 Cr
+    riskProfile: 'High',
+    investmentHorizon: '10+ years',
+    createdAt: pastDate(70),
+  });
+
+  const clientKavita = dbStore.createClient({
+    id: 'cli_kavita_shah',
+    riaId: ria2.id,
+    name: 'Kavita Shah',
+    pan: 'XYZPS7890S',
+    dob: '1990-09-30', // Password: 789030091990
+    mobile: '9830578901',
+    email: 'kavita.shah@investor.in',
+    portfolioValue: 11500000, // ₹1.15 Cr
+    riskProfile: 'Moderate',
+    investmentHorizon: '5+ years',
+    createdAt: pastDate(65),
+  });
+
+  // 5. Seed Benchmark Realistic Mandates Across Lifecycle States
+
+  // Mandate A: Equity concentration reduction (Rohan Mehta, RIA 1) - State: SENT
+  const mandateA = dbStore.createMandate({
+    id: 'man_1',
+    riaId: ria1.id,
+    clientId: clientRohan.id,
+    title: 'Equity Concentration Reduction & Fixed-Income Reallocation',
+    status: 'sent',
+    magicToken: 'tok_rohan_mandate_a',
+    currentAllocation: { equity: 59.5, debt: 24.3, liquid: 16.2, gold: 0 },
+    proposedAllocation: { equity: 46.0, debt: 29.7, liquid: 24.3, gold: 0 },
+    sellBasket: [
+      { securityName: 'HDFC Bank Ltd', isin: 'INE040A01034', units: 800, saleValue: 1320000, purchaseValue: 1150000, gainType: 'LTCG' },
+      { securityName: 'Tata Consultancy Services', isin: 'INE467B01029', units: 285, saleValue: 1180000, purchaseValue: 1020000, gainType: 'LTCG' },
+    ],
+    buyBasket: [
+      { securityName: 'Kotak Equity Arbitrage Fund - Direct Growth', approxValue: 1500000 },
+      { securityName: 'HDFC Short Duration Debt Fund - Direct Growth', approxValue: 1000000 },
+    ],
+    stcgAmount: 0,
+    ltcgAmount: 330000,
+    stcgTax: 0,
+    ltcgTax: 25625, // (330000 - 125000) * 12.5% = 25,625
+    cessAmount: 1025, // 4% of 25625
+    taxPayable: 26650,
+    advanceTaxQuarter: 'Q4 - Due 15th March',
+    advanceTaxAlert: 'Estimated net tax liability of ₹26,650 requires Advance Tax adjustment by 15th March.',
+    advisorRationale: 'Client equity portfolio was over-indexed to large banking and IT (59.5% vs mandate target of 45%). Selling ₹25L concentrated holdings and redeploying ₹15L into tax-efficient arbitrage and ₹10L into short-duration debt preserves capital while harvesting post-budget LTCG within the low tax bracket.',
+    cutoffTimestamp: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+    createdAt: pastDate(1, 2),
+    updatedAt: pastDate(1, 1),
+    chatMessages: [
+      {
+        id: 'msg_1',
+        sender: 'client',
+        senderName: 'Rohan Mehta',
+        message: 'Why are we reducing the equity allocation?',
+        timestamp: pastDate(1, 0.8),
+      },
+      {
+        id: 'msg_2',
+        sender: 'ria',
+        senderName: 'Suresh Narayanan',
+        message: 'The current equity exposure is above the target range. We are reducing concentration while maintaining the long-term growth allocation.',
+        timestamp: pastDate(1, 0.6),
+      },
+      {
+        id: 'msg_3',
+        sender: 'client',
+        senderName: 'Rohan Mehta',
+        message: 'Will I have a tax liability?',
+        timestamp: pastDate(1, 0.4),
+      },
+      {
+        id: 'msg_4',
+        sender: 'ria',
+        senderName: 'Suresh Narayanan',
+        message: 'The estimated capital gains impact is approximately ₹26,650. Please review the tax-impact section above for details.',
+        timestamp: pastDate(1, 0.2),
+      },
+    ],
+  });
+
+  // Mandate B: Tax-loss harvesting (Ananya Kapoor, RIA 1) - State: VIEWED
+  const mandateB = dbStore.createMandate({
+    id: 'man_ananya_tax_harvest',
+    riaId: ria1.id,
+    clientId: clientAnanya.id,
+    title: 'Tax-Loss Harvesting & Broad Market Reinvestment',
+    status: 'viewed',
+    magicToken: 'tok_ananya_mandate_b',
+    currentAllocation: { equity: 70, debt: 20, gold: 10, cash: 0 },
+    proposedAllocation: { equity: 70, debt: 20, gold: 10, cash: 0 },
+    sellBasket: [
+      { securityName: 'Mid-Cap Growth Fund Active Units', isin: 'INF200K01012', units: 15000, saleValue: 1550000, purchaseValue: 1800000, gainType: 'STCG' },
+    ],
+    buyBasket: [
+      { securityName: 'Nifty 50 Index Fund - Direct Plan Growth', approxValue: 1550000 },
+    ],
+    stcgAmount: -250000,
+    ltcgAmount: 0,
+    stcgTax: 0,
+    ltcgTax: 0,
+    cessAmount: 0,
+    taxPayable: 0,
+    advanceTaxQuarter: 'Q3 - Due 15th December',
+    advanceTaxAlert: 'Harvesting ₹2.50L STCL creates a tax shield saving ₹50,000 against FY25 realized short-term gains.',
+    advisorRationale: 'Underperforming mid-cap active scheme units bought in FY24 currently reflect an unrealized capital loss of ₹2.50 Lakhs. Booking this loss offsets earlier short-term capital gains, saving ₹50,000 in immediate tax liability, while immediate re-entry into Nifty 50 Index Fund prevents market dislocation.',
+    cutoffTimestamp: new Date(Date.now() + 36 * 60 * 60 * 1000).toISOString(),
+    createdAt: pastDate(2),
+    updatedAt: pastDate(1, 6),
+  });
+
+  // Mandate C: Comprehensive Portfolio Rebalancing (Vikram Shah, RIA 1) - State: CONSENTED / APPROVED
+  const mandateC = dbStore.createMandate({
+    id: 'man_vikram_rebalance_approved',
+    riaId: ria1.id,
+    clientId: clientVikram.id,
+    title: 'Strategic Asset Allocation Rebalancing & Target Maturity Shift',
+    status: 'consented',
+    isApproved: true,
+    magicToken: null,
+    currentAllocation: { equity: 78.0, debt: 14.0, gold: 8.0, cash: 0 },
+    proposedAllocation: { equity: 60.0, debt: 30.0, gold: 10.0, cash: 0 },
+    sellBasket: [
+      { securityName: 'Reliance Industries Ltd', isin: 'INE002A01018', units: 750, saleValue: 2212500, purchaseValue: 1500000, gainType: 'LTCG' },
+      { securityName: 'ICICI Bank Ltd', isin: 'INE090A01021', units: 1465, saleValue: 1787500, purchaseValue: 1300000, gainType: 'LTCG' },
+    ],
+    buyBasket: [
+      { securityName: 'Bharat Bond ETF - April 2030', approxValue: 2800000 },
+      { securityName: 'Sovereign Gold Bond Tranche 2026', approxValue: 1200000 },
+    ],
+    stcgAmount: 0,
+    ltcgAmount: 1200000,
+    stcgTax: 0,
+    ltcgTax: 134375, // (1200000 - 125000) * 12.5% = 134,375
+    cessAmount: 5375,
+    taxPayable: 139750,
+    advanceTaxQuarter: 'Q4 - Due 15th March',
+    advanceTaxAlert: 'High capital gains realization requires statutory advance tax installment payment.',
+    advisorRationale: 'Vikram Shah equity allocation exceeded statutory risk profile tolerance (78% vs 60%). Rebalancing ₹40L into Bharat Bond ETF and SGB locks in guaranteed retirement yields and provides an inflation hedge.',
+    cutoffTimestamp: pastDate(10),
+    createdAt: pastDate(12),
+    updatedAt: pastDate(11),
+    approvedAt: pastDate(11, 2),
+    consentedAt: pastDate(11, 2),
+  });
+
+  // Mandate D: DRAFT state (Rohan Mehta, RIA 1)
+  const mandateD = dbStore.createMandate({
+    id: 'man_rohan_draft',
+    riaId: ria1.id,
+    clientId: clientRohan.id,
+    title: 'Routine Debt Allocation Adjustment (Draft)',
+    status: 'draft',
+    magicToken: null,
+    currentAllocation: { equity: 50, debt: 40, gold: 10, cash: 0 },
+    proposedAllocation: { equity: 50, debt: 45, gold: 5, cash: 0 },
+    sellBasket: [{ securityName: 'Sovereign Gold Bond 2025', units: 100, saleValue: 720000, purchaseValue: 500000, gainType: 'LTCG' }],
+    buyBasket: [{ securityName: 'Corporate Bond Fund - Direct Plan', approxValue: 720000 }],
+    stcgAmount: 0,
+    ltcgAmount: 220000,
+    stcgTax: 0,
+    ltcgTax: 11875,
+    cessAmount: 475,
+    taxPayable: 12350,
+    advisorRationale: 'Internal draft to evaluate moving maturing gold tranche into corporate debt.',
+    createdAt: pastDate(0, 3),
+  });
+
+  // Mandate E: IN_REVIEW / AWAITING CONSENT (Ananya Kapoor, RIA 1)
+  const mandateE = dbStore.createMandate({
+    id: 'man_ananya_in_review',
+    riaId: ria1.id,
+    clientId: clientAnanya.id,
+    title: 'Mid-Cap Rotation to Large-Cap Value (Awaiting Consent)',
+    status: 'in_review',
+    magicToken: 'tok_ananya_in_review',
+    currentAllocation: { equity: 65, debt: 25, gold: 10, cash: 0 },
+    proposedAllocation: { equity: 65, debt: 25, gold: 10, cash: 0 },
+    sellBasket: [{ securityName: 'Tata Motors Ltd', units: 500, saleValue: 475000, purchaseValue: 400000, gainType: 'STCG' }],
+    buyBasket: [{ securityName: 'Infosys Ltd', approxValue: 475000 }],
+    stcgAmount: 75000,
+    ltcgAmount: 0,
+    stcgTax: 15000,
+    ltcgTax: 0,
+    cessAmount: 600,
+    taxPayable: 15600,
+    advisorRationale: 'Rotating out of cyclical auto into resilient IT exporter.',
+    cutoffTimestamp: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: pastDate(1, 5),
+  });
+
+  // Mandate F: EXPIRED state (Vikram Shah, RIA 1)
+  const mandateF = dbStore.createMandate({
+    id: 'man_vikram_expired',
+    riaId: ria1.id,
+    clientId: clientVikram.id,
+    title: 'Q3 Tax Harvesting Proposal (Cutoff Lapsed)',
+    status: 'expired',
+    magicToken: 'tok_vikram_expired',
+    currentAllocation: { equity: 75, debt: 25, gold: 0, cash: 0 },
+    proposedAllocation: { equity: 65, debt: 35, gold: 0, cash: 0 },
+    sellBasket: [{ securityName: 'Wipro Ltd', units: 1000, saleValue: 450000, purchaseValue: 400000, gainType: 'STCG' }],
+    buyBasket: [{ securityName: 'Liquid BeES ETF', approxValue: 450000 }],
+    stcgAmount: 50000,
+    ltcgAmount: 0,
+    stcgTax: 10000,
+    ltcgTax: 0,
+    cessAmount: 400,
+    taxPayable: 10400,
+    advisorRationale: 'Proposal cutoff lapsed without client OTP response.',
+    cutoffTimestamp: pastDate(5),
+    createdAt: pastDate(8),
+  });
+
+  // Mandate G: REVOKED state (Rohan Mehta, RIA 1)
+  const mandateG = dbStore.createMandate({
+    id: 'man_rohan_revoked',
+    riaId: ria1.id,
+    clientId: clientRohan.id,
+    title: 'Ad-hoc Small-Cap Exit (Revoked by RIA)',
+    status: 'revoked',
+    isRevoked: true,
+    magicToken: 'tok_rohan_revoked',
+    currentAllocation: { equity: 60, debt: 30, gold: 10, cash: 0 },
+    proposedAllocation: { equity: 50, debt: 40, gold: 10, cash: 0 },
+    sellBasket: [{ securityName: 'Small Cap Discovery Fund', units: 2000, saleValue: 500000, purchaseValue: 450000, gainType: 'STCG' }],
+    buyBasket: [{ securityName: 'Short Duration Debt Fund', approxValue: 500000 }],
+    advisorRationale: 'Revoked by RIA Suresh Narayanan following sudden corporate dividend announcement.',
+    cutoffTimestamp: pastDate(2),
+    createdAt: pastDate(4),
+  });
+
+  // Mandate H: RIA 2 Mandate (Nikhil Bansal under Meera Iyer / Artha Capital) - State: SENT
+  const mandateH = dbStore.createMandate({
+    id: 'man_nikhil_artha_sent',
+    riaId: ria2.id,
+    clientId: clientNikhil.id,
+    title: 'Artha High-Alpha Equity Tactical Rebalance',
+    status: 'sent',
+    magicToken: 'tok_nikhil_mandate_h',
+    currentAllocation: { equity: 85, debt: 15, gold: 0, cash: 0 },
+    proposedAllocation: { equity: 75, debt: 25, gold: 0, cash: 0 },
+    sellBasket: [{ securityName: 'Larsen & Toubro Ltd', units: 300, saleValue: 1086000, purchaseValue: 900000, gainType: 'LTCG' }],
+    buyBasket: [{ securityName: 'Corporate Debt Yield Fund', approxValue: 1086000 }],
+    stcgAmount: 0,
+    ltcgAmount: 186000,
+    stcgTax: 0,
+    ltcgTax: 7625,
+    cessAmount: 305,
+    taxPayable: 7930,
+    advisorRationale: 'Artha Capital rebalance reducing infrastructure overweight into high-grade corporate debt.',
+    cutoffTimestamp: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+    createdAt: pastDate(1),
+  });
+
+  // Mandate I: RIA 2 Mandate (Kavita Shah under Meera Iyer) - State: CONSENTED
+  const mandateI = dbStore.createMandate({
+    id: 'man_kavita_artha_consented',
+    riaId: ria2.id,
+    clientId: clientKavita.id,
+    title: 'Fixed Income Safety Mandate',
+    status: 'consented',
+    isApproved: true,
+    magicToken: null,
+    currentAllocation: { equity: 40, debt: 50, gold: 10, cash: 0 },
+    proposedAllocation: { equity: 30, debt: 60, gold: 10, cash: 0 },
+    sellBasket: [{ securityName: 'Axis Bank Ltd', units: 250, saleValue: 297500, purchaseValue: 250000, gainType: 'STCG' }],
+    buyBasket: [{ securityName: 'Gilt 10-Yr Constant Maturity Fund', approxValue: 297500 }],
+    stcgAmount: 47500,
+    ltcgAmount: 0,
+    stcgTax: 9500,
+    ltcgTax: 0,
+    cessAmount: 380,
+    taxPayable: 9880,
+    advisorRationale: 'Securing gains for conservative investor into sovereign gilt bonds.',
+    createdAt: pastDate(20),
+    consentedAt: pastDate(19),
+    approvedAt: pastDate(19),
+  });
+
+  // Audit Logs for Benchmark Mandates
+  dbStore.createAuditLog({
+    riaId: ria1.id,
+    clientId: clientRohan.id,
+    mandateId: mandateA.id,
+    eventType: 'MANDATE_CREATED',
+    ipAddress: '103.21.12.8',
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0',
+    channel: 'SYSTEM_API',
+    timestamp: mandateA.createdAt,
+    metadata: { action: 'Mandate created by Suresh Narayanan (RIA 1)', taxPayable: mandateA.taxPayable },
+  });
+
+  dbStore.createAuditLog({
+    riaId: ria1.id,
+    clientId: clientRohan.id,
+    mandateId: mandateA.id,
+    eventType: 'MANDATE_DISPATCHED',
+    ipAddress: '103.21.12.8',
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0',
+    channel: 'WHATSAPP_EMAIL (SMS Disabled)',
+    timestamp: pastDate(1, 1),
+    metadata: { magicToken: mandateA.magicToken, status: 'sent' },
+  });
+
+  // 6. Background Scaled Users, Clients, Mandates & Logs for Scale Consistency (~1000 users, ~200 clients, ~350 mandates)
   const firstNames = [
     'Aarav', 'Aditi', 'Alok', 'Amit', 'Ananya', 'Anil', 'Anirudh', 'Arjun', 'Bhavna', 'Chetan',
     'Deepak', 'Devika', 'Gaurav', 'Harish', 'Ishaan', 'Jitendra', 'Kavita', 'Kiran', 'Madhuri', 'Manoj',
@@ -128,17 +508,8 @@ export async function runSeed() {
     'Investment Counsel', 'Wealth Management', 'Advisory Services', 'Portfolio Managers'
   ];
 
-  // Helper for dates in past N days
-  const pastDate = (daysAgo, hourOffset = 0) => {
-    const d = new Date();
-    d.setDate(d.getDate() - daysAgo);
-    d.setHours(d.getHours() - hourOffset);
-    return d.toISOString();
-  };
-
-  // 2. Generate ~1,000 Users
-  const totalUsersToGenerate = 995; // + 5 fixed = 1,000 total
-  const generatedRias = [ria1, ria2];
+  const totalUsersToGenerate = 995;
+  const backgroundRias = [ria1, ria2];
 
   for (let i = 1; i <= totalUsersToGenerate; i++) {
     const fn = firstNames[i % firstNames.length];
@@ -174,60 +545,68 @@ export async function runSeed() {
     });
 
     if (role === 'ria') {
-      generatedRias.push(user);
+      backgroundRias.push(user);
     }
   }
 
-  // 3. Generate 200 Clients
-  const generatedClients = [];
+  // Generate 195 additional background clients (total 200)
   const panLetters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const allClients = [clientRohan, clientAnanya, clientVikram, clientNikhil, clientKavita];
 
-  for (let c = 1; c <= 200; c++) {
+  for (let c = 6; c <= 200; c++) {
     const fn = firstNames[(c * 7) % firstNames.length];
     const ln = lastNames[(c * 5) % lastNames.length];
-    let clientName = `${fn} ${ln}`;
-    let email = `${fn.toLowerCase()}.${ln.toLowerCase()}${c}@gmail.com`;
+    const clientName = `${fn} ${ln}`;
+    const email = `${fn.toLowerCase()}.${ln.toLowerCase()}${c}@gmail.com`;
 
-    // Valid Indian PAN format: 5 letters, 4 digits, 1 letter
     const p1 = panLetters[c % panLetters.length];
     const p2 = panLetters[(c + 3) % panLetters.length];
     const p3 = panLetters[(c + 7) % panLetters.length];
-    const p4 = 'P'; // P = Individual
+    const p4 = 'P';
     const p5 = ln[0].toUpperCase();
     const panDigits = String(1000 + (c * 37) % 8999);
     const pChecksum = panLetters[(c * 2) % panLetters.length];
-    let pan = `${p1}${p2}${p3}${p4}${p5}${panDigits}${pChecksum}`;
+    const pan = `${p1}${p2}${p3}${p4}${p5}${panDigits}${pChecksum}`;
 
-    let mobile = `98${String(10000000 + c * 31415).slice(0, 8)}`;
-    let portfolioValue = Math.round((15 + (c % 85) * 1.2) * 100000); // 15L to 1.17 Cr
-    let assignedRia = generatedRias[c % Math.min(generatedRias.length, 30)];
+    const birthYear = 1965 + (c % 35);
+    const birthMonth = String(1 + (c % 12)).padStart(2, '0');
+    const birthDay = String(1 + (c % 28)).padStart(2, '0');
+    const dob = `${birthYear}-${birthMonth}-${birthDay}`;
+
+    const mobile = `98${String(10000000 + c * 31415).slice(0, 8)}`;
+    const portfolioValue = Math.round((25 + (c % 80) * 1.5) * 100000);
+    const assignedRia = backgroundRias[c % Math.min(backgroundRias.length, 30)];
     const createdAt = pastDate(Math.floor((c % 180) + 20));
-
-    // Ensure benchmark client user Rohan Mehta is explicitly created and linked
-    if (c === 1) {
-      clientName = 'Rohan Mehta';
-      email = 'client@example.in';
-      pan = 'ABCDE1234F';
-      mobile = '9820112345';
-      portfolioValue = 8500000;
-      assignedRia = ria1; // Suresh Narayanan
-    }
 
     const client = dbStore.createClient({
       id: `cli_${c}`,
       riaId: assignedRia.id,
       name: clientName,
       pan,
+      dob,
       mobile,
       email,
       portfolioValue,
+      riskProfile: c % 3 === 0 ? 'High' : c % 2 === 0 ? 'Moderate' : 'Conservative',
+      investmentHorizon: `${5 + (c % 10)} years`,
       createdAt,
     });
 
-    generatedClients.push(client);
+    allClients.push(client);
+
+    dbStore.createAuditLog({
+      riaId: assignedRia.id,
+      clientId: client.id,
+      eventType: 'CLIENT_ONBOARDED',
+      ipAddress: `103.21.${(c % 100) + 1}.8`,
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0',
+      channel: 'RIA_WORKSPACE',
+      timestamp: createdAt,
+      metadata: { action: 'Client onboarded with KYC & Risk Profile' },
+    });
   }
 
-  // 4. Generate ~350 Mandates with realistic lifecycle distributions & chronological timestamps
+  // Generate background mandates to reach ~350 mandates & 1000+ audit logs
   const statuses = ['draft', 'sent', 'viewed', 'consented', 'expired'];
   const securitiesPool = [
     { name: 'HDFC Bank Ltd', price: 1650, type: 'STCG' },
@@ -244,30 +623,15 @@ export async function runSeed() {
     { name: 'Hindustan Unilever Ltd', price: 2680, type: 'LTCG' }
   ];
 
-  for (let m = 1; m <= 350; m++) {
-    let client = generatedClients[m % generatedClients.length];
-    let riaId = client.riaId;
-    let status = statuses[m % statuses.length];
-    
-    // Explicitly seed Rohan Mehta with live testable records
-    if (m === 1) {
-      client = generatedClients[0];
-      riaId = ria1.id;
-      status = 'sent';
-    } else if (m === 2) {
-      client = generatedClients[0];
-      riaId = ria1.id;
-      status = 'consented';
-    } else if (m > 150) {
-      status = 'consented';
-    }
+  for (let m = 10; m <= 350; m++) {
+    const client = allClients[m % allClients.length];
+    const riaId = client.riaId;
+    const status = statuses[m % statuses.length];
 
     let daysAgo = 1;
     if (status === 'consented') daysAgo = Math.floor(5 + (m % 320));
     else if (status === 'expired') daysAgo = Math.floor(3 + (m % 60));
     else if (status === 'draft') daysAgo = Math.floor(m % 5);
-    else if (status === 'sent') daysAgo = 1;
-    else if (status === 'viewed') daysAgo = 0.5;
 
     const createdAt = pastDate(daysAgo, 4);
     const cutoffTimestamp = new Date(new Date(createdAt).getTime() + 48 * 60 * 60 * 1000).toISOString();
@@ -318,7 +682,6 @@ export async function runSeed() {
       magicToken: status === 'consented' ? null : `tok_${m}_${String(Math.random()).slice(2, 10)}`,
     });
 
-    // Append realistic audit events
     dbStore.createAuditLog({
       riaId,
       clientId: client.id,
@@ -394,7 +757,7 @@ export async function runSeed() {
     }
   }
 
-  // 5. Generate ~50 Advisory Requests in Requests Collection
+  // 50 Advisory Requests
   const requestCategories = [
     'Portfolio Rebalance Advisory',
     'Statutory Tax Impact Assessment',
@@ -404,7 +767,7 @@ export async function runSeed() {
   ];
 
   for (let r = 1; r <= 50; r++) {
-    const client = generatedClients[(r * 3) % generatedClients.length];
+    const client = allClients[(r * 3) % allClients.length];
     const category = requestCategories[r % requestCategories.length];
     const status = r % 4 === 0 ? 'completed' : r % 3 === 0 ? 'in_progress' : 'pending';
     const createdAt = pastDate(Math.floor((r % 45) + 1));
@@ -431,12 +794,12 @@ export async function runSeed() {
   console.log(`[Seed] In-memory store prepared in ${durationMs}ms:`);
   console.log(`  - Users: ${dbStore.users.size} (RIAs, Compliance Officers, Admins, Clients)`);
   console.log(`  - Clients: ${dbStore.clients.size}`);
-  console.log(`  - Mandates: ${dbStore.mandates.size} across Draft, Sent, Viewed, Consented, Expired`);
+  console.log(`  - Mandates: ${dbStore.mandates.size} across Draft, Sent, Viewed, In Review, Consented, Expired, Revoked`);
   console.log(`  - Audit Trail Records: ${dbStore.auditLogs.length} with SHA-256 hash chaining`);
   console.log(`  - Advisory Requests: ${dbStore.requests.size}`);
 
-  // Synchronize documents into live MongoDB Atlas cluster
-  if (mongoose.connection.readyState === 1) {
+  // Synchronize documents into live MongoDB Atlas cluster (skipped in automated tests for speed)
+  if (mongoose.connection.readyState === 1 && process.env.NODE_ENV !== 'test') {
     console.log('[Seed] Synchronizing and inserting documents into live MongoDB Atlas collections...');
     try {
       await Promise.all([
@@ -486,6 +849,20 @@ export async function runSeed() {
     complianceOfficer,
     adminUser,
     clientUser,
+    clientRohan,
+    clientAnanya,
+    clientVikram,
+    clientNikhil,
+    clientKavita,
+    mandateA,
+    mandateB,
+    mandateC,
+    mandateD,
+    mandateE,
+    mandateF,
+    mandateG,
+    mandateH,
+    mandateI,
     totalUsers: dbStore.users.size,
     totalClients: dbStore.clients.size,
     totalMandates: dbStore.mandates.size,
@@ -505,4 +882,3 @@ if (process.argv[1] && process.argv[1].endsWith('seed.js')) {
       process.exit(1);
     });
 }
-

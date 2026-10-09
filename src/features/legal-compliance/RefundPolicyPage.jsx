@@ -5,19 +5,22 @@ import Card from '@mui/material/Card';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import CurrencyRupeeOutlinedIcon from '@mui/icons-material/CurrencyRupeeOutlined';
+import { useI18n } from '../../i18n/I18nContext';
 
 export const RefundPolicyPage = () => {
+  const { t } = useI18n();
+
   return (
     <Container maxWidth="md" sx={{ py: 6 }}>
       <Card elevation={2} sx={{ p: { xs: 3, md: 5 }, borderRadius: 3, border: 1, borderColor: 'divider' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
           <CurrencyRupeeOutlinedIcon color="primary" sx={{ fontSize: 32 }} />
           <Typography variant="h4" component="h1" fontWeight={800}>
-            Refund & Cancellation Policy
+            {t('legal.refund_title')}
           </Typography>
         </Box>
         <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-          Payment Gateway Standards for B2B SaaS Subscriptions (Razorpay Compliance)
+          {t('legal.refund_sub')}
         </Typography>
 
         <Divider sx={{ my: 3 }} />

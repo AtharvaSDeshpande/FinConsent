@@ -12,21 +12,18 @@ import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import CalculateOutlinedIcon from '@mui/icons-material/CalculateOutlined';
-import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import BusinessCenterOutlinedIcon from '@mui/icons-material/BusinessCenterOutlined';
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
 import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
 import { Link as RouterLink } from 'react-router-dom';
-import { useAuth } from '../../security/AuthContext.jsx';
+import { useI18n } from '../../i18n/I18nContext';
 
 export const GuestDashboard = () => {
-  const { switchPersona } = useAuth();
-  
+  const { t, formatCurrency } = useI18n();
+
   // Interactive tax preview state
   const [gainAmount, setGainAmount] = useState(150000);
   const [holdingMonths, setHoldingMonths] = useState(14);
@@ -97,7 +94,7 @@ export const GuestDashboard = () => {
       <Box sx={{ mb: 5, textAlign: 'center', maxWidth: 840, mx: 'auto' }}>
         <Chip
           icon={<ShieldOutlinedIcon sx={{ fontSize: '15px !important', color: '#047857' }} />}
-          label="SEBI Regulation 19 Compliance Infrastructure"
+          label={t('guest.badge')}
           sx={{
             mb: 2,
             fontWeight: 700,
@@ -108,11 +105,10 @@ export const GuestDashboard = () => {
           }}
         />
         <Typography variant="h3" component="h1" fontWeight={800} letterSpacing="-0.03em" color="#0F172A" sx={{ mb: 2 }}>
-          Experience Regulated Wealth Consent
+          {t('guest.title')}
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1.05rem', lineHeight: 1.6 }}>
-          FinConsent transforms non-discretionary advisory mandates into legally binding, tamper-evident audit trails
-          with automated capital gains tax calculation under Finance Act 2024.
+          {t('guest.sub')}
         </Typography>
         <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 3 }}>
           <Button
@@ -122,28 +118,28 @@ export const GuestDashboard = () => {
             size="large"
             sx={{ fontWeight: 700, borderRadius: 2.5, bgcolor: '#0F172A', px: 3, '&:hover': { bgcolor: '#1E293B' } }}
           >
-            Sign In with Password or OAuth
+            {t('guest.btn_signin_workspace')}
           </Button>
           <Button
             variant="outlined"
             component={RouterLink}
-            to="/m/demo-token"
+            to="/register"
             size="large"
             sx={{ fontWeight: 650, borderRadius: 2.5, borderColor: '#CBD5E1', color: '#334155', px: 3 }}
           >
-            View Sample Investor Proposal
+            {t('guest.btn_register_practice')}
           </Button>
         </Stack>
       </Box>
 
-      {/* 2. Interactive Test-Drive Persona Selector */}
+      {/* 2. Supported Institutional Roles & Workspaces */}
       <Box sx={{ mb: 6 }}>
         <Box sx={{ mb: 2.5 }}>
           <Typography variant="h5" fontWeight={800} color="#0F172A">
-            1-Click Interactive Role Test-Drive
+            {t('guest.roles_title')}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Select any persona below to switch into that role instantly and experience its tailored workspace.
+            {t('guest.roles_sub')}
           </Typography>
         </Box>
 
@@ -197,9 +193,10 @@ export const GuestDashboard = () => {
                 </Box>
 
                 <Button
+                  component={RouterLink}
+                  to="/login"
                   variant="outlined"
                   fullWidth
-                  onClick={() => switchPersona(p.id)}
                   endIcon={<ArrowForwardIcon sx={{ fontSize: 16 }} />}
                   sx={{
                     fontWeight: 700,
@@ -210,7 +207,7 @@ export const GuestDashboard = () => {
                     '&:hover': { bgcolor: '#F8FAFC', borderColor: '#0F172A' },
                   }}
                 >
-                  {p.cta}
+                  {t('guest.btn_signin_access')}
                 </Button>
               </Card>
             </Grid>
@@ -232,10 +229,10 @@ export const GuestDashboard = () => {
             }}
           >
             <Typography variant="h6" fontWeight={800} color="#0F172A" sx={{ mb: 1 }}>
-              Regulated 5-Step Compliance Journey
+              {t('landing.journey_title')}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Every rebalancing recommendation is bound to strict statutory guardrails mandated by SEBI (Investment Advisers) Regulations.
+              {t('landing.journey_sub')}
             </Typography>
 
             <Stack spacing={2.5}>
@@ -245,10 +242,10 @@ export const GuestDashboard = () => {
                 </Box>
                 <Box>
                   <Typography variant="subtitle2" fontWeight={800} color="#0F172A">
-                    Adviser Formulation & Mandate Drafting
+                    {t('landing.step1_title')}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    RIA records allocation shift, rationale, target weights, and asset identifiers for non-discretionary client review.
+                    {t('landing.step1_desc')}
                   </Typography>
                 </Box>
               </Box>
@@ -259,10 +256,10 @@ export const GuestDashboard = () => {
                 </Box>
                 <Box>
                   <Typography variant="subtitle2" fontWeight={800} color="#0F172A">
-                    Finance Act 2024 Pre-Computed Tax Transparency
+                    {t('landing.step2_title')}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Before recommending a trade, pre-compute STCG (20%) and LTCG (12.5% after ₹1.25L exemption) so clients make informed decisions.
+                    {t('landing.step2_desc')}
                   </Typography>
                 </Box>
               </Box>
@@ -273,10 +270,10 @@ export const GuestDashboard = () => {
                 </Box>
                 <Box>
                   <Typography variant="subtitle2" fontWeight={800} color="#0F172A">
-                    48-Hour Statutory Cutoff Window
+                    {t('landing.step3_title')}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Mandates auto-expire after 48 hours to prevent execution on stale market valuations and unapproved prices.
+                    {t('landing.step3_desc')}
                   </Typography>
                 </Box>
               </Box>
@@ -287,10 +284,10 @@ export const GuestDashboard = () => {
                 </Box>
                 <Box>
                   <Typography variant="subtitle2" fontWeight={800} color="#0F172A">
-                    Investor Mobile OTP Authorization
+                    {t('landing.step4_title')}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Client reviews on mobile, inspects portfolio impact, and approves via single-use 6-digit SMS OTP verification.
+                    {t('landing.step4_desc')}
                   </Typography>
                 </Box>
               </Box>
@@ -301,10 +298,10 @@ export const GuestDashboard = () => {
                 </Box>
                 <Box>
                   <Typography variant="subtitle2" fontWeight={800} color="#0F172A">
-                    Cryptographic Audit Chain & Section 65B Certificate
+                    {t('landing.step5_title')}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Generates immutable SHA-256 evidence log admissible under Section 65B of the Indian Evidence Act.
+                    {t('landing.step5_desc')}
                   </Typography>
                 </Box>
               </Box>
@@ -331,17 +328,17 @@ export const GuestDashboard = () => {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                 <CalculateOutlinedIcon sx={{ color: '#38BDF8' }} />
                 <Typography variant="h6" fontWeight={800}>
-                  Finance Act 2024 Simulator
+                  {t('guest.simulator_title')}
                 </Typography>
               </Box>
               <Typography variant="body2" sx={{ color: '#94A3B8', mb: 3 }}>
-                Experience our real-time capital gains tax calculation engine for Indian equities and mutual funds.
+                {t('guest.simulator_sub')}
               </Typography>
 
               <Stack spacing={2.5}>
                 <Box>
                   <Typography variant="caption" sx={{ color: '#CBD5E1', display: 'block', mb: 0.5, fontWeight: 600 }}>
-                    Estimated Capital Gain (₹)
+                    {t('guest.est_gain_label')}
                   </Typography>
                   <TextField
                     type="number"
@@ -358,7 +355,7 @@ export const GuestDashboard = () => {
 
                 <Box>
                   <Typography variant="caption" sx={{ color: '#CBD5E1', display: 'block', mb: 0.5, fontWeight: 600 }}>
-                    Holding Period (Months)
+                    {t('guest.holding_period_label')}
                   </Typography>
                   <TextField
                     type="number"
@@ -374,7 +371,7 @@ export const GuestDashboard = () => {
 
                 <Box sx={{ p: 2, bgcolor: '#1E293B', borderRadius: 2.5, border: '1px solid #334155' }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
-                    <Typography variant="caption" sx={{ color: '#94A3B8' }}>Asset Classification</Typography>
+                    <Typography variant="caption" sx={{ color: '#94A3B8' }}>{t('guest.asset_class_label')}</Typography>
                     <Chip
                       label={isLtcg ? 'LTCG (≥ 12 Months)' : 'STCG (< 12 Months)'}
                       size="small"
@@ -382,7 +379,7 @@ export const GuestDashboard = () => {
                     />
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
-                    <Typography variant="caption" sx={{ color: '#94A3B8' }}>Tax Rate (Budget 2024)</Typography>
+                    <Typography variant="caption" sx={{ color: '#94A3B8' }}>{t('guest.tax_rate_label')}</Typography>
                     <Typography variant="caption" sx={{ color: '#FFF', fontWeight: 700 }}>
                       {isLtcg ? '12.5% (above ₹1.25L)' : '20.0%'}
                     </Typography>
@@ -390,10 +387,10 @@ export const GuestDashboard = () => {
                   <Divider sx={{ my: 1, borderColor: '#334155' }} />
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography variant="body2" sx={{ color: '#E2E8F0', fontWeight: 700 }}>
-                      Total Tax Payable
+                      {t('guest.total_tax_label')}
                     </Typography>
                     <Typography variant="h6" fontWeight={800} sx={{ color: '#38BDF8', fontFamily: 'JetBrains Mono' }}>
-                      ₹{totalEstimatedTax.toLocaleString('en-IN')}
+                      {formatCurrency(totalEstimatedTax)}
                     </Typography>
                   </Box>
                 </Box>
@@ -402,8 +399,9 @@ export const GuestDashboard = () => {
 
             <Button
               variant="contained"
+              component={RouterLink}
+              to="/login"
               fullWidth
-              onClick={() => switchPersona('ria')}
               sx={{
                 mt: 3,
                 fontWeight: 700,
@@ -413,7 +411,7 @@ export const GuestDashboard = () => {
                 '&:hover': { bgcolor: '#7DD3FC' },
               }}
             >
-              Draft Full Mandate with This Tax Engine
+              {t('guest.btn_draft_tax_engine')}
             </Button>
           </Card>
         </Grid>

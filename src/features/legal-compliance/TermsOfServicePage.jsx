@@ -5,19 +5,22 @@ import Card from '@mui/material/Card';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import GavelOutlinedIcon from '@mui/icons-material/GavelOutlined';
+import { useI18n } from '../../i18n/I18nContext';
 
 export const TermsOfServicePage = () => {
+  const { t } = useI18n();
+
   return (
     <Container maxWidth="md" sx={{ py: 6 }}>
       <Card elevation={2} sx={{ p: { xs: 3, md: 5 }, borderRadius: 3, border: 1, borderColor: 'divider' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
           <GavelOutlinedIcon color="primary" sx={{ fontSize: 32 }} />
           <Typography variant="h4" component="h1" fontWeight={800}>
-            Terms of Service
+            {t('legal.terms_title')}
           </Typography>
         </Box>
         <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-          Advisory Consent Technology & Statutory Record-Keeping Agreement
+          {t('legal.terms_sub')}
         </Typography>
 
         <Divider sx={{ my: 3 }} />

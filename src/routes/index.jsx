@@ -68,7 +68,7 @@ export const AppRoutes = () => {
         <Route
           path="/mandates/:id"
           element={
-            <ProtectedRoute allowedRoles={['ria', 'compliance_officer', 'admin']}>
+            <ProtectedRoute allowedRoles={['ria', 'compliance_officer', 'admin', 'client']}>
               <MandateDetailPage />
             </ProtectedRoute>
           }

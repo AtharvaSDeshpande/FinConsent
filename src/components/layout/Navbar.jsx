@@ -22,9 +22,11 @@ import CheckIcon from '@mui/icons-material/Check';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import TranslateOutlinedIcon from '@mui/icons-material/TranslateOutlined';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { Logo } from '../brand/Logo.jsx';
 import { useAuth } from '../../security/AuthContext.jsx';
+import { useI18n } from '../../i18n/index.js';
 
 export const Navbar = () => {
   const {
@@ -34,31 +36,18 @@ export const Navbar = () => {
     isGuest,
     isRia,
     isAdmin,
-    personas,
-    switchPersona,
     logout,
   } = useAuth();
+  const { language, setLanguage, t, supportedLanguages, currentLanguageInfo } = useI18n();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [personaAnchorEl, setPersonaAnchorEl] = useState(null);
-
-  const handleOpenPersonaMenu = (e) => {
-    setPersonaAnchorEl(e.currentTarget);
-  };
-
-  const handleClosePersonaMenu = () => {
-    setPersonaAnchorEl(null);
-  };
-
-  const handleSelectPersona = async (p) => {
-    handleClosePersonaMenu();
-    await switchPersona(p.email);
-    if (p.role === 'guest') {
-      navigate('/login');
-    } else {
-      navigate('/dashboard');
-    }
+  const [langAnchorEl, setLangAnchorEl] = useState(null);
+  const handleOpenLangMenu = (e) => setLangAnchorEl(e.currentTarget);
+  const handleCloseLangMenu = () => setLangAnchorEl(null);
+  const handleSelectLang = (code) => {
+    setLanguage(code);
+    handleCloseLangMenu();
   };
 
   const handleLogout = () => {
@@ -136,7 +125,7 @@ export const Navbar = () => {
                     '&:hover': { bgcolor: '#F1F5F9', color: '#0F172A' },
                   }}
                 >
-                  {role === 'client' ? 'Authorizations' : role === 'compliance_officer' ? 'Audit Center' : 'Mandates'}
+                  {role === 'client' ? t('nav.mandates') : role === 'compliance_officer' ? t('nav.audit_trail') : t('nav.mandates')}
                 </Button>
 
                 <Button
@@ -154,7 +143,7 @@ export const Navbar = () => {
                     '&:hover': { bgcolor: '#F1F5F9', color: '#0F172A' },
                   }}
                 >
-                  {role === 'client' ? 'Requests' : role === 'compliance_officer' ? 'Requests Scrutiny' : 'Requests Hub'}
+                  {t('nav.requests')}
                 </Button>
 
                 {(isRia || isAdmin || role === 'compliance_officer') && (
@@ -173,7 +162,7 @@ export const Navbar = () => {
                       '&:hover': { bgcolor: '#F1F5F9', color: '#0F172A' },
                     }}
                   >
-                    {role === 'compliance_officer' ? 'Audit Registry' : 'Clients'}
+                    {t('nav.clients')}
                   </Button>
                 )}
 
@@ -193,7 +182,7 @@ export const Navbar = () => {
                       '&:hover': { bgcolor: '#F1F5F9', color: '#0F172A' },
                     }}
                   >
-                    Billing & Quota
+                    {t('nav.billing')}
                   </Button>
                 )}
               </Box>
@@ -287,94 +276,59 @@ export const Navbar = () => {
               {getRoleBadgeText()}
             </Box>
 
-            {/* Quick Persona Switcher */}
+
+
+            {/* Language Selector Dropdown */}
             <Button
+              id="navbar_language_btn"
               size="small"
-              variant="outlined"
-              onClick={handleOpenPersonaMenu}
+              onClick={handleOpenLangMenu}
+              startIcon={<TranslateOutlinedIcon sx={{ fontSize: 16 }} />}
               endIcon={<KeyboardArrowDownIcon sx={{ fontSize: 16 }} />}
               sx={{
                 textTransform: 'none',
-                borderRadius: 2,
-                px: 1.3,
-                py: 0.5,
-                fontSize: '0.78rem',
+                fontSize: '0.8rem',
                 fontWeight: 600,
-                color: '#334155',
-                borderColor: '#CBD5E1',
-                bgcolor: '#FFFFFF',
-                '&:hover': { borderColor: '#94A3B8', bgcolor: '#F8FAFC' },
+                color: '#475569',
+                borderRadius: 2,
+                px: 1.2,
+                py: 0.5,
+                bgcolor: 'rgba(241, 245, 249, 0.6)',
+                '&:hover': { bgcolor: '#F1F5F9', color: '#0F172A' },
               }}
             >
-              Switch Role
+              <span style={{ marginRight: '4px' }}>{currentLanguageInfo.flag}</span>
+              {currentLanguageInfo.nativeName}
             </Button>
-
             <Menu
-              anchorEl={personaAnchorEl}
-              open={Boolean(personaAnchorEl)}
-              onClose={handleClosePersonaMenu}
+              id="navbar_language_menu"
+              anchorEl={langAnchorEl}
+              open={Boolean(langAnchorEl)}
+              onClose={handleCloseLangMenu}
               PaperProps={{
-                sx: {
-                  minWidth: 280,
-                  p: 0.5,
-                  borderRadius: 3,
-                  boxShadow: '0 12px 30px rgba(15, 23, 42, 0.12)',
-                  border: '1px solid #E2E8F0',
-                },
+                sx: { borderRadius: 2, minWidth: 200, mt: 1, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' },
               }}
             >
-              <Box sx={{ px: 2, py: 1.2 }}>
-                <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  System Personas & Roles
-                </Typography>
-              </Box>
-              <Divider sx={{ my: 0.5 }} />
-
-              {personas.map((p) => {
-                const isCurrent = (p.role === 'guest' && isGuest) || (!isGuest && user?.email === p.email);
-                return (
-                  <MenuItem
-                    key={p.label}
-                    onClick={() => handleSelectPersona(p)}
-                    selected={isCurrent}
-                    sx={{
-                      py: 1,
-                      px: 1.5,
-                      borderRadius: 2,
-                      my: 0.3,
-                      '&.Mui-selected': { bgcolor: 'rgba(79, 70, 229, 0.08)' },
-                    }}
-                  >
-                    <ListItemIcon sx={{ minWidth: 28 }}>
-                      {isCurrent ? <CheckIcon sx={{ fontSize: 18, color: '#4F46E5' }} /> : <PersonOutlineIcon sx={{ fontSize: 18, color: '#94A3B8' }} />}
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <Typography variant="body2" fontWeight={isCurrent ? 750 : 550} color={isCurrent ? '#0F172A' : '#334155'}>
-                            {p.label}
-                          </Typography>
-                          <Box
-                            sx={{
-                              px: 0.8,
-                              py: 0.2,
-                              borderRadius: '4px',
-                              bgcolor: isCurrent ? 'rgba(79, 70, 229, 0.15)' : '#F1F5F9',
-                              color: isCurrent ? '#4F46E5' : '#64748B',
-                              fontSize: '0.65rem',
-                              fontWeight: 700,
-                            }}
-                          >
-                            {p.badge}
-                          </Box>
-                        </Box>
-                      }
-                      secondary={p.description}
-                      secondaryTypographyProps={{ variant: 'caption', sx: { color: '#64748B', display: 'block', mt: 0.3 } }}
-                    />
-                  </MenuItem>
-                );
-              })}
+              {supportedLanguages.map((lang) => (
+                <MenuItem
+                  key={lang.code}
+                  id={`nav_lang_option_${lang.code}`}
+                  selected={language === lang.code}
+                  onClick={() => handleSelectLang(lang.code)}
+                  sx={{ py: 1 }}
+                >
+                  <ListItemIcon sx={{ minWidth: '32px !important', fontSize: '1.2rem' }}>
+                    {lang.flag}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={lang.nativeName}
+                    secondary={lang.name}
+                    primaryTypographyProps={{ fontSize: '0.85rem', fontWeight: language === lang.code ? 700 : 500 }}
+                    secondaryTypographyProps={{ fontSize: '0.72rem' }}
+                  />
+                  {language === lang.code && <CheckIcon sx={{ fontSize: 16, color: 'primary.main', ml: 1 }} />}
+                </MenuItem>
+              ))}
             </Menu>
 
             {/* Authenticated user profile & sign out */}
@@ -426,6 +380,7 @@ export const Navbar = () => {
                   variant="contained"
                   size="small"
                   sx={{
+                    display: { xs: 'none', sm: 'inline-flex' },
                     borderRadius: 2,
                     fontWeight: 650,
                     fontSize: '0.8rem',

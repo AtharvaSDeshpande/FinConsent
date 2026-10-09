@@ -16,8 +16,10 @@ import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Logo } from '../../components/brand/Logo.jsx';
 import { useAuth } from '../../security/AuthContext.jsx';
+import { useI18n } from '../../i18n/I18nContext.jsx';
 
 export const RegisterPage = () => {
+  const { t } = useI18n();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -44,12 +46,12 @@ export const RegisterPage = () => {
     // SEBI Registration format validation: INA followed by 9 digits
     const sebiRegex = /^INA\d{9}$/i;
     if (!sebiRegex.test(formData.sebiRegNumber.trim())) {
-      setError('Invalid SEBI Registration Number. Must be in format INAXXXXXXXXX (e.g. INA000088921)');
+      setError(t('validation.sebi_format_error') || 'Invalid SEBI Registration Number. Must be in format INAXXXXXXXXX (e.g. INA000088921)');
       return;
     }
 
     if (!agreeTerms) {
-      setError('You must accept the terms of service and statutory compliance mandate');
+      setError(t('validation.terms_required') || 'You must accept the terms of service and statutory compliance mandate');
       return;
     }
 
@@ -282,7 +284,7 @@ export const RegisterPage = () => {
                     target="_blank"
                     sx={{ color: '#60A5FA', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
                   >
-                    Terms of Service
+                    {t('footer.terms_of_service') || 'Terms of Service'}
                   </Link>{' '}
                   and{' '}
                   <Link
@@ -291,7 +293,7 @@ export const RegisterPage = () => {
                     target="_blank"
                     sx={{ color: '#60A5FA', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
                   >
-                    DPDP Privacy Policy
+                    {t('footer.dpdp_privacy') || 'DPDP Privacy Policy'}
                   </Link>
                   .
                 </Typography>
@@ -320,7 +322,7 @@ export const RegisterPage = () => {
                 },
               }}
             >
-              {submitting ? 'Registering RIA Account...' : 'Complete RIA Registration'}
+              {submitting ? 'Registering RIA Account...' : (t('guest.btn_register_practice') || 'Complete RIA Registration')}
             </Button>
           </Box>
 
@@ -337,7 +339,7 @@ export const RegisterPage = () => {
                   '&:hover': { textDecoration: 'underline' },
                 }}
               >
-                Sign In
+                {t('nav.sign_in') || 'Sign In'}
               </Link>
             </Typography>
           </Box>

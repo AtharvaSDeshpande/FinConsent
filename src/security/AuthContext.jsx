@@ -40,40 +40,14 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
   };
 
-  const loginWithGoogle = async (payload) => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/auth/google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      const contentType = res.headers.get('content-type') || '';
-      let data;
-      if (contentType.includes('application/json')) {
-        try {
-          data = await res.json();
-        } catch (jsonErr) {
-          throw new Error(`Failed to parse authentication response: ${jsonErr.message}`);
-        }
-      } else {
-        const text = await res.text();
-        const cleanMsg = text.replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim().slice(0, 150);
-        throw new Error(cleanMsg || `Backend returned status ${res.status}. Please ensure backend is running.`);
-      }
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Google authentication failed');
-      }
-      login(data.token, data.user);
-      return data;
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const logout = () => {
+    const currentToken = localStorage.getItem('finconsent_token');
+    if (currentToken) {
+      fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${currentToken}` },
+      }).catch(() => {});
+    }
     localStorage.removeItem('finconsent_token');
     localStorage.removeItem('finconsent_user');
     setToken(null);
@@ -82,39 +56,6 @@ export const AuthProvider = ({ children }) => {
 
   const resetToGuest = () => {
     logout();
-  };
-
-  const switchPersona = async (target) => {
-    if (target === 'guest' || target === 'guest@finconsent.in') {
-      resetToGuest();
-      return GUEST_USER;
-    }
-
-    const persona = ESTABLISHED_PERSONAS.find(
-      (p) => p.email === target || p.role === target
-    );
-
-    if (!persona || !persona.password) {
-      resetToGuest();
-      return GUEST_USER;
-    }
-
-    setLoading(true);
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: persona.email, password: persona.password }),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        login(data.token, data.user);
-        return data.user;
-      }
-      throw new Error(data.error || 'Failed to authenticate persona');
-    } finally {
-      setLoading(false);
-    }
   };
 
   const updateUser = (updates) => {
@@ -150,14 +91,11 @@ export const AuthProvider = ({ children }) => {
         isAdmin,
         isClient,
         login,
-        loginWithGoogle,
         logout,
         resetToGuest,
-        switchPersona,
         updateUser,
         loading,
         roles: ROLES,
-        personas: ESTABLISHED_PERSONAS,
       }}
     >
       {children}

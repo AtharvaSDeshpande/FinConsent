@@ -81,7 +81,6 @@ app.get('/api/health', (req, res) => {
     compliance: 'SEBI (IA) Regulations, 2013 | DPDP Act 2023',
     smsService: 'Disabled by policy (Email & In-App delivery only)',
     database: process.env.MONGODB_URI ? 'MongoDB Atlas (AWS Mumbai)' : 'In-Memory Store',
-    googleOAuth: process.env.GOOGLE_CLIENT_ID ? 'Configured' : 'Simulated',
   });
 });
 
@@ -135,8 +134,13 @@ async function initServer() {
 
 initServer().catch((err) => console.error('[Server Init Error]:', err));
 
-// Start server if executed directly
-if (process.env.NODE_ENV !== 'test') {
+// Start server if executed directly as main script
+const isMainScript = process.argv[1] && (
+  process.argv[1].endsWith('server/index.js') ||
+  process.argv[1].endsWith('server\\index.js')
+);
+
+if (isMainScript && process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
     console.log(`FinConsent Server listening on http://localhost:${PORT}`);
   });

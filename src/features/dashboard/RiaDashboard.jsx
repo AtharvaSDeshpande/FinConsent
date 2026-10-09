@@ -34,8 +34,10 @@ import { StatutoryBadge, ExpirationCountdownBadge } from '../../components/brand
 import { StatutoryLifecycleGuide } from '../../components/brand/StatutoryLifecycleGuide.jsx';
 import { MagicLinkModal } from '../magic-link/MagicLinkModal.jsx';
 import { ComplianceDossierModal } from '../compliance-dossier/ComplianceDossierModal.jsx';
+import { useI18n } from '../../i18n/I18nContext.jsx';
 
 export const RiaDashboard = ({ user, mandates = [], loading = false, error = null }) => {
+  const { t, formatCurrency } = useI18n();
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedMandate, setSelectedMandate] = useState(null);
@@ -126,11 +128,10 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
             />
           </Box>
           <Typography variant="subtitle2" color="primary.main" fontWeight={700} sx={{ mb: 0.5 }}>
-            {user?.name ? `${user.name} • Registered Investment Adviser Workspace` : 'Adviser Execution Workspace'}
+            {user?.name ? t('dashboard.ria_registered_title', { name: user.name }) : t('dashboard.ria_title')}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 740 }}>
-            Prepare non-discretionary portfolio rebalances, preview capital gains tax impacts under Finance Act 2024,
-            and monitor statutory 48-hour client authorization windows.
+            {t('dashboard.ria_subtitle')}
           </Typography>
         </Box>
 
@@ -142,7 +143,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
             to="/clients"
             sx={{ fontWeight: 650, borderRadius: 2.5, borderColor: '#CBD5E1', color: '#334155' }}
           >
-            Client Directory
+            {t('dashboard.client_dir_btn')}
           </Button>
           <Button
             variant="contained"
@@ -158,7 +159,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
               '&:hover': { bgcolor: '#1E293B' },
             }}
           >
-            Draft Rebalance Mandate
+            {t('dashboard.draft_mandate_btn')}
           </Button>
         </Stack>
       </Box>
@@ -181,10 +182,10 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
             <Box>
               <Typography variant="subtitle2" fontWeight={800} color="#92400E">
-                Action Required: {urgentMandates.length} Mandate{urgentMandates.length > 1 ? 's' : ''} Expiring in &lt; 24 Hours
+                {t('dashboard.urgent_action_title', { count: urgentMandates.length })}
               </Typography>
               <Typography variant="caption" color="#B45309">
-                Investors have not yet submitted mobile OTP consent. Remind them or reshare their access link before the statutory 48-hour cutoff.
+                {t('dashboard.urgent_action_desc')}
               </Typography>
             </Box>
             <Button
@@ -194,7 +195,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
               onClick={() => handleOpenMagicLink(urgentMandates[0])}
               sx={{ fontWeight: 700, borderRadius: 2, fontSize: '0.75rem' }}
             >
-              Reshare Most Urgent Link
+              {t('dashboard.reshare_urgent_btn')}
             </Button>
           </Box>
         </Alert>
@@ -218,7 +219,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
           >
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
               <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 650, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                Pending Client Authorizations
+                {t('dashboard.stat_pending_title')}
               </Typography>
               <Box sx={{ p: 0.7, borderRadius: 1.5, bgcolor: '#FEF3C7', color: '#D97706', display: 'flex' }}>
                 <HourglassEmptyOutlinedIcon sx={{ fontSize: 16 }} />
@@ -228,7 +229,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
               {pendingMandates.length}
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block', fontSize: '0.75rem' }}>
-              {urgentMandates.length > 0 ? `${urgentMandates.length} nearing 48h cutoff` : 'All within active window'}
+              {urgentMandates.length > 0 ? t('dashboard.stat_pending_sub_urgent', { count: urgentMandates.length }) : t('dashboard.stat_pending_sub_normal')}
             </Typography>
           </Card>
         </Grid>
@@ -249,7 +250,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
           >
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
               <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 650, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                Consented & Certified
+                {t('dashboard.stat_consented_title')}
               </Typography>
               <Box sx={{ p: 0.7, borderRadius: 1.5, bgcolor: '#ECFDF5', color: '#059669', display: 'flex' }}>
                 <CheckCircleOutlineIcon sx={{ fontSize: 16 }} />
@@ -259,7 +260,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
               {consentedMandates.length}
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block', fontSize: '0.75rem' }}>
-              Legally sealed with Reg. 19 receipt
+              {t('dashboard.stat_consented_sub')}
             </Typography>
           </Card>
         </Grid>
@@ -280,17 +281,17 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
           >
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
               <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 650, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                Tax Impact Assessed
+                {t('dashboard.stat_tax_title')}
               </Typography>
               <Box sx={{ p: 0.7, borderRadius: 1.5, bgcolor: '#EEF2FF', color: '#4F46E5', display: 'flex' }}>
                 <CurrencyRupeeIcon sx={{ fontSize: 16 }} />
               </Box>
             </Box>
             <Typography variant="h3" fontWeight={800} color="#0F172A" sx={{ letterSpacing: '-0.025em' }}>
-              ₹{totalTax.toLocaleString('en-IN')}
+              {formatCurrency(totalTax)}
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block', fontSize: '0.75rem' }}>
-              Finance Act 2024 pre-computed tax
+              {t('dashboard.stat_tax_sub')}
             </Typography>
           </Card>
         </Grid>
@@ -311,19 +312,19 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
           >
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
               <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 650, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                Firm Quota & Health
+                {t('dashboard.stat_quota_title')}
               </Typography>
-              <Chip label="Healthy" size="small" sx={{ height: 20, fontSize: '0.68rem', bgcolor: '#ECFDF5', color: '#047857', fontWeight: 700 }} />
+              <Chip label={t('dashboard.stat_quota_badge')} size="small" sx={{ height: 20, fontSize: '0.68rem', bgcolor: '#ECFDF5', color: '#047857', fontWeight: 700 }} />
             </Box>
             <Box sx={{ my: 1 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                <Typography variant="caption" color="text.secondary">Monthly Capacity</Typography>
+                <Typography variant="caption" color="text.secondary">{t('dashboard.stat_quota_cap')}</Typography>
                 <Typography variant="caption" fontWeight={700}>{mandates.length}/500</Typography>
               </Box>
               <LinearProgress variant="determinate" value={Math.min(100, (mandates.length / 500) * 100)} sx={{ height: 6, borderRadius: 3 }} />
             </Box>
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.75rem' }}>
-              Non-discretionary audit trail online
+              {t('dashboard.stat_quota_sub')}
             </Typography>
           </Card>
         </Grid>
@@ -350,12 +351,12 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
             variant="scrollable"
             scrollButtons="auto"
           >
-            <Tab label={`All (${mandates.length})`} value="all" />
-            <Tab label={`Drafts (${draftMandates.length})`} value="draft" />
-            <Tab label={`Dispatched (${mandates.filter((m) => m.status === 'sent').length})`} value="sent" />
-            <Tab label={`In Review (${mandates.filter((m) => m.status === 'viewed').length})`} value="viewed" />
-            <Tab label={`Consented (${consentedMandates.length})`} value="consented" />
-            <Tab label={`Expired (${mandates.filter((m) => m.status === 'expired').length})`} value="expired" />
+            <Tab label={t('dashboard.tab_all', { count: mandates.length })} value="all" />
+            <Tab label={t('dashboard.tab_drafts', { count: draftMandates.length })} value="draft" />
+            <Tab label={t('dashboard.tab_sent', { count: mandates.filter((m) => m.status === 'sent').length })} value="sent" />
+            <Tab label={t('dashboard.tab_viewed', { count: mandates.filter((m) => m.status === 'viewed').length })} value="viewed" />
+            <Tab label={t('dashboard.tab_consented', { count: consentedMandates.length })} value="consented" />
+            <Tab label={t('dashboard.tab_expired', { count: mandates.filter((m) => m.status === 'expired').length })} value="expired" />
           </Tabs>
 
           <Button
@@ -365,7 +366,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
             startIcon={<AddCircleOutlineIcon sx={{ fontSize: 16 }} />}
             sx={{ fontWeight: 700, borderRadius: 2, textTransform: 'none' }}
           >
-            New Mandate
+            {t('nav.new_mandate')}
           </Button>
         </Box>
 
@@ -373,11 +374,11 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Mandate & Investor Particulars</TableCell>
-                <TableCell>Statutory Status</TableCell>
-                <TableCell align="right">Pre-Computed Tax</TableCell>
-                <TableCell>48-Hour Cutoff Deadline</TableCell>
-                <TableCell align="center">Guided Action</TableCell>
+                <TableCell>{t('dashboard.th_mandate_client')}</TableCell>
+                <TableCell>{t('dashboard.th_status')}</TableCell>
+                <TableCell align="right">{t('dashboard.th_tax')}</TableCell>
+                <TableCell>{t('dashboard.th_cutoff')}</TableCell>
+                <TableCell align="center">{t('dashboard.th_action')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -386,7 +387,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
                   <TableCell colSpan={5} align="center" sx={{ py: 8 }}>
                     <CircularProgress size={28} sx={{ color: '#0F172A' }} />
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5 }}>
-                      Loading verified portfolio mandates...
+                      {t('dashboard.loading_mandates')}
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -396,10 +397,10 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
                       <FolderOpenOutlinedIcon sx={{ fontSize: 40, color: '#94A3B8' }} />
                       <Typography variant="subtitle2" fontWeight={700} color="#334155">
-                        No mandates found in this filter view
+                        {t('dashboard.no_mandates_found')}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        Draft a new rebalance mandate or select another filter view above.
+                        {t('dashboard.no_mandates_hint')}
                       </Typography>
                       <Button
                         variant="outlined"
@@ -408,7 +409,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
                         to="/mandates/new"
                         sx={{ mt: 1.5, borderRadius: 2 }}
                       >
-                        Draft New Mandate
+                        {t('dashboard.draft_mandate_btn')}
                       </Button>
                     </Box>
                   </TableCell>
@@ -446,7 +447,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
                               color: '#475569',
                               fontSize: '0.68rem',
                               fontFamily: 'JetBrains Mono',
-                              fontWeight: 600,
+                              fontWeight: 650,
                             }}
                           >
                             {mandate.client.pan}
@@ -460,7 +461,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
                     </TableCell>
 
                     <TableCell align="right" sx={{ fontWeight: 700, fontFamily: 'JetBrains Mono', color: '#0F172A' }}>
-                      ₹{(mandate.taxPayable || 0).toLocaleString('en-IN')}
+                      {formatCurrency(mandate.taxPayable || 0)}
                     </TableCell>
 
                     <TableCell>
@@ -495,7 +496,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
                             '&:hover': { bgcolor: '#1E293B' },
                           }}
                         >
-                          Review & Dispatch
+                          {t('dashboard.btn_review_dispatch')}
                         </Button>
                       ) : mandate.status === 'sent' ? (
                         <Stack direction="row" spacing={1} justifyContent="center">
@@ -507,7 +508,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
                             onClick={() => handleOpenMagicLink(mandate)}
                             sx={{ fontWeight: 700, borderRadius: 2 }}
                           >
-                            Share Link
+                            {t('dashboard.btn_share_link')}
                           </Button>
                           <Button
                             size="small"
@@ -515,7 +516,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
                             onClick={() => handleOpenDossier(mandate)}
                             sx={{ borderRadius: 2, fontSize: '0.75rem' }}
                           >
-                            Dossier
+                            {t('dashboard.btn_dossier')}
                           </Button>
                         </Stack>
                       ) : mandate.status === 'viewed' ? (
@@ -528,7 +529,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
                             onClick={() => handleOpenMagicLink(mandate)}
                             sx={{ fontWeight: 650, borderRadius: 2 }}
                           >
-                            Remind Client
+                            {t('dashboard.btn_remind_client')}
                           </Button>
                           <Button
                             size="small"
@@ -536,7 +537,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
                             onClick={() => handleOpenDossier(mandate)}
                             sx={{ borderRadius: 2, fontSize: '0.75rem' }}
                           >
-                            Dossier
+                            {t('dashboard.btn_dossier')}
                           </Button>
                         </Stack>
                       ) : mandate.status === 'consented' || mandate.status === 'approved' ? (
@@ -548,7 +549,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
                           onClick={() => handleOpenDossier(mandate)}
                           sx={{ fontWeight: 700, borderRadius: 2 }}
                         >
-                          Reg. 19 Receipt
+                          {t('dashboard.btn_reg19_receipt')}
                         </Button>
                       ) : (
                         <Button
@@ -559,7 +560,7 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
                           to="/mandates/new"
                           sx={{ fontWeight: 650, borderRadius: 2 }}
                         >
-                          Re-draft
+                          {t('dashboard.btn_redraft')}
                         </Button>
                       )}
                     </TableCell>

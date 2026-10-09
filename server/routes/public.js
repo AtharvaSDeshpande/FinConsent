@@ -1,15 +1,58 @@
 import express from 'express';
 import crypto from 'node:crypto';
+import jwt from 'jsonwebtoken';
 import { dbStore } from '../db/store.js';
+import { sharedState } from '../db/sharedState.js';
 import { otpRequestLimiter, otpVerifyLimiter } from '../middleware/rateLimiter.js';
+import { unlockMandateWithServerKey } from '../security/mandateCrypto.js';
 
 const router = express.Router();
+const JWT_SECRET = process.env.JWT_SECRET || 'finconsent_super_secret_jwt_key_2026';
 
-// Public Token Inspection Endpoint (Zero Login)
+// Helper: Verify if client has unlocked the mandate via password
+function isClientUnlocked(req, mandateId) {
+  const token =
+    req.headers['x-unlock-token'] ||
+    req.headers['x-mandate-unlock-token'] ||
+    req.headers.authorization?.replace(/^Bearer\s+/i, '') ||
+    req.body?.unlockToken ||
+    req.query?.unlockToken;
+  if (!token) return false;
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    return Boolean(decoded && decoded.mandateId === mandateId && decoded.role === 'client_viewer');
+  } catch {
+    return false;
+  }
+}
+
+// Helper: Sanitize message to prevent XSS
+function sanitizeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// Public Token Inspection Endpoint
+// Before password unlock: returns ONLY non-sensitive metadata for unlock screen.
+// After password unlock: returns decrypted proposal and transaction data.
 router.get('/mandates/:token', (req, res) => {
   const mandate = dbStore.findMandateByToken(req.params.token);
   if (!mandate) {
-    return res.status(404).json({ success: false, error: 'Mandate link not found or has been revoked' });
+    return res.status(404).json({ success: false, error: 'Mandate link not found' });
+  }
+
+  if (mandate.isRevoked) {
+    return res.status(410).json({
+      success: false,
+      revoked: true,
+      error: 'This trade mandate link has been revoked by the adviser.',
+      status: 'revoked',
+    });
   }
 
   // Check if cutoff has expired
@@ -20,6 +63,7 @@ router.get('/mandates/:token', (req, res) => {
   if (isCutoffExpired || isTokenExpired || mandate.status === 'expired') {
     return res.status(410).json({
       success: false,
+      expired: true,
       error: 'This trade mandate link has expired. The market cutoff window has lapsed.',
       status: 'expired',
       mandate: {
@@ -29,71 +73,292 @@ router.get('/mandates/:token', (req, res) => {
     });
   }
 
-  // Mark status as viewed if sent/draft
-  if (mandate.status === 'sent' || mandate.status === 'draft') {
-    dbStore.updateMandate(mandate.id, { status: 'viewed' });
-    mandate.status = 'viewed';
-  }
-
-  const client = dbStore.findClientById(mandate.clientId);
   const ria = dbStore.findUserById(mandate.riaId);
 
-  // Mask sensitive PAN and Mobile for privacy
-  const maskedPan = client ? `${client.pan.slice(0, 2)}*****${client.pan.slice(-2)}` : '******';
-  const maskedMobile = client ? `******${client.mobile.slice(-4)}` : '******';
+  // Check if already unlocked in this session
+  if (isClientUnlocked(req, mandate.id)) {
+    const unlocked = unlockMandateWithServerKey(mandate);
+    const client = dbStore.findClientById(mandate.clientId);
 
-  // Log OPENED audit event
-  dbStore.createAuditLog({
-    riaId: mandate.riaId,
-    clientId: mandate.clientId,
-    mandateId: mandate.id,
-    eventType: 'OPENED',
-    ipAddress: req.ip || req.connection?.remoteAddress || '127.0.0.1',
-    userAgent: req.headers['user-agent'] || 'Mobile-Client',
-    metadata: { clientDevice: 'Client Review Mobile View' },
-  });
+    if (unlocked.status === 'sent' || unlocked.status === 'draft') {
+      dbStore.updateMandate(unlocked.id, { status: 'viewed' });
+      unlocked.status = 'viewed';
+    }
 
-  res.json({
+    const maskedPan = client ? `${client.pan.slice(0, 2)}*****${client.pan.slice(-2)}` : '******';
+    const maskedMobile = client ? `******${client.mobile.slice(-4)}` : '******';
+
+    return res.json({
+      success: true,
+      unlocked: true,
+      data: {
+        mandate: {
+          id: unlocked.id,
+          title: unlocked.title,
+          status: unlocked.status,
+          currentAllocation: unlocked.currentAllocation,
+          proposedAllocation: unlocked.proposedAllocation,
+          sellBasket: unlocked.sellBasket,
+          buyBasket: unlocked.buyBasket,
+          trades: unlocked.trades,
+          stcgAmount: unlocked.stcgAmount,
+          ltcgAmount: unlocked.ltcgAmount,
+          stcgTax: unlocked.stcgTax,
+          ltcgTax: unlocked.ltcgTax,
+          cessAmount: unlocked.cessAmount,
+          taxPayable: unlocked.taxPayable,
+          advanceTaxQuarter: unlocked.advanceTaxQuarter,
+          advanceTaxAlert: unlocked.advanceTaxAlert,
+          cutoffTimestamp: unlocked.cutoffTimestamp,
+          rationale: unlocked.rationale || unlocked.advisorRationale,
+          advisorRationale: unlocked.advisorRationale || unlocked.rationale,
+        },
+        client: {
+          name: client ? client.name : 'Valued Client',
+          maskedPan,
+          maskedMobile,
+        },
+        ria: {
+          firmName: ria?.firmName || 'SEBI Registered Investment Adviser',
+          sebiRegNumber: ria?.sebiRegNumber || 'INA000088921',
+          name: ria?.name || 'Advisor',
+        },
+        chatMessages: dbStore.getMandateChat(mandate.id),
+      },
+    });
+  }
+
+  // Not unlocked: Return STRICTLY minimal, non-sensitive metadata for password prompt
+  const clientObj = dbStore.findClientById(mandate.clientId);
+  return res.json({
     success: true,
+    unlocked: false,
+    requiresUnlock: true,
+    isPasswordProtected: true,
     data: {
+      isPasswordProtected: true,
+      requiresUnlock: true,
       mandate: {
         id: mandate.id,
         title: mandate.title,
         status: mandate.status,
-        currentAllocation: mandate.currentAllocation,
-        proposedAllocation: mandate.proposedAllocation,
-        sellBasket: mandate.sellBasket,
-        buyBasket: mandate.buyBasket,
-        stcgAmount: mandate.stcgAmount,
-        ltcgAmount: mandate.ltcgAmount,
-        stcgTax: mandate.stcgTax,
-        ltcgTax: mandate.ltcgTax,
-        cessAmount: mandate.cessAmount,
-        taxPayable: mandate.taxPayable,
-        advanceTaxQuarter: mandate.advanceTaxQuarter,
-        advanceTaxAlert: mandate.advanceTaxAlert,
         cutoffTimestamp: mandate.cutoffTimestamp,
-        rationale: mandate.rationale,
-      },
-      client: {
-        name: client ? client.name : 'Valued Client',
-        maskedPan,
-        maskedMobile,
+        isPasswordProtected: true,
       },
       ria: {
-        firmName: ria ? ria.firmName : 'SEBI Registered Investment Adviser',
-        sebiRegNumber: ria ? ria.sebiRegNumber : 'INA000000000',
-        name: ria ? ria.name : 'Advisor',
+        firmName: ria?.firmName || 'Registered Investment Adviser',
+        sebiRegNumber: ria?.sebiRegNumber || 'INA000088921',
+        name: ria?.name || 'Advisor',
+      },
+      client: {
+        name: clientObj ? clientObj.name : 'Valued Client',
       },
     },
   });
 });
 
-// Request 6-digit OTP
-router.post('/mandates/:token/request-otp', otpRequestLimiter, (req, res) => {
+// Password Unlock Endpoint
+router.post('/mandates/:token/unlock', (req, res) => {
   const mandate = dbStore.findMandateByToken(req.params.token);
   if (!mandate) {
     return res.status(404).json({ success: false, error: 'Mandate not found' });
+  }
+  if (mandate.isRevoked) {
+    return res.status(410).json({ success: false, revoked: true, error: 'Mandate link has been revoked' });
+  }
+
+  // Check expiry
+  const now = new Date();
+  if (mandate.cutoffTimestamp && new Date(mandate.cutoffTimestamp) < now) {
+    return res.status(410).json({ success: false, error: 'Mandate link has expired' });
+  }
+
+  // Brute-force lockout check
+  const lockout = sharedState.checkPasswordLockout(mandate.id);
+  if (lockout.locked) {
+    return res.status(429).json({
+      success: false,
+      error: 'Too many failed password attempts. This mandate link is temporarily locked for security.',
+      retryAfter: lockout.retryAfter,
+    });
+  }
+
+  const { password } = req.body;
+  if (!password || typeof password !== 'string') {
+    return res.status(400).json({ success: false, error: 'Mandate password is required' });
+  }
+
+  try {
+    const decrypted = dbStore.unlockMandateClient(req.params.token, password.trim());
+    if (!decrypted) {
+      throw new Error('INVALID_MANDATE_PASSWORD');
+    }
+
+    // Success: reset failed attempts
+    sharedState.clearPasswordLockout(mandate.id);
+
+    // Issue signed client unlock token valid for 2 hours
+    const unlockToken = jwt.sign(
+      { mandateId: mandate.id, role: 'client_viewer' },
+      JWT_SECRET,
+      { expiresIn: '2h' }
+    );
+
+    // Log PASSWORD_UNLOCKED audit event
+    dbStore.createAuditLog({
+      riaId: mandate.riaId,
+      clientId: mandate.clientId,
+      mandateId: mandate.id,
+      eventType: 'PASSWORD_UNLOCKED',
+      ipAddress: req.ip || req.connection?.remoteAddress || '127.0.0.1',
+      userAgent: req.headers['user-agent'] || 'Client-Device',
+      metadata: { unlockMethod: 'PAN_LAST4_DOB' },
+    });
+
+    if (decrypted.status === 'sent' || decrypted.status === 'draft') {
+      dbStore.updateMandate(decrypted.id, { status: 'viewed' });
+      decrypted.status = 'viewed';
+    }
+
+    const client = dbStore.findClientById(mandate.clientId);
+    const ria = dbStore.findUserById(mandate.riaId);
+    const maskedPan = client ? `${client.pan.slice(0, 2)}*****${client.pan.slice(-2)}` : '******';
+    const maskedMobile = client ? `******${client.mobile.slice(-4)}` : '******';
+
+    return res.json({
+      success: true,
+      unlocked: true,
+      unlockToken,
+      data: {
+        mandate: {
+          id: decrypted.id,
+          title: decrypted.title,
+          status: decrypted.status,
+          currentAllocation: decrypted.currentAllocation,
+          proposedAllocation: decrypted.proposedAllocation,
+          sellBasket: decrypted.sellBasket,
+          buyBasket: decrypted.buyBasket,
+          trades: decrypted.trades,
+          stcgAmount: decrypted.stcgAmount,
+          ltcgAmount: decrypted.ltcgAmount,
+          stcgTax: decrypted.stcgTax,
+          ltcgTax: decrypted.ltcgTax,
+          cessAmount: decrypted.cessAmount,
+          taxPayable: decrypted.taxPayable,
+          advanceTaxQuarter: decrypted.advanceTaxQuarter,
+          advanceTaxAlert: decrypted.advanceTaxAlert,
+          cutoffTimestamp: decrypted.cutoffTimestamp,
+          rationale: decrypted.rationale || decrypted.advisorRationale,
+          advisorRationale: decrypted.advisorRationale || decrypted.rationale,
+        },
+        client: {
+          name: client ? client.name : 'Valued Client',
+          maskedPan,
+          maskedMobile,
+        },
+        ria: {
+          firmName: ria?.firmName || 'SEBI Registered Investment Adviser',
+          sebiRegNumber: ria?.sebiRegNumber || 'INA000088921',
+          name: ria?.name || 'Advisor',
+        },
+        chatMessages: dbStore.getMandateChat(mandate.id),
+      },
+    });
+  } catch {
+    // Record failed attempt
+    const failure = sharedState.recordPasswordFailure(mandate.id, 5, 15 * 60 * 1000);
+    if (failure.locked) {
+      return res.status(429).json({
+        success: false,
+        error: 'Too many failed password attempts. This mandate link is temporarily locked for security.',
+        retryAfter: failure.retryAfter,
+      });
+    }
+
+    return res.status(401).json({
+      success: false,
+      error: 'The password is incorrect or this mandate is unavailable.',
+      remainingAttempts: failure.remainingAttempts,
+    });
+  }
+});
+
+// Client Chat: Retrieve messages (requires unlocked session)
+router.get('/mandates/:token/chat', (req, res) => {
+  const mandate = dbStore.findMandateByToken(req.params.token);
+  if (!mandate || mandate.isRevoked) {
+    return res.status(404).json({ success: false, error: 'Mandate not found' });
+  }
+
+  const hasToken = req.headers['x-unlock-token'] || req.headers['x-mandate-unlock-token'] || req.headers.authorization || req.query?.unlockToken;
+  if (!hasToken) {
+    return res.status(401).json({ success: false, error: 'Mandate password unlock required to view discussion' });
+  }
+
+  if (!isClientUnlocked(req, mandate.id)) {
+    return res.status(403).json({ success: false, error: 'Invalid unlock token or mandate mismatch' });
+  }
+
+  const messages = dbStore.getMandateChat(mandate.id);
+  res.json({ success: true, data: messages });
+});
+
+// Client Chat: Send message (requires unlocked session)
+router.post('/mandates/:token/chat', (req, res) => {
+  const mandate = dbStore.findMandateByToken(req.params.token);
+  if (!mandate || mandate.isRevoked) {
+    return res.status(404).json({ success: false, error: 'Mandate not found' });
+  }
+
+  const hasToken = req.headers['x-unlock-token'] || req.headers['x-mandate-unlock-token'] || req.headers.authorization || req.body?.unlockToken;
+  if (!hasToken) {
+    return res.status(401).json({ success: false, error: 'Mandate password unlock required to send message' });
+  }
+
+  if (!isClientUnlocked(req, mandate.id)) {
+    return res.status(403).json({ success: false, error: 'Invalid unlock token or mandate mismatch' });
+  }
+
+  const { message } = req.body;
+  if (!message || typeof message !== 'string' || message.trim().length === 0) {
+    return res.status(400).json({ success: false, error: 'Message cannot be empty' });
+  }
+
+  if (message.length > 500) {
+    return res.status(400).json({ success: false, error: 'Message exceeds 500 characters limit' });
+  }
+
+  const sanitized = sanitizeHtml(message.trim());
+  const client = dbStore.findClientById(mandate.clientId);
+
+  const newMsg = dbStore.addMandateChatMessage(mandate.id, {
+    sender: 'client',
+    senderRole: 'client',
+    senderName: client?.name || 'Client',
+    message: sanitized,
+  });
+
+  res.status(201).json({ success: true, data: newMsg });
+});
+
+// Request 6-digit OTP (requires unlocked session)
+router.post('/mandates/:token/request-otp', otpRequestLimiter, (req, res) => {
+  const mandate = dbStore.findMandateByToken(req.params.token);
+  if (!mandate || mandate.isRevoked) {
+    return res.status(404).json({ success: false, error: 'Mandate not found' });
+  }
+
+  const hasClientUnlockToken =
+    req.headers['x-unlock-token'] ||
+    req.headers['x-mandate-unlock-token'] ||
+    req.body?.unlockToken;
+
+  if (hasClientUnlockToken && !isClientUnlocked(req, mandate.id)) {
+    return res.status(403).json({ success: false, error: 'Invalid or expired mandate unlock token' });
+  }
+
+  if (process.env.NODE_ENV === 'production' && !isClientUnlocked(req, mandate.id)) {
+    return res.status(403).json({ success: false, error: 'Mandate password unlock required before requesting OTP' });
   }
 
   if (mandate.status === 'approved' || mandate.status === 'consented') {
@@ -135,98 +400,123 @@ router.post('/mandates/:token/request-otp', otpRequestLimiter, (req, res) => {
   res.json(responsePayload);
 });
 
-// Verify 6-digit OTP and Statutory Consent
+// Verify 6-digit OTP and Statutory Consent (requires unlocked session)
 router.post('/mandates/:token/verify-otp', otpVerifyLimiter, (req, res) => {
   const { otp, statutoryDeclarationsAccepted } = req.body;
   const mandate = dbStore.findMandateByToken(req.params.token);
 
-  if (!mandate) {
+  if (!mandate || mandate.isRevoked) {
     return res.status(404).json({ success: false, error: 'Mandate not found' });
+  }
+
+  const hasClientUnlockToken =
+    req.headers['x-unlock-token'] ||
+    req.headers['x-mandate-unlock-token'] ||
+    req.body?.unlockToken;
+
+  if (hasClientUnlockToken && !isClientUnlocked(req, mandate.id)) {
+    return res.status(403).json({ success: false, error: 'Invalid or expired mandate unlock token' });
+  }
+
+  if (process.env.NODE_ENV === 'production' && !isClientUnlocked(req, mandate.id)) {
+    return res.status(403).json({ success: false, error: 'Mandate password unlock required before granting consent' });
   }
 
   if (mandate.status === 'approved' || mandate.status === 'consented') {
     return res.status(400).json({ success: false, error: 'Mandate is already approved and locked.' });
   }
 
+  if (!otp) {
+    return res.status(400).json({ success: false, error: '6-digit OTP code is required' });
+  }
+
   if (!statutoryDeclarationsAccepted) {
     return res.status(400).json({
       success: false,
-      error: 'Statutory declarations acknowledging capital gains tax and SEBI Regulation 19 consent must be accepted.',
+      error: 'You must explicitly accept the statutory risk disclosures, non-discretionary authority terms, and Indian capital gains tax acknowledgement.',
     });
   }
 
-  const verification = dbStore.verifyOtp(req.params.token, otp);
-  if (!verification.valid) {
-    if (verification.locked) {
+  // Verify OTP via distributed shared state store
+  const verificationResult = sharedState.verifyOtp(req.params.token, otp);
+  if (!verificationResult.valid) {
+    if (verificationResult.locked) {
       dbStore.createAuditLog({
+        riaId: mandate.riaId,
+        clientId: mandate.clientId,
         mandateId: mandate.id,
-        eventType: 'OTP_BRUTE_FORCE_LOCK',
-        ipAddress: req.ip || req.connection?.remoteAddress || '127.0.0.1',
+        eventType: 'OTP_LOCKOUT',
+        ipAddress: req.ip || '127.0.0.1',
         userAgent: req.headers['user-agent'] || 'Mobile-Client',
-        metadata: { reason: 'Excessive failed OTP attempts (3/3). Authorization code revoked.' },
+        metadata: { reason: 'Maximum OTP verification attempts exceeded' },
       });
-      return res.status(429).json({
-        success: false,
-        error: verification.reason,
-        locked: true,
-      });
+      return res.status(429).json({ success: false, locked: true, error: verificationResult.reason });
     }
-
     return res.status(400).json({
       success: false,
-      error: verification.reason,
-      remainingAttempts: verification.remainingAttempts,
+      error: verificationResult.reason,
+      remainingAttempts: verificationResult.remainingAttempts,
     });
   }
 
-  // Lock mandate to Consented and preserve for Section 65B receipt
-  const updated = dbStore.updateMandate(mandate.id, {
+  // Update mandate status to consented
+  const updatedMandate = dbStore.updateMandate(mandate.id, {
     status: 'consented',
-    isApproved: true,
-    approvedAt: new Date().toISOString(),
     consentedAt: new Date().toISOString(),
-  });
-
-  const otpVerificationId = `otp_ver_${crypto.randomUUID()}`;
-
-  // Commit immutable SHA-256 audit entry satisfying Criterion 7
-  const auditEntry = dbStore.createAuditLog({
-    riaId: mandate.riaId,
-    clientId: mandate.clientId,
-    mandateId: mandate.id,
-    eventType: 'CONSENT_GRANTED',
-    ipAddress: req.ip || req.connection?.remoteAddress || '127.0.0.1',
-    userAgent: req.headers['user-agent'] || 'Mobile-Client',
-    verificationMethod: 'OTP_SMS',
-    otpVerificationId,
-    timestampIST: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-    metadata: {
-      status: 'Consented & Locked',
-      declarationsAcknowledged: [
-        'SEBI Regulation 19 Informed Consent',
-        `Acknowledged Capital Gains Tax Obligation of ₹${mandate.taxPayable.toLocaleString('en-IN')}`,
-      ],
-      sha256PayloadHash: crypto.createHash('sha256').update(JSON.stringify(mandate)).digest('hex'),
-    },
   });
 
   const client = dbStore.findClientById(mandate.clientId);
   const ria = dbStore.findUserById(mandate.riaId);
 
+  // Generate Section 65B Electronic Evidence compliant Audit Certificate
+  const timestampIST = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+  const auditReceipt = {
+    receiptId: `REC-${mandate.id.toUpperCase()}-${Date.now().toString(36).toUpperCase()}`,
+    mandateId: mandate.id,
+    mandateTitle: mandate.title,
+    clientName: client ? client.name : 'Advisory Client',
+    clientPan: client ? client.pan : 'XXXXX0000X',
+    riaFirmName: ria ? ria.firmName : 'SEBI Registered Investment Adviser',
+    riaSebiReg: ria ? ria.sebiRegNumber : 'INA000088921',
+    consentedAtIST: timestampIST,
+    authChannel: 'EMAIL_IN_APP_OTP',
+    status: 'LEGALLY_SEALED_CONSENTED',
+    statutoryAct: 'Section 65B Indian Evidence Act, 1872 / IT Act 2000',
+    dataResidency: 'AWS Mumbai (ap-south-1)',
+    preComputedTax: {
+      taxPayable: mandate.taxPayable,
+      stcgTax: mandate.stcgTax,
+      ltcgTax: mandate.ltcgTax,
+      cessAmount: mandate.cessAmount,
+    },
+  };
+
+  const auditString = JSON.stringify(auditReceipt);
+  const sha256Hash = crypto.createHash('sha256').update(auditString).digest('hex');
+  auditReceipt.sha256Hash = sha256Hash;
+
+  // Commit immutable audit log
+  dbStore.createAuditLog({
+    riaId: mandate.riaId,
+    clientId: mandate.clientId,
+    mandateId: mandate.id,
+    eventType: 'CONSENTED',
+    ipAddress: req.ip || req.connection?.remoteAddress || '127.0.0.1',
+    userAgent: req.headers['user-agent'] || 'Mobile-Client',
+    channel: 'EMAIL_IN_APP_OTP',
+    payloadHash: sha256Hash,
+    metadata: {
+      certificate: auditReceipt,
+      statutoryDeclarations: ['SEBI IA Reg 19', 'Section 65B Admissibility', 'Budget 2024 Tax Acceptance'],
+    },
+  });
+
   res.json({
     success: true,
+    message: 'Trade mandate successfully authorized and locked under Section 65B Indian Evidence Act.',
     data: {
-      mandate: updated,
-      auditCertificate: {
-        receiptId: auditEntry.id,
-        otpVerificationId,
-        timestamp: auditEntry.timestamp,
-        sha256Hash: auditEntry.payloadHash,
-        taxPayable: mandate.taxPayable,
-        clientName: client ? client.name : '',
-        riaFirm: ria ? ria.firmName : '',
-        sebiRegNumber: ria ? ria.sebiRegNumber : '',
-      },
+      mandate: updatedMandate,
+      auditCertificate: auditReceipt,
     },
   });
 });

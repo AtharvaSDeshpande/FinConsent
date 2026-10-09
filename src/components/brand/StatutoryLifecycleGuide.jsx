@@ -11,17 +11,9 @@ import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
-import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
-
-const STEPS = [
-  { id: 1, key: 'draft', label: '1. Draft Mandate', desc: 'Client allocated & portfolio target set' },
-  { id: 2, key: 'tax', label: '2. Tax Impact', desc: 'STCG, LTCG & Section 234B/C checked' },
-  { id: 3, key: 'dispatch', label: '3. Dispatch Link', desc: 'Tokenized magic link sent to mobile' },
-  { id: 4, key: 'review', label: '4. Client Review', desc: 'Investor reviewing in mobile view' },
-  { id: 5, key: 'otp', label: '5. OTP Consent', desc: '6-digit OTP verified per Reg. 19' },
-  { id: 6, key: 'dossier', label: '6. Reg. 19 Receipt', desc: 'Evidence locked; cleared to execute' },
-];
+import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
+import { useI18n } from '../../i18n/I18nContext.jsx';
 
 export const StatutoryLifecycleGuide = ({
   status = 'draft',
@@ -32,7 +24,17 @@ export const StatutoryLifecycleGuide = ({
   compact = false,
   overview = false,
 }) => {
+  const { t } = useI18n();
   const norm = (status || '').toLowerCase();
+
+  const steps = [
+    { id: 1, key: 'draft', label: t('guide.step1_label'), desc: t('guide.step1_desc') },
+    { id: 2, key: 'tax', label: t('guide.step2_label'), desc: t('guide.step2_desc') },
+    { id: 3, key: 'dispatch', label: t('guide.step3_label'), desc: t('guide.step3_desc') },
+    { id: 4, key: 'review', label: t('guide.step4_label'), desc: t('guide.step4_desc') },
+    { id: 5, key: 'otp', label: t('guide.step5_label'), desc: t('guide.step5_desc') },
+    { id: 6, key: 'dossier', label: t('guide.step6_label'), desc: t('guide.step6_desc') },
+  ];
 
   // Determine current active step number (1 to 6)
   let currentStep = 1;
@@ -61,8 +63,8 @@ export const StatutoryLifecycleGuide = ({
     if (norm === 'draft') {
       return {
         severity: 'info',
-        title: 'Next Step: Review Pre-Computed Tax & Dispatch Proposal to Client',
-        description: 'Verify the capital gains calculation below. When ready, dispatch the proposal link to generate the client-guarded mobile authorization rail.',
+        title: t('guide.banner_draft_title'),
+        description: t('guide.banner_draft_desc'),
         action: onDispatch ? (
           <Button
             variant="contained"
@@ -73,7 +75,7 @@ export const StatutoryLifecycleGuide = ({
             disabled={dispatching}
             sx={{ fontWeight: 700, borderRadius: 2 }}
           >
-            {dispatching ? 'Dispatching...' : 'Dispatch Mandate to Client'}
+            {dispatching ? t('common.loading') : t('guide.btn_dispatch')}
           </Button>
         ) : null,
       };
@@ -81,8 +83,8 @@ export const StatutoryLifecycleGuide = ({
     if (norm === 'sent') {
       return {
         severity: 'warning',
-        title: 'Next Step: Share Magic Link & Notify Client',
-        description: 'Proposal link generated. Share with client via WhatsApp or secure email. Awaiting first client review within the 48-hour cutoff window.',
+        title: t('guide.banner_sent_title'),
+        description: t('guide.banner_sent_desc'),
         action: onShare ? (
           <Button
             variant="contained"
@@ -92,7 +94,7 @@ export const StatutoryLifecycleGuide = ({
             onClick={onShare}
             sx={{ fontWeight: 700, borderRadius: 2 }}
           >
-            Share / Copy Client Link
+            {t('guide.btn_share_client_link')}
           </Button>
         ) : null,
       };
@@ -100,8 +102,8 @@ export const StatutoryLifecycleGuide = ({
     if (norm === 'viewed') {
       return {
         severity: 'info',
-        title: 'Status: Client is Currently Reviewing Proposal',
-        description: 'Client has opened the mobile proposal overview and is inspecting allocation changes and tax liabilities. Awaiting 6-digit Mobile OTP sign-off.',
+        title: t('guide.banner_viewed_title'),
+        description: t('guide.banner_viewed_desc'),
         action: onShare ? (
           <Button
             variant="outlined"
@@ -110,7 +112,7 @@ export const StatutoryLifecycleGuide = ({
             onClick={onShare}
             sx={{ fontWeight: 600, borderRadius: 2 }}
           >
-            Resend / Remind Client
+            {t('guide.btn_remind_client')}
           </Button>
         ) : null,
       };
@@ -118,8 +120,8 @@ export const StatutoryLifecycleGuide = ({
     if (norm === 'consented' || norm === 'approved') {
       return {
         severity: 'success',
-        title: 'Status: Statutory Consent Verified & Clear for Trade Execution',
-        description: 'Client has authorized the rebalancing mandate via Mobile OTP. Informed consent is committed to the append-only audit trail per SEBI Regulation 19.',
+        title: t('guide.banner_approved_title'),
+        description: t('guide.banner_approved_desc'),
         action: onViewDossier ? (
           <Button
             variant="contained"
@@ -129,7 +131,7 @@ export const StatutoryLifecycleGuide = ({
             onClick={onViewDossier}
             sx={{ fontWeight: 700, borderRadius: 2 }}
           >
-            Download Regulation 19 Dossier
+            {t('guide.btn_download_dossier')}
           </Button>
         ) : null,
       };
@@ -137,8 +139,8 @@ export const StatutoryLifecycleGuide = ({
     if (norm === 'expired') {
       return {
         severity: 'error',
-        title: 'Cutoff Window Expired — Execution Stalled',
-        description: 'The 48-hour cutoff window passed without client OTP authorization. Under non-discretionary rules, trades cannot be executed. Generate a fresh proposal.',
+        title: t('guide.banner_expired_title'),
+        description: t('guide.banner_expired_desc'),
         action: null,
       };
     }
@@ -168,7 +170,7 @@ export const StatutoryLifecycleGuide = ({
           </Typography>
         </Box>
         <Chip
-          label={overview ? '6 MANDATORY STATUTORY STAGES' : `CURRENT STAGE: ${norm.toUpperCase()}`}
+          label={overview ? '6 MANDATORY STATUTORY STAGES' : `CURRENT STAGE: ${(t(`status.${norm}`) || norm).toUpperCase()}`}
           size="small"
           color={overview ? 'primary' : norm === 'consented' ? 'success' : norm === 'expired' ? 'error' : norm === 'draft' ? 'default' : 'primary'}
           sx={{ fontWeight: 750, fontSize: '0.68rem' }}
@@ -184,7 +186,7 @@ export const StatutoryLifecycleGuide = ({
           mb: banner || overview ? 2 : 0,
         }}
       >
-        {STEPS.map((step) => {
+        {steps.map((step) => {
           const stepStatus = getStepStatus(step.id);
           const isDone = stepStatus === 'completed';
           const isActive = stepStatus === 'active';

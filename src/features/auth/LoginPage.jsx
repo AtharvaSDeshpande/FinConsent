@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -6,98 +6,25 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
-import Divider from '@mui/material/Divider';
-import Chip from '@mui/material/Chip';
 import Link from '@mui/material/Link';
 import CircularProgress from '@mui/material/CircularProgress';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
-import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Logo } from '../../components/brand/Logo.jsx';
 import { useAuth } from '../../security/AuthContext.jsx';
-
-
-const DEMO_PERSONAS = [
-  { role: 'guest', label: 'Guest (Public)', email: 'guest@finconsent.in', badge: 'Public' },
-  { role: 'ria', label: 'RIA (Free)', email: 'ria@example.in', badge: 'Standard' },
-  { role: 'ria', label: 'RIA (Pro)', email: 'pro.ria@example.in', badge: 'Pro' },
-  { role: 'compliance_officer', label: 'Compliance Officer', email: 'compliance@example.in', badge: 'Auditor' },
-  { role: 'admin', label: 'Platform Admin', email: 'admin@example.in', badge: 'Superuser' },
-  { role: 'client', label: 'Advisory Client', email: 'client@example.in', badge: 'Investor' },
-];
+import { useI18n } from '../../i18n/I18nContext.jsx';
 
 export const LoginPage = () => {
-  const [email, setEmail] = useState('ria@example.in');
-  const [password, setPassword] = useState('Password@123');
-  const [selectedRole, setSelectedRole] = useState('ria');
+  const { t } = useI18n();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [gisMounted, setGisMounted] = useState(false);
 
-  const { login, loginWithGoogle } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
-
-  const selectedRoleRef = React.useRef(selectedRole);
-  useEffect(() => {
-    selectedRoleRef.current = selectedRole;
-  }, [selectedRole]);
-
-  const handleGoogleCredentialResponse = async (response) => {
-    setError('');
-    setSubmitting(true);
-    try {
-      await loginWithGoogle({
-        credential: response.credential,
-        role: selectedRoleRef.current || 'ria',
-      });
-      navigate('/dashboard');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  useEffect(() => {
-    const googleClientId =
-      import.meta.env.VITE_GOOGLE_CLIENT_ID ||
-      '449245026318-c7tdrllunjusqapt02qn2ugmbp2t0r80.apps.googleusercontent.com';
-
-    const initGoogleGis = () => {
-      if (window.google?.accounts?.id) {
-        try {
-          window.google.accounts.id.initialize({
-            client_id: googleClientId,
-            callback: handleGoogleCredentialResponse,
-            auto_select: false,
-          });
-          const btn = document.getElementById('g_id_signin_btn');
-          if (btn) {
-            btn.innerHTML = '';
-            window.google.accounts.id.renderButton(btn, {
-              theme: 'filled_blue',
-              size: 'large',
-              width: btn.offsetWidth || 380,
-              text: 'continue_with',
-              shape: 'pill',
-            });
-            setGisMounted(true);
-          }
-        } catch (e) {
-          console.warn('[Google GIS init warning]:', e.message);
-        }
-      }
-    };
-
-    if (window.google?.accounts?.id) {
-      initGoogleGis();
-    } else {
-      const timer = setTimeout(initGoogleGis, 600);
-      return () => clearTimeout(timer);
-    }
-  }, []);
 
   const [mfaRequired, setMfaRequired] = useState(false);
   const [tempToken, setTempToken] = useState('');
@@ -112,7 +39,7 @@ export const LoginPage = () => {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: email.trim(), password }),
       });
 
       const contentType = res.headers.get('content-type') || '';
@@ -154,7 +81,7 @@ export const LoginPage = () => {
       const res = await fetch('/api/auth/mfa/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tempToken, code: mfaCode }),
+        body: JSON.stringify({ tempToken, code: mfaCode.trim() }),
       });
 
       const data = await res.json();
@@ -169,19 +96,6 @@ export const LoginPage = () => {
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const handleDemoFill = (demoEmail, role = 'ria') => {
-    if (role === 'guest') {
-      resetToGuest();
-      setSelectedRole('guest');
-      setEmail('');
-      setPassword('');
-      return;
-    }
-    setEmail(demoEmail);
-    setPassword('Password@123');
-    setSelectedRole(role);
   };
 
   return (
@@ -234,7 +148,7 @@ export const LoginPage = () => {
               <Logo size={38} />
             </Box>
             <Typography variant="h5" component="h1" sx={{ fontWeight: 800, letterSpacing: '-0.02em', color: '#FFFFFF' }}>
-              FinConsent Workspace
+              {t('auth.sign_in_title')}
             </Typography>
             <Typography
               variant="caption"
@@ -248,49 +162,8 @@ export const LoginPage = () => {
               }}
             >
               <ShieldOutlinedIcon sx={{ fontSize: 14, color: '#38BDF8' }} />
-              SEBI Reg 19 • Statutory Advisory & Consent Management
+              {t('auth.sign_in_subtitle')}
             </Typography>
-          </Box>
-
-          {/* Role Selection Tabs for Sign In */}
-          <Box sx={{ mb: 2.5, p: 1.5, bgcolor: 'rgba(15, 23, 42, 0.7)', borderRadius: 2.5, border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-            <Typography variant="caption" sx={{ fontWeight: 700, color: 'rgba(255, 255, 255, 0.75)', display: 'block', mb: 1, textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: '0.68rem' }}>
-              Select Active Role for Sign In:
-            </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.8 }}>
-              {[
-                { id: 'ria', label: 'RIA Advisor', badge: 'Drafting' },
-                { id: 'client', label: 'Advisory Client', badge: 'Investor' },
-                { id: 'compliance_officer', label: 'Compliance', badge: 'Auditor' },
-                { id: 'admin', label: 'Platform Admin', badge: 'Superuser' },
-              ].map((r) => {
-                const isSelected = selectedRole === r.id;
-                return (
-                  <Button
-                    key={r.id}
-                    size="small"
-                    variant={isSelected ? 'contained' : 'outlined'}
-                    onClick={() => setSelectedRole(r.id)}
-                    sx={{
-                      textTransform: 'none',
-                      py: 0.6,
-                      px: 1,
-                      fontSize: '0.75rem',
-                      fontWeight: isSelected ? 700 : 500,
-                      borderRadius: 1.8,
-                      bgcolor: isSelected ? '#4F46E5' : 'transparent',
-                      borderColor: isSelected ? '#6366F1' : 'rgba(255, 255, 255, 0.15)',
-                      color: isSelected ? '#FFFFFF' : 'rgba(255, 255, 255, 0.8)',
-                      '&:hover': {
-                        bgcolor: isSelected ? '#4338CA' : 'rgba(255, 255, 255, 0.08)',
-                      },
-                    }}
-                  >
-                    {r.label}
-                  </Button>
-                );
-              })}
-            </Box>
           </Box>
 
           {error && (
@@ -387,7 +260,7 @@ export const LoginPage = () => {
             <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <TextField
                 id="login_email_input"
-                label="Registered Email"
+                label={t('auth.email_label')}
                 type="email"
                 fullWidth
                 required
@@ -411,7 +284,7 @@ export const LoginPage = () => {
 
               <TextField
                 id="login_password_input"
-                label="Password"
+                label={t('auth.password_label')}
                 type="password"
                 fullWidth
                 required
@@ -454,96 +327,10 @@ export const LoginPage = () => {
                   },
                 }}
               >
-                {submitting ? 'Authenticating...' : `Sign In as ${selectedRole === 'ria' ? 'RIA' : selectedRole === 'client' ? 'Client' : selectedRole === 'compliance_officer' ? 'Auditor' : 'Admin'}`}
+                {submitting ? t('auth.signing_in') : t('auth.sign_in_button')}
               </Button>
             </Box>
           )}
-
-            <Divider
-              sx={{
-                my: 1.5,
-                '&::before, &::after': { borderColor: 'rgba(255, 255, 255, 0.15)' },
-                color: 'rgba(255, 255, 255, 0.45)',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                letterSpacing: '0.05em',
-              }}
-            >
-              OR
-            </Divider>
-
-            {/* Official Google Identity Services action */}
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                width: '100%',
-                minHeight: 44,
-                my: 0.5,
-              }}
-            >
-              <Box
-                id="g_id_signin_btn"
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  width: '100%',
-                  minHeight: 44,
-                }}
-              />
-            </Box>
-
-          {/* Persona quick switch */}
-          <Box
-            sx={{
-              mt: 3.5,
-              p: 2,
-              bgcolor: 'rgba(15, 23, 42, 0.55)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              borderRadius: 3,
-            }}
-          >
-            <Typography
-              variant="caption"
-              sx={{
-                fontWeight: 700,
-                display: 'block',
-                mb: 1.2,
-                color: 'rgba(255, 255, 255, 0.6)',
-                letterSpacing: '0.04em',
-                textTransform: 'uppercase',
-                fontSize: '0.7rem',
-              }}
-            >
-              Demo Personas (Live Seeder Database):
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 0.8, flexWrap: 'wrap' }}>
-              {DEMO_PERSONAS.map((p) => {
-                const isSelected = email === p.email;
-                return (
-                  <Chip
-                    key={p.email}
-                    label={p.label}
-                    size="small"
-                    onClick={() => handleDemoFill(p.email, p.role)}
-                    clickable
-                    icon={isSelected ? <CheckCircleRoundedIcon sx={{ fontSize: '14px !important', color: '#10B981 !important' }} /> : undefined}
-                    sx={{
-                      fontSize: '0.75rem',
-                      fontWeight: isSelected ? 700 : 500,
-                      color: isSelected ? '#FFFFFF' : 'rgba(255, 255, 255, 0.75)',
-                      bgcolor: isSelected ? 'rgba(99, 102, 241, 0.35)' : 'rgba(255, 255, 255, 0.06)',
-                      border: `1px solid ${isSelected ? '#818CF8' : 'rgba(255, 255, 255, 0.12)'}`,
-                      '&:hover': {
-                        bgcolor: isSelected ? 'rgba(99, 102, 241, 0.45)' : 'rgba(255, 255, 255, 0.12)',
-                      },
-                    }}
-                  />
-                );
-              })}
-            </Box>
-          </Box>
 
           {/* Registration link */}
           <Box sx={{ mt: 3, textAlign: 'center' }}>

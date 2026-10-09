@@ -9,20 +9,6 @@ import { generateMfaSecret, verifyTotp } from '../auth/mfa.js';
 
 const router = express.Router();
 
-// Helper to safely parse Google ID token payload
-function parseGoogleCredential(credential) {
-  try {
-    const parts = credential.split('.');
-    if (parts.length === 3) {
-      const payloadBase64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = Buffer.from(payloadBase64, 'base64').toString('utf8');
-      return JSON.parse(jsonPayload);
-    }
-  } catch (err) {
-    console.warn('[Google OAuth] Could not parse token payload:', err.message);
-  }
-  return null;
-}
 
 // Register User (RIA, Compliance Officer, Client, Admin)
 router.post('/register', authRateLimiter, async (req, res) => {
@@ -272,78 +258,6 @@ router.post('/logout', requireAuth, (req, res) => {
   }
 });
 
-// Google OAuth Authentication (Live endpoint using GOOGLE_CLIENT_ID from .env)
-router.post('/google', async (req, res) => {
-  try {
-    const { credential, email: bodyEmail, name: bodyName, googleId: bodyGoogleId, role = 'ria' } = req.body;
-
-    let email = bodyEmail;
-    let name = bodyName;
-    let googleId = bodyGoogleId;
-
-    if (credential) {
-      const parsed = parseGoogleCredential(credential);
-      if (parsed) {
-        email = parsed.email || email;
-        name = parsed.name || name;
-        googleId = parsed.sub || googleId;
-      }
-    }
-
-    if (!email) {
-      return res.status(400).json({
-        success: false,
-        error: 'Google authentication credential missing valid email address',
-      });
-    }
-
-    let user = dbStore.findUserByEmail(email) || (googleId ? dbStore.findUserByGoogleId(googleId) : null);
-
-    if (user) {
-      const updates = {};
-      if (googleId) updates.googleId = googleId;
-      if (name && name.trim()) updates.name = name.trim();
-      if (role && ['ria', 'compliance_officer', 'admin', 'client'].includes(role)) {
-        updates.role = role;
-      }
-      user = dbStore.updateUser(user.id, updates);
-    } else {
-      const defaultFirm = role === 'compliance_officer'
-        ? 'Independent Compliance Office'
-        : role === 'client'
-        ? 'Individual Advisory Client'
-        : `${name}'s Advisory Practice`;
-
-      user = dbStore.createUser({
-        name: name || email.split('@')[0],
-        email,
-        googleId,
-        role: ['ria', 'compliance_officer', 'admin', 'client'].includes(role) ? role : 'ria',
-        firmName: defaultFirm,
-        sebiRegNumber: role === 'ria' ? 'INA000088921' : undefined,
-        complianceEmail: email,
-        plan: 'free',
-        mfaEnabled: false,
-      });
-    }
-
-    const token = signToken({ userId: user.id });
-    const userSafe = { ...user };
-    delete userSafe.passwordHash;
-    delete userSafe.mfaSecret;
-    delete userSafe.mfaPendingSecret;
-
-    res.json({
-      success: true,
-      token,
-      user: userSafe,
-      provider: 'google',
-      googleClientId: process.env.GOOGLE_CLIENT_ID ? 'Configured' : 'Simulated',
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
 
 // Current User & Quota status
 router.get('/me', requireAuth, (req, res) => {
@@ -365,10 +279,17 @@ router.get('/me', requireAuth, (req, res) => {
   });
 });
 
-// Update User Profile (e.g. INA number, firm name, role, name, mobile)
+// Update User Profile (e.g. INA number, firm name, role, name, mobile, preferredLanguage)
 router.put('/profile', requireAuth, (req, res) => {
-  const { sebiRegNumber, firmName, complianceEmail, role, name, mobile, pan } = req.body;
+  const { sebiRegNumber, firmName, complianceEmail, role, name, mobile, pan, preferredLanguage } = req.body;
   const updates = {};
+
+  if (preferredLanguage) {
+    const validLanguages = ['en', 'hi', 'ta', 'bn', 'gu', 'de', 'ja', 'ko'];
+    if (validLanguages.includes(preferredLanguage)) {
+      updates.preferredLanguage = preferredLanguage;
+    }
+  }
 
   if (name) updates.name = name;
   if (mobile) updates.mobile = mobile;

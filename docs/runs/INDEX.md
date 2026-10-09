@@ -8,4 +8,7 @@
 20261008-003500-remove-duplicate-google-signin | Remove duplicate Sign in with Google button and eliminate redundant simulation modal code | shipped
 20261008-004500-b2b-ria-client-model-workflow | Align B2B RIA organization hierarchy, recommendation workflow, and tenant isolation | shipped
 20261008-082000-security-audit-and-hardening | Comprehensive security audit, tenant isolation hardening, IDOR prevention & verification | shipped
-
+20261008-183000-dispatch-print-mandate-password | Print mandate and test unlock password upon dispatch across backend, frontend, and tests | shipped
+20261009-001500-i18n-localization-multilingual-support | Multilingual i18n & l10n support for 8 languages with English-only numbers and profile language selector | shipped
+20261009-043000-production-i18n-localization-audit | Full production i18n/l10n audit, domain modularization, 8-language browser verification | shipped
+20261009-051500-fix-api-regressions | End-to-end API regression audit, contract fix, and full verification suite | shipped

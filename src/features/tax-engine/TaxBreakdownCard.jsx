@@ -4,10 +4,11 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { calculateIndianGainsTax } from './taxCalculator.js';
+import { useI18n } from '../../i18n/I18nContext';
 
-export const TaxBreakdownCard = ({ stcgAmount = 0, ltcgAmount = 0, customTitle = 'Estimated Tax Liability (FY 2026-27)' }) => {
+export const TaxBreakdownCard = ({ stcgAmount = 0, ltcgAmount = 0, customTitle = null }) => {
+  const { t, formatCurrency } = useI18n();
   const tax = calculateIndianGainsTax({ stcgAmount, ltcgAmount });
 
   return (
@@ -24,7 +25,7 @@ export const TaxBreakdownCard = ({ stcgAmount = 0, ltcgAmount = 0, customTitle =
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <ReceiptLongOutlinedIcon sx={{ fontSize: 20, color: '#0F172A' }} />
           <Typography variant="subtitle1" fontWeight={750} color="#0F172A">
-            {customTitle}
+            {customTitle || t('tax.breakdown_title')}
           </Typography>
         </Box>
         <Box
@@ -39,7 +40,7 @@ export const TaxBreakdownCard = ({ stcgAmount = 0, ltcgAmount = 0, customTitle =
             letterSpacing: '0.03em',
           }}
         >
-          Finance Act 2024
+          {t('tax.finance_act_badge')}
         </Box>
       </Box>
 
@@ -49,14 +50,14 @@ export const TaxBreakdownCard = ({ stcgAmount = 0, ltcgAmount = 0, customTitle =
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <Box>
             <Typography variant="body2" fontWeight={650} color="#1E293B">
-              Equity STCG (Section 111A @ 20%)
+              {t('tax.stcg_heading')}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              Realized profit: ₹{tax.stcg.toLocaleString('en-IN')}
+              {t('tax.stcg_realized', { amount: formatCurrency(tax.stcg) })}
             </Typography>
           </Box>
           <Typography variant="body2" fontWeight={700} sx={{ fontFamily: 'JetBrains Mono', color: '#0F172A' }}>
-            ₹{tax.stcgTax.toLocaleString('en-IN')}
+            {formatCurrency(tax.stcgTax)}
           </Typography>
         </Box>
 
@@ -64,24 +65,24 @@ export const TaxBreakdownCard = ({ stcgAmount = 0, ltcgAmount = 0, customTitle =
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <Box>
             <Typography variant="body2" fontWeight={650} color="#1E293B">
-              Equity LTCG (Section 112A @ 12.5%)
+              {t('tax.ltcg_heading')}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              Realized: ₹{tax.ltcg.toLocaleString('en-IN')} (₹1.25L statutory exemption applied)
+              {t('tax.ltcg_realized', { amount: formatCurrency(tax.ltcg) })}
             </Typography>
           </Box>
           <Typography variant="body2" fontWeight={700} sx={{ fontFamily: 'JetBrains Mono', color: '#0F172A' }}>
-            ₹{tax.ltcgTax.toLocaleString('en-IN')}
+            {formatCurrency(tax.ltcgTax)}
           </Typography>
         </Box>
 
         {/* Cess */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="body2" color="text.secondary">
-            Health & Education Cess (4%)
+            {t('tax.cess_heading')}
           </Typography>
           <Typography variant="body2" fontWeight={650} sx={{ fontFamily: 'JetBrains Mono', color: '#475569' }}>
-            ₹{tax.cess.toLocaleString('en-IN')}
+            {formatCurrency(tax.cess)}
           </Typography>
         </Box>
       </Box>
@@ -107,10 +108,10 @@ export const TaxBreakdownCard = ({ stcgAmount = 0, ltcgAmount = 0, customTitle =
             fontWeight={750}
             color={tax.totalTax > 0 ? '#92400E' : '#065F46'}
           >
-            Net Pre-Computed Tax Obligation
+            {t('tax.net_obligation_title')}
           </Typography>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.2 }}>
-            Mandatory disclosure prior to trade execution
+            {t('tax.net_obligation_sub')}
           </Typography>
         </Box>
         <Typography
@@ -122,7 +123,7 @@ export const TaxBreakdownCard = ({ stcgAmount = 0, ltcgAmount = 0, customTitle =
             letterSpacing: '-0.02em',
           }}
         >
-          ₹{tax.totalTax.toLocaleString('en-IN')}
+          {formatCurrency(tax.totalTax)}
         </Typography>
       </Box>
     </Card>

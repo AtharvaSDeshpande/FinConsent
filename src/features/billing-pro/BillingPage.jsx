@@ -13,9 +13,11 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PaymentOutlinedIcon from '@mui/icons-material/PaymentOutlined';
 import { useAuth } from '../../security/AuthContext.jsx';
 import { createRazorpayCheckout, upgradeTestPlan } from '../../integrations/razorpay.js';
+import { useI18n } from '../../i18n/I18nContext.jsx';
 
 export const BillingPage = () => {
   const { user, updateUser } = useAuth();
+  const { t } = useI18n();
   const [quota, setQuota] = useState({ activeMandates: 0, quotaLimit: 3, canCreate: true });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -47,10 +49,10 @@ export const BillingPage = () => {
       const res = await createRazorpayCheckout();
       if (res.success) {
         setCheckoutData(res.data);
-        setMessage(`Razorpay Order created: ${res.data.orderId}. Click 'Complete Payment' to finalize.`);
+        setMessage(t('billing.order_created', { orderId: res.data.orderId }));
       }
     } catch (err) {
-      setMessage(`Checkout creation failed: ${err.message}`);
+      setMessage(t('billing.checkout_failed', { error: err.message }));
     } finally {
       setLoading(false);
     }
@@ -62,11 +64,11 @@ export const BillingPage = () => {
       const res = await upgradeTestPlan();
       if (res.success) {
         updateUser({ plan: 'pro' });
-        setMessage('Subscription successfully upgraded to Pro RIA tier! Mandate quota is now unlimited.');
+        setMessage(t('billing.upgrade_success'));
         fetchQuota();
       }
     } catch (err) {
-      setMessage(`Payment simulation failed: ${err.message}`);
+      setMessage(t('billing.simulation_failed', { error: err.message }));
     } finally {
       setLoading(false);
     }
@@ -74,14 +76,22 @@ export const BillingPage = () => {
 
   const isPro = user?.plan === 'pro';
 
+  const proFeatures = [
+    t('billing.feature_1'),
+    t('billing.feature_2'),
+    t('billing.feature_3'),
+    t('billing.feature_4'),
+    t('billing.feature_5'),
+  ];
+
   return (
     <Container maxWidth="md">
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" fontWeight={700}>
-          Subscription Plans & Quota Meter
+          {t('billing.title')}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          Tiered B2B SaaS pricing and statutory mandate quota controls
+          {t('billing.subtitle')}
         </Typography>
       </Box>
 
@@ -93,16 +103,16 @@ export const BillingPage = () => {
           <Card elevation={2} sx={{ borderRadius: 3, border: 1, borderColor: 'divider', height: '100%' }}>
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h6" fontWeight={700} gutterBottom>
-                Active Mandate Quota
+                {t('billing.quota_heading')}
               </Typography>
 
               <Box sx={{ my: 3 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                   <Typography variant="body2" color="text.secondary">
-                    Active Proposals
+                    {t('billing.active_proposals')}
                   </Typography>
                   <Typography variant="body2" fontWeight={700}>
-                    {quota.activeMandates} / {isPro ? 'Unlimited' : '3'}
+                    {quota.activeMandates} / {isPro ? t('billing.unlimited') : '3'}
                   </Typography>
                 </Box>
                 <LinearProgress
@@ -115,14 +125,14 @@ export const BillingPage = () => {
 
               <Alert severity={isPro ? 'success' : quota.activeMandates >= 3 ? 'error' : 'info'} sx={{ mb: 2 }}>
                 {isPro
-                  ? 'Pro Plan: You have unlimited mandate creation.'
+                  ? t('billing.pro_quota_info')
                   : quota.activeMandates >= 3
-                  ? 'Free tier quota limit reached (3 active mandates). Upgrade to create new mandates.'
-                  : `${3 - quota.activeMandates} free active mandate slot(s) remaining.`}
+                  ? t('billing.free_quota_limit')
+                  : t('billing.free_quota_info', { count: 3 - quota.activeMandates })}
               </Alert>
 
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                * Completed or approved mandates are preserved in audit history and do not consume active quota once archived.
+                {t('billing.quota_footnote')}
               </Typography>
             </CardContent>
           </Card>
@@ -141,7 +151,7 @@ export const BillingPage = () => {
           >
             {isPro && (
               <Chip
-                label="ACTIVE SUBSCRIPTION"
+                label={t('billing.active_badge')}
                 color="success"
                 size="small"
                 sx={{ position: 'absolute', top: 16, right: 16, fontWeight: 700 }}
@@ -149,28 +159,22 @@ export const BillingPage = () => {
             )}
             <CardContent sx={{ p: 4 }}>
               <Typography variant="overline" fontWeight={700} color="secondary.main">
-                RECOMMENDED FOR SEBI RIAS
+                {t('billing.recommended_badge')}
               </Typography>
               <Typography variant="h5" fontWeight={800} sx={{ mt: 0.5 }}>
-                Pro RIA Annual / Monthly
+                {t('billing.pro_tier_name')}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, my: 2 }}>
                 <Typography variant="h4" fontWeight={800}>
                   ₹2,499
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  / month (+ 18% GST)
+                  {t('billing.price_period')}
                 </Typography>
               </Box>
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, my: 3 }}>
-                {[
-                  'Unlimited active trade rebalancing mandates',
-                  'Up to 150 active HNI advisory clients',
-                  'White-labeled client portal with firm logo & INA number',
-                  'TRAI DLT-compliant SMS OTP verification',
-                  'Statutory 5-year AWS Mumbai cloud audit retention',
-                ].map((feature, i) => (
+                {proFeatures.map((feature, i) => (
                   <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <CheckCircleIcon color="success" fontSize="small" />
                     <Typography variant="body2">{feature}</Typography>
@@ -187,7 +191,7 @@ export const BillingPage = () => {
                     onClick={handleRazorpayUpgrade}
                     disabled={loading}
                   >
-                    {loading ? 'Initializing Razorpay...' : 'Upgrade with Razorpay (₹2,949)'}
+                    {loading ? t('billing.btn_initializing_razorpay') : t('billing.btn_upgrade_razorpay')}
                   </Button>
 
                   <Button
@@ -196,12 +200,12 @@ export const BillingPage = () => {
                     onClick={handleSimulatePayment}
                     disabled={loading}
                   >
-                    Simulate Pro Upgrade (Demo / Sandbox)
+                    {t('billing.btn_simulate_pro')}
                   </Button>
                 </Box>
               ) : (
                 <Alert severity="success" sx={{ mt: 2 }}>
-                  Your firm is enrolled in Pro RIA. Subscription renwal managed via Razorpay.
+                  {t('billing.pro_active_alert')}
                 </Alert>
               )}
             </CardContent>
@@ -211,3 +215,5 @@ export const BillingPage = () => {
     </Container>
   );
 };
+
+export default BillingPage;

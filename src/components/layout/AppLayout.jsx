@@ -4,8 +4,10 @@ import Typography from '@mui/material/Typography';
 import { useLocation } from 'react-router-dom';
 import { Navbar } from './Navbar.jsx';
 import { Footer } from './Footer.jsx';
+import { useI18n } from '../../i18n/I18nContext.jsx';
 
 export const AppLayout = ({ children }) => {
+  const { t } = useI18n();
   const location = useLocation();
   const isAuthRoute = location.pathname === '/login' || location.pathname === '/register';
 
@@ -50,7 +52,7 @@ export const AppLayout = ({ children }) => {
           }}
         >
           <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.55)', letterSpacing: '0.02em' }}>
-            FinConsent • SEBI (Investment Advisers) Regulations, 2013 Statutory Compliance • Digital Personal Data Protection (DPDP) Act 2023
+            FinConsent • {t('footer.statutory_subtitle')} • {t('footer.dpdp_compliant')}
           </Typography>
         </Box>
       </Box>

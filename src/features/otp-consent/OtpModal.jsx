@@ -12,8 +12,10 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import CircularProgress from '@mui/material/CircularProgress';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import { useI18n } from '../../i18n/I18nContext.jsx';
 
-export const OtpModal = ({ open, onClose, token, mandate, maskedMobile, onVerified }) => {
+export const OtpModal = ({ open, onClose, token, mandate, maskedMobile, unlockToken, onVerified }) => {
+  const { t } = useI18n();
   const [otp, setOtp] = useState('');
   const [agreeGains, setAgreeGains] = useState(false);
   const [agreeConsent, setAgreeConsent] = useState(false);
@@ -35,8 +37,12 @@ export const OtpModal = ({ open, onClose, token, mandate, maskedMobile, onVerifi
     setError('');
     setLoading(true);
     try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (unlockToken) headers['x-unlock-token'] = unlockToken;
       const res = await fetch(`/api/public/mandates/${token}/request-otp`, {
         method: 'POST',
+        headers,
+        body: JSON.stringify({ unlockToken }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
@@ -72,12 +78,15 @@ export const OtpModal = ({ open, onClose, token, mandate, maskedMobile, onVerifi
 
     setLoading(true);
     try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (unlockToken) headers['x-unlock-token'] = unlockToken;
       const res = await fetch(`/api/public/mandates/${token}/verify-otp`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           otp: otp.trim(),
           statutoryDeclarationsAccepted: true,
+          unlockToken,
         }),
       });
 
@@ -97,12 +106,12 @@ export const OtpModal = ({ open, onClose, token, mandate, maskedMobile, onVerifi
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>
-        Statutory Trade Consent & OTP Verification
+        {t('otp.dialog_title')}
       </DialogTitle>
       <Box component="form" onSubmit={handleVerify}>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
           <Typography variant="body2" color="text.secondary">
-            Mandate: <strong>{mandate?.title}</strong>
+            {t('otp.mandate_label')} <strong>{mandate?.title}</strong>
           </Typography>
 
           {error && <Alert severity="error">{error}</Alert>}
@@ -110,12 +119,13 @@ export const OtpModal = ({ open, onClose, token, mandate, maskedMobile, onVerifi
           {/* Statutory Declarations */}
           <Box sx={{ p: 2, bgcolor: 'background.default', borderRadius: 2, border: 1, borderColor: 'divider' }}>
             <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-              MANDATORY STATUTORY DECLARATIONS
+              {t('otp.declarations_heading')}
             </Typography>
 
             <FormControlLabel
               control={
                 <Checkbox
+                  id="agree_gains_checkbox"
                   checked={agreeGains}
                   onChange={(e) => setAgreeGains(e.target.checked)}
                   color="primary"
@@ -123,7 +133,7 @@ export const OtpModal = ({ open, onClose, token, mandate, maskedMobile, onVerifi
               }
               label={
                 <Typography variant="body2">
-                  I understand and acknowledge the estimated capital gains tax of <strong>₹{(mandate?.taxPayable || 0).toLocaleString('en-IN')}</strong> computed for FY 2026-27.
+                  {t('otp.agree_gains', { tax: (mandate?.taxPayable || 0).toLocaleString('en-IN') })}
                 </Typography>
               }
               sx={{ alignItems: 'flex-start', mb: 1 }}
@@ -132,6 +142,7 @@ export const OtpModal = ({ open, onClose, token, mandate, maskedMobile, onVerifi
             <FormControlLabel
               control={
                 <Checkbox
+                  id="agree_consent_checkbox"
                   checked={agreeConsent}
                   onChange={(e) => setAgreeConsent(e.target.checked)}
                   color="primary"
@@ -139,7 +150,7 @@ export const OtpModal = ({ open, onClose, token, mandate, maskedMobile, onVerifi
               }
               label={
                 <Typography variant="body2">
-                  I explicitly provide prior informed consent under Regulation 19 of SEBI (Investment Advisers) Regulations, 2013 to authorize this rebalance execution.
+                  {t('otp.agree_consent')}
                 </Typography>
               }
               sx={{ alignItems: 'flex-start' }}
@@ -149,24 +160,26 @@ export const OtpModal = ({ open, onClose, token, mandate, maskedMobile, onVerifi
           {!otpSent ? (
             <Box sx={{ textAlign: 'center', py: 2 }}>
               <Alert severity="info" sx={{ mb: 2, textAlign: 'left', fontSize: '0.82rem' }}>
-                <strong>SMS Channel Disabled:</strong> Pursuant to compliance policy, cellular SMS delivery is decommissioned. Your 6-digit trade authorization OTP is securely dispatched via registered email and displayed instantly below.
+                {t('otp.sms_disabled_alert')}
               </Alert>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Click below to generate and dispatch your statutory authorization OTP.
+                {t('otp.click_generate_desc')}
               </Typography>
               <Button
+                id="generate_otp_btn"
                 variant="contained"
                 onClick={handleRequestOtp}
                 disabled={loading || !agreeGains || !agreeConsent}
                 startIcon={<LockOutlinedIcon />}
               >
-                {loading ? 'Dispatching OTP...' : 'Generate Trade Authorization OTP'}
+                {loading ? t('common.loading') : t('otp.generate_otp_button')}
               </Button>
             </Box>
           ) : (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
               <TextField
-                label="Enter 6-Digit OTP"
+                id="otp_input_field"
+                label={t('otp.enter_otp_label')}
                 required
                 fullWidth
                 value={otp}
@@ -180,7 +193,7 @@ export const OtpModal = ({ open, onClose, token, mandate, maskedMobile, onVerifi
                     fontFamily: 'JetBrains Mono',
                   },
                 }}
-                helperText={`Dispatched via Email / In-App Portal${demoOtpHint ? ` (Instant OTP: ${demoOtpHint})` : ''}`}
+                helperText={`${t('otp.otp_helper_text')}${demoOtpHint ? ` (Instant OTP: ${demoOtpHint})` : ''}`}
               />
 
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -189,10 +202,10 @@ export const OtpModal = ({ open, onClose, token, mandate, maskedMobile, onVerifi
                   onClick={handleRequestOtp}
                   disabled={resendTimer > 0 || loading}
                 >
-                  {resendTimer > 0 ? `Resend OTP in ${resendTimer}s` : 'Resend OTP'}
+                  {resendTimer > 0 ? t('otp.resend_timer_label', { sec: resendTimer }) : t('otp.resend_otp')}
                 </Button>
                 <Typography variant="caption" color="text.secondary">
-                  Valid for 5 minutes • SMS Disabled
+                  {t('otp.otp_validity_note')}
                 </Typography>
               </Box>
             </Box>
@@ -201,16 +214,17 @@ export const OtpModal = ({ open, onClose, token, mandate, maskedMobile, onVerifi
 
         <DialogActions sx={{ p: 2.5 }}>
           <Button onClick={onClose} disabled={loading}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           {otpSent && (
             <Button
+              id="confirm_authorization_btn"
               type="submit"
               variant="contained"
               color="primary"
               disabled={loading || !agreeGains || !agreeConsent}
             >
-              {loading ? 'Verifying...' : 'Confirm Statutory Authorization'}
+              {loading ? t('otp.authorizing') : t('otp.confirm_button')}
             </Button>
           )}
         </DialogActions>

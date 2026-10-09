@@ -8,9 +8,12 @@ import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import { useI18n } from '../../i18n/I18nContext.jsx';
 
 export const StatutoryBadge = ({ status = 'DRAFT', size = 'small' }) => {
+  const { t } = useI18n();
   const norm = (status || '').toUpperCase();
+  const lowerKey = (status || '').toLowerCase();
 
   const configs = {
     DRAFT: {
@@ -65,6 +68,7 @@ export const StatutoryBadge = ({ status = 'DRAFT', size = 'small' }) => {
   };
 
   const current = configs[norm] || configs.DRAFT;
+  const localizedLabel = t(`status.${lowerKey}`) || current.label;
 
   return (
     <Box
@@ -87,7 +91,7 @@ export const StatutoryBadge = ({ status = 'DRAFT', size = 'small' }) => {
       }}
     >
       {current.icon}
-      <span>{current.label}</span>
+      <span>{localizedLabel}</span>
     </Box>
   );
 };

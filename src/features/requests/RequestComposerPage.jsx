@@ -31,6 +31,7 @@ import ShuffleIcon from '@mui/icons-material/Shuffle';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../security/AuthContext.jsx';
+import { useI18n } from '../../i18n/I18nContext.jsx';
 
 const RIA_REQUEST_CATEGORIES = [
   'Portfolio Rebalance Advisory',
@@ -64,6 +65,7 @@ const STATUS_COLORS = {
 };
 
 export const RequestComposerPage = () => {
+  const { t } = useI18n();
   const { user, role, isComplianceOfficer, isClient, isRia, isAdmin } = useAuth();
   const queryClient = useQueryClient();
 
@@ -89,7 +91,7 @@ export const RequestComposerPage = () => {
     proposedCashRatio: 5,
   });
 
-  // Fetch clients for dropdown & automated assignment
+  // Fetch clients for dropdown & automated assignment (Restricted to RIA/Admin/Compliance)
   const { data: clientsData = [] } = useQuery({
     queryKey: ['clients'],
     queryFn: async () => {
@@ -101,6 +103,7 @@ export const RequestComposerPage = () => {
       return json.success ? json.data : [];
     },
     staleTime: 1000 * 60 * 5,
+    enabled: Boolean(!isClient && (isRia || isAdmin || isComplianceOfficer)),
   });
 
   const clients = clientsData;
@@ -261,11 +264,7 @@ export const RequestComposerPage = () => {
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
             <Typography variant="h4" component="h1" fontWeight={800} letterSpacing="-0.02em">
-              {isComplianceOfficer
-                ? 'Statutory Scrutiny & Requests Queue'
-                : isClient
-                ? 'My Advisory Inquiries & Proposals'
-                : 'Advisory & Compliance Request Hub'}
+              {t('requests.title')}
             </Typography>
             <Chip
               label={`ROLE: ${role?.toUpperCase() || 'GUEST'}`}
@@ -275,11 +274,7 @@ export const RequestComposerPage = () => {
             />
           </Box>
           <Typography variant="body2" color="text.secondary">
-            {isComplianceOfficer
-              ? 'Review advisory rationale, verify Regulation 19 asset allocation tolerances, and submit statutory sign-offs'
-              : isClient
-              ? 'View rebalancing proposals from your investment adviser or submit statutory advisory questions'
-              : 'Compose and dispatch trade rebalancing requests, regulatory queries, and asset allocation adjustments'}
+            {t('requests.subtitle')}
           </Typography>
         </Box>
       </Box>
@@ -524,7 +519,7 @@ export const RequestComposerPage = () => {
           <Card sx={{ borderRadius: 3, border: '1px solid #E2E8F0', boxShadow: '0 1px 3px 0 rgba(15, 23, 42, 0.04)' }}>
             <Box sx={{ p: 2, borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
               <Typography variant="h6" fontWeight={700}>
-                Live Requests Ledger ({requests.length})
+                {t('requests.queue_title')} ({requests.length})
               </Typography>
               <Tabs
                 value={statusFilter}
@@ -533,11 +528,10 @@ export const RequestComposerPage = () => {
                 scrollButtons="auto"
                 sx={{ minHeight: 36, '& .MuiTab-root': { minHeight: 36, py: 0.5, textTransform: 'capitalize' } }}
               >
-                <Tab label="All" value="all" />
-                <Tab label="Pending" value="pending" />
-                <Tab label="In Review" value="in_review" />
-                <Tab label="Approved" value="approved" />
-                <Tab label="Completed" value="completed" />
+                <Tab label={t('requests.tab_all')} value="all" />
+                <Tab label={t('requests.tab_pending')} value="pending" />
+                <Tab label={t('requests.tab_in_review')} value="in_review" />
+                <Tab label={t('requests.tab_completed')} value="completed" />
               </Tabs>
             </Box>
 
