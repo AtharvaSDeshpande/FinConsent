@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import app from '../../server/index.js';
 import { signToken } from '../../server/auth/jwt.js';
 import { runSeed } from '../../server/db/seed.js';
@@ -43,6 +43,18 @@ describe('Role-Based Access Control, Tenant Isolation & User Experience Test Sui
 
   afterAll(() => {
     if (server) server.close();
+  });
+
+  beforeEach(() => {
+    if (!dbStore.findUserById('usr_client_stranger')) {
+      dbStore.createUser({
+        id: 'usr_client_stranger',
+        name: 'Stranger Client',
+        email: 'stranger@example.in',
+        role: 'client',
+        clientId: 'cli_stranger_unaffiliated',
+      });
+    }
   });
 
   describe('1. Mandates Access Scoping & Tenant Isolation', () => {

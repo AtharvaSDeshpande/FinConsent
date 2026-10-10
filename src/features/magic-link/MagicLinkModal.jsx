@@ -21,14 +21,13 @@ export const MagicLinkModal = ({ open, onClose, mandate, onRevokeAndRegenerate }
   const [revoking, setRevoking] = useState(false);
   const [message, setMessage] = useState('');
 
-  if (!mandate) return null;
-
-  const magicUrl = mandate.magicToken
+  const magicUrl = mandate?.magicToken
     ? `${window.location.origin}/m/${mandate.magicToken}`
     : '';
 
-  const testPassword = mandate.password || mandate.clientPassword;
+  const testPassword = mandate?.password || mandate?.clientPassword;
 
+  // React Hook rules: must be called unconditionally on EVERY render before any early return
   React.useEffect(() => {
     if (open && mandate) {
       console.log('======================================================');
@@ -42,26 +41,63 @@ export const MagicLinkModal = ({ open, onClose, mandate, onRevokeAndRegenerate }
     }
   }, [open, mandate, testPassword, magicUrl]);
 
+  const fallbackCopy = (text) => {
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-9999px';
+      textArea.style.top = '-9999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopied(true);
+      setMessage(t('magic_link.copy_success'));
+      setTimeout(() => setCopied(false), 3000);
+    } catch {
+      setMessage(t('magic_link.copy_success'));
+    }
+  };
+
   const handleCopy = () => {
     if (!magicUrl) return;
-    navigator.clipboard.writeText(magicUrl);
-    setCopied(true);
-    setMessage(t('magic_link.copy_success'));
-    setTimeout(() => setCopied(false), 3000);
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        navigator.clipboard.writeText(magicUrl)
+          .then(() => {
+            setCopied(true);
+            setMessage(t('magic_link.copy_success'));
+            setTimeout(() => setCopied(false), 3000);
+          })
+          .catch(() => {
+            fallbackCopy(magicUrl);
+          });
+      } else {
+        fallbackCopy(magicUrl);
+      }
+    } catch {
+      fallbackCopy(magicUrl);
+    }
   };
 
   const handleRevoke = async () => {
+    if (!mandate?.id || typeof onRevokeAndRegenerate !== 'function') return;
     setRevoking(true);
     setMessage('');
     try {
       await onRevokeAndRegenerate(mandate.id);
       setMessage(t('magic_link.revoke_success'));
     } catch (err) {
-      setMessage(t('magic_link.revoke_failed', { error: err.message }));
+      setMessage(t('magic_link.revoke_failed', { error: err.message || 'Revocation error' }));
     } finally {
       setRevoking(false);
     }
   };
+
+  // Safe early return only AFTER all hooks are called
+  if (!open || !mandate) return null;
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -83,7 +119,7 @@ export const MagicLinkModal = ({ open, onClose, mandate, onRevokeAndRegenerate }
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
               {t('magic_link.format_helper', {
-                pan: mandate.client?.pan ? String(mandate.client.pan).replace(/\D/g, '').slice(-4) : '****'
+                pan: (mandate.client?.pan || mandate.clientPan) ? String(mandate.client?.pan || mandate.clientPan).replace(/\D/g, '').slice(-4) : '****'
               })}
             </Typography>
           </Alert>

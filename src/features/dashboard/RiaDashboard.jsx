@@ -46,11 +46,13 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
   const [dossierData, setDossierData] = useState(null);
 
   const handleOpenMagicLink = (mandate) => {
+    if (!mandate) return;
     setSelectedMandate(mandate);
     setOpenMagicModal(true);
   };
 
   const handleOpenDossier = async (mandate) => {
+    if (!mandate?.id) return;
     try {
       const token = localStorage.getItem('finconsent_token');
       const res = await fetch(`/api/mandates/${mandate.id}/dossier`, {
@@ -85,8 +87,13 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
     },
   });
 
-  const handleRevoke = (mandateId) => {
-    revokeMutation.mutate(mandateId);
+  const handleRevoke = async (mandateId) => {
+    try {
+      return await revokeMutation.mutateAsync(mandateId);
+    } catch (err) {
+      console.error('[Revoke Error]:', err);
+      throw err;
+    }
   };
 
   // Metrics calculations
@@ -192,7 +199,11 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
               size="small"
               variant="contained"
               color="warning"
-              onClick={() => handleOpenMagicLink(urgentMandates[0])}
+              onClick={() => {
+                if (urgentMandates && urgentMandates.length > 0) {
+                  handleOpenMagicLink(urgentMandates[0]);
+                }
+              }}
               sx={{ fontWeight: 700, borderRadius: 2, fontSize: '0.75rem' }}
             >
               {t('dashboard.reshare_urgent_btn')}
@@ -573,12 +584,14 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
       </Card>
 
       {/* Magic Link Sharing Modal */}
-      <MagicLinkModal
-        open={openMagicModal}
-        onClose={() => setOpenMagicModal(false)}
-        mandate={selectedMandate}
-        onRevokeAndRegenerate={handleRevoke}
-      />
+      {selectedMandate && (
+        <MagicLinkModal
+          open={openMagicModal}
+          onClose={() => setOpenMagicModal(false)}
+          mandate={selectedMandate}
+          onRevokeAndRegenerate={handleRevoke}
+        />
+      )}
 
       {/* Regulation 19 Compliance Dossier Modal */}
       {dossierData && (

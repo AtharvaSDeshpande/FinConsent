@@ -209,7 +209,9 @@ async function initServer() {
   }
 }
 
-initServer().catch((err) => console.error('[Server Init Error]:', err));
+if (process.env.NODE_ENV !== 'test') {
+  initServer().catch((err) => console.error('[Server Init Error]:', err));
+}
 
 // Start server if executed directly as main script
 const isMainScript = process.argv[1] && (

@@ -18,4 +18,5 @@
 20261010-095703-fix-website-factual-legal-tax-security-a | Remediate website legal, tax, security, compliance and data consistency | shipped
 20261010-104659-regenerate-client-presentation-remediate | Regenerate client presentation PPTX and HTML with complete legal, tax, security, and pilot proposal remediations | shipped
 20261010-110627-fix-prod-deploy-mongo-render | Fix Render port binding, MongoDB Atlas connectivity, readiness probes, and prevent in-memory fallback | shipped
+20261010-130900-fix-reshare-remind-blank-screen | Fix buttons like Reshare most urgent links or Remind Client causing blank screen via React hook order & ErrorBoundary | shipped
 

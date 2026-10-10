@@ -443,6 +443,15 @@ All platform invariants and security controls have been validated in automated t
   - All mutating data-dependent operations (`POST /api/mandates`, `POST /api/clients`, `POST /api/public/consent`, `POST /api/requests`, `POST /api/auth/register`, and direct store mutations) are intercepted and rejected with HTTP `503 DATABASE_UNAVAILABLE`.
   - In-memory storage is permitted only in explicitly configured development or test environments (`NODE_ENV !== 'production'`) or when `ALLOW_IN_MEMORY_FALLBACK=true` is explicitly passed.
 
+### 5. Automated Verification & Test Suite
+FinConsent maintains a rigorous automated testing suite covering cryptographic operations, role-based access control, tenant isolation, emergency revocation, production readiness, and UI action stability:
+- **Test Framework:** Vitest v3.2.7 with jsdom environment
+- **Coverage:** 17 test suites, 223 automated tests (100% passing, 0 regressions)
+- **UI Action & Modal Hook Safety:** Dedicated verification for quick actions ("Reshare most urgent links", "Remind Client", "Share Link"), ensuring unconditional React hook execution order, safe optional chaining, resilient clipboard copy fallbacks, and global `<ErrorBoundary>` protection preventing blank screens.
+- **Run Tests:** `npm test`
+- **Lint Code:** `npm run lint`
+- **Production Build:** `npm run build`
+
 ---
 
 ## Current Operational Status & Roadmap

@@ -7,15 +7,19 @@ export const WhatsAppShareButton = ({ mandate, magicUrl }) => {
   const { t, formatCurrency } = useI18n();
 
   const handleWhatsApp = () => {
-    if (!magicUrl) return;
-    const formattedTax = formatCurrency(mandate.taxPayable || 0);
-    const msg = t('magic_link.whatsapp_msg_template', {
-      title: mandate.title || 'Mandate',
-      tax: formattedTax,
-      url: magicUrl,
-    });
-    const text = encodeURIComponent(msg);
-    window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+    if (!magicUrl || !mandate) return;
+    try {
+      const formattedTax = formatCurrency(mandate?.taxPayable || 0);
+      const msg = t('magic_link.whatsapp_msg_template', {
+        title: mandate?.title || 'Mandate',
+        tax: formattedTax,
+        url: magicUrl,
+      });
+      const text = encodeURIComponent(msg);
+      window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+    } catch (err) {
+      console.warn('[WhatsApp Share Error]:', err);
+    }
   };
 
   return (
@@ -24,7 +28,7 @@ export const WhatsAppShareButton = ({ mandate, magicUrl }) => {
       color="success"
       startIcon={<WhatsAppIcon />}
       onClick={handleWhatsApp}
-      disabled={!magicUrl}
+      disabled={!magicUrl || !mandate}
     >
       {t('magic_link.whatsapp_btn')}
     </Button>
