@@ -1,3 +1,4 @@
+/* global setInterval */
 import crypto from 'node:crypto';
 
 /**

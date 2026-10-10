@@ -110,7 +110,7 @@ describe('FinConsent Localization (i18n & l10n) Test Suite', () => {
       const formatted = formatCurrency(825000);
       expect(formatted).toBe('₹8,25,000');
       // Must not contain any non-ASCII digits
-      expect(/[^\x00-\x7F]/.test(formatted.replace('₹', ''))).toBe(false);
+      expect(/[^\x20-\x7E]/.test(formatted.replace('₹', ''))).toBe(false);
       expect(/^[0-9,]+$/.test(formatted.replace('₹', ''))).toBe(true);
     });
 

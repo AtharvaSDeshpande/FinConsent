@@ -41,6 +41,7 @@ export const MandateDetailPage = () => {
   const [openMagicModal, setOpenMagicModal] = useState(false);
   const [openDossierModal, setOpenDossierModal] = useState(false);
   const [dispatching, setDispatching] = useState(false);
+  const [revoking, setRevoking] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
   const fetchMandate = async () => {
@@ -110,6 +111,28 @@ export const MandateDetailPage = () => {
       setError(err.message);
     } finally {
       setDispatching(false);
+    }
+  };
+
+  const handleRevokeMandate = async () => {
+    if (!window.confirm('Are you sure you want to revoke this mandate? This will invalidate the client access link and log a statutory revocation audit event.')) return;
+    setRevoking(true);
+    try {
+      const token = localStorage.getItem('finconsent_token');
+      const res = await fetch(`/api/mandates/${id}/revoke`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.success) {
+        await fetchMandate();
+      } else {
+        setError(data.error || 'Failed to revoke mandate');
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setRevoking(false);
     }
   };
 
@@ -388,6 +411,18 @@ export const MandateDetailPage = () => {
             >
               {t('mandate.btn_reg19_dossier')}
             </Button>
+
+            {!isClient && (role === 'ria' || role === 'admin') && mandate.status !== 'consented' && mandate.status !== 'approved' && mandate.status !== 'revoked' && mandate.status !== 'expired' && (
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={handleRevokeMandate}
+                disabled={revoking}
+                sx={{ fontWeight: 650, borderRadius: 2.5 }}
+              >
+                {revoking ? 'Revoking...' : 'Revoke Mandate'}
+              </Button>
+            )}
           </Box>
         </Box>
       </Card>

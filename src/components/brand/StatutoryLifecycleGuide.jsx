@@ -43,10 +43,11 @@ export const StatutoryLifecycleGuide = ({
   else if (norm === 'viewed') currentStep = 4; // Opened, pending OTP
   else if (norm === 'consented' || norm === 'approved') currentStep = 6; // Fully completed
   else if (norm === 'expired') currentStep = 4; // Stalled at review
+  else if (norm === 'revoked') currentStep = 4; // Revoked
 
   const getStepStatus = (stepId) => {
     if (overview) return 'overview';
-    if (norm === 'expired') {
+    if (norm === 'expired' || norm === 'revoked') {
       if (stepId <= 3) return 'completed';
       if (stepId === 4) return 'expired';
       return 'pending';
@@ -144,6 +145,14 @@ export const StatutoryLifecycleGuide = ({
         action: null,
       };
     }
+    if (norm === 'revoked') {
+      return {
+        severity: 'error',
+        title: 'Mandate Revoked',
+        description: 'This advisory mandate has been revoked and is void for execution or consent.',
+        action: null,
+      };
+    }
     return null;
   };
 
@@ -166,13 +175,13 @@ export const StatutoryLifecycleGuide = ({
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <VerifiedUserOutlinedIcon color="primary" sx={{ fontSize: 20 }} />
           <Typography variant="subtitle2" fontWeight={800} color="#0F172A">
-            {overview ? 'SEBI Regulation 19 Statutory Workflow Rail' : 'SEBI Regulation 19 Statutory Lifecycle Progress'}
+            {overview ? 'SEBI Regulation 19 Compliance Lifecycle Rail' : 'SEBI Regulation 19 Compliance Lifecycle Progress'}
           </Typography>
         </Box>
         <Chip
-          label={overview ? '6 MANDATORY STATUTORY STAGES' : `CURRENT STAGE: ${(t(`status.${norm}`) || norm).toUpperCase()}`}
+          label={overview ? '6 STATUTORY COMPLIANCE STAGES' : `CURRENT STAGE: ${(t(`status.${norm}`) || norm).toUpperCase()}`}
           size="small"
-          color={overview ? 'primary' : norm === 'consented' ? 'success' : norm === 'expired' ? 'error' : norm === 'draft' ? 'default' : 'primary'}
+          color={overview ? 'primary' : norm === 'consented' ? 'success' : (norm === 'expired' || norm === 'revoked') ? 'error' : norm === 'draft' ? 'default' : 'primary'}
           sx={{ fontWeight: 750, fontSize: '0.68rem' }}
         />
       </Box>
@@ -253,7 +262,7 @@ export const StatutoryLifecycleGuide = ({
       {overview && (
         <Box sx={{ px: 1, pt: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
           <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.74rem' }}>
-            Non-discretionary statutory flow required under SEBI (Investment Advisers) Regulations, 2013. Execution is legally locked until Stage 6.
+            Non-discretionary advisory record workflow aligned with SEBI (Investment Advisers) Regulations, 2013 Regulation 19 record-keeping requirements. Execution requires prior documented client consent.
           </Typography>
         </Box>
       )}

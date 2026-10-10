@@ -77,10 +77,10 @@ Every audit entry conforms to a deterministic JSON schema stored in the `audit_l
   "riaId": "usr_ria_1",
   "clientId": "cli_1",
   "mandateId": "man_faad6087-e53c-493c-9c8d-3553dedb1f71",
-  "eventType": "CONSENTED",
+  "eventType": "CONSENT_GRANTED",
   "timestamp": "2026-10-08T10:28:45.123Z",
   "timestampIST": "08/10/2026, 3:58:45 pm",
-  "ipAddress": "49.36.110.12",
+  "ipAddress": "203.0.113.12",
   "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15",
   "channel": "EMAIL_IN_APP_OTP",
   "payloadHash": "7f3d99e526a0b2341258ef8a90123456789abcdef0123456789abcdef0123456",
@@ -89,18 +89,18 @@ Every audit entry conforms to a deterministic JSON schema stored in the `audit_l
     "certificate": {
       "receiptId": "REC-MAN_FAAD6087-M1K89Z",
       "clientName": "Rohan Mehta",
-      "clientPan": "ABCDE1234F",
+      "clientPan": "XXXXX1234F",
       "riaFirmName": "Prudent Wealth Advisory",
-      "riaSebiReg": "INA000018421",
+      "riaSebiReg": "INA000088921",
       "taxPayable": 11440,
       "stcgTax": 11000,
       "ltcgTax": 0,
       "cessAmount": 440
     },
     "statutoryDeclarations": [
-      "SEBI (Investment Advisers) Regulations, 2013 (Regulation 19) Prior Informed Consent",
-      "Acceptance of Pre-Computed Union Budget 2024 Capital Gains Tax Liability",
-      "Section 65B Electronic Evidence Admissibility Declaration"
+      "SEBI (Investment Advisers) Regulations, 2013 (Regulation 19) Record of Advice & Informed Consent",
+      "Statutory Capital Gains Tax Impact Transparency (Current Rates)",
+      "Section 63 Bharatiya Sakshya Adhiniyam, 2023 / Section 65B Electronic Record Declaration"
     ]
   }
 }
@@ -114,14 +114,14 @@ $$\text{payloadHash}_N = \text{SHA-256}(\text{prevHash}_{N-1} \parallel \text{ti
 
 Where:
 - $\text{prevHash}_0$ is the genesis hash: `0000000000000000000000000000000000000000000000000000000000000000`.
-- Altering any historical log record invalidates every subsequent hash in the sequence, rendering tampering immediately detectable during regulatory audits.
+- Altering any historical log record invalidates every subsequent hash in the sequence, rendering tampering immediately detectable within the ledger.
 
 ---
 
 ## 5. Security & Verification Lifecycle Events
 
 ### 5.1 Mandate Password Protection & Access Events
-1. **Pre-Unlock Access:** When a client opens `/m/:token`, the server commits `MANDATE_VIEWED` logging client IP and User-Agent. Only minimal non-sensitive metadata (firm name, advisor name, client name) is emitted. Trade baskets and tax calculations remain encrypted at rest.
+1. **Pre-Unlock Access:** When a client opens `/m/:token`, the server commits `MANDATE_OPENED` logging client IP and User-Agent. Only minimal non-sensitive metadata (firm name, advisor name, client name) is emitted. Trade baskets and tax calculations remain encrypted at rest.
 2. **Password Verification:** The client enters the normalized password (`Last 4 PAN digits + DOB in DDMMYYYY`, e.g., `123414081978` for Rohan Mehta), triggering PBKDF2 key derivation and AES-256-GCM DEK unwrapping.
    - On success: The server records `PASSWORD_UNLOCKED`, resets failed attempt counters, and issues a 2-hour signed JWT (`x-unlock-token`).
    - On failure: The server records `PASSWORD_FAILED`. If 5 consecutive failures occur within 15 minutes, `PASSWORD_LOCKOUT` engages, returning `HTTP 429 Too Many Requests`.
@@ -135,39 +135,40 @@ FinConsent includes an in-app clarification rail. Every message posted by the cl
 2. **Verification & Lockout:** The client inputs the 6-digit code.
    - If incorrect: Counter decrements (3 attempts max).
    - If 3rd attempt fails: `OTP_LOCKOUT` is committed, the token is permanently burned, and subsequent requests return `HTTP 429 Too Many Requests`.
-3. **Consent Commitment:** Upon valid OTP submission and verified declaration acceptance, the mandate status transitions to `consented`, the magic token is revoked, and `CONSENTED` is committed to the ledger with the Section 65B certificate digest.
+3. **Consent Commitment:** Upon valid OTP submission and verified declaration acceptance, the mandate status transitions to `consented`, the magic token is revoked, and `CONSENT_GRANTED` is committed to the ledger with the Section 63 BSA / Section 65B certificate digest.
 
 ### 5.4 Cross-Tenant Isolation Enforcement
 When an advisor or client attempts to query a record belonging to another advisory practice, the server logs a `CROSS_TENANT_ACCESS_BLOCKED` security event and returns `HTTP 403 Forbidden`. Foreign client names, PANs, or portfolio contents are never disclosed.
 
 ---
 
-## 6. Section 65B Electronic Evidence Dossier Generation
+## 6. Section 63 BSA / Section 65B Electronic Evidence Dossier Generation
 
 Upon consent, the platform compiles an official electronic compliance certificate:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
-│             SEBI REGULATION 19 / SECTION 65B ELECTRONIC COMPLIANCE DOSSIER             │
+│             SEBI REGULATION 19 / SECTION 63 BSA ELECTRONIC COMPLIANCE DOSSIER          │
 ├────────────────────────────────────────────────────────────────────────────────────────┤
 │ Receipt Identifier: REC-MAN_FAAD6087-M1K89Z                                            │
 │ Mandate Reference:  Tactical Equity Rebalance & Tax-Efficient Realignment              │
-│ Status:             LEGALLY SEALED & LOCKED (CONSENTED)                                │
+│ Status:             RECORD SEALED & LOCKED (CONSENT_GRANTED)                           │
 ├────────────────────────────────────────────────────────────────────────────────────────┤
-│ Advisory Practice:  Prudent Wealth Advisory (SEBI Reg: INA000018421)                   │
+│ Advisory Practice:  Prudent Wealth Advisory (SEBI Reg: INA000088921)                   │
 │ Lead Adviser:       Suresh Narayanan                                                   │
 │ Client Name:        Rohan Mehta                                                        │
-│ Client Masked PAN:  AB*****4F                                                          │
+│ Client Masked PAN:  XXXXX1234F                                                         │
 │ Timestamp (IST):    08/10/2026, 3:58:45 pm                                             │
-│ Client IP Address:  49.36.110.12                                                       │
+│ Client IP Address:  203.0.113.12                                                       │
 │ Client User-Agent:  Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X)            │
 │ Authorization Mode: 6-Digit OTP Verification + Mandatory Statutory Checkboxes           │
 ├────────────────────────────────────────────────────────────────────────────────────────┤
-│ Pre-Computed Tax Summary (Union Budget 2024 Regime):                                   │
+│ Pre-Computed Tax Summary (Current Statutory Regime):                                   │
 │ • Net Short-Term Capital Gains (STCG @ 20%):     ₹55,000  (Tax: ₹11,000)               │
 │ • Net Long-Term Capital Gains (LTCG @ 12.5%):    ₹1,25,000 (Exempt under Sec 112A)     │
 │ • Health & Education Cess (4%):                  ₹440                                  │
 │ • Total Estimated Tax Liability:                 ₹11,440                               │
+│ * Assumes annual ₹1.25L LTCG exemption across client portfolio; excludes surcharges.   │
 ├────────────────────────────────────────────────────────────────────────────────────────┤
 │ SHA-256 Electronic Evidence Hash:                                                      │
 │ 7f3d99e526a0b2341258ef8a90123456789abcdef0123456789abcdef0123456                       │

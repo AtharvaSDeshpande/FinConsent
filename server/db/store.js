@@ -10,6 +10,17 @@ import {
   formatClientPassword,
 } from '../security/mandateCrypto.js';
 
+import { isWriteReady } from './connection.js';
+
+function assertWriteReady() {
+  if (!isWriteReady()) {
+    const err = new Error('Database write rejected: MongoDB Atlas is disconnected and in-memory storage fallback is disabled in production.');
+    err.status = 503;
+    err.code = 'DATABASE_UNAVAILABLE';
+    throw err;
+  }
+}
+
 // Hybrid database store: in-memory cache + live MongoDB Atlas persistence
 class FinConsentStore {
   constructor() {
@@ -124,6 +135,7 @@ class FinConsentStore {
 
   // User operations
   createUser(userData) {
+    if (!this.isSeeding) assertWriteReady();
     const id = userData.id || `usr_${crypto.randomUUID()}`;
     const user = {
       id,
@@ -161,6 +173,7 @@ class FinConsentStore {
   }
 
   updateUser(id, updates) {
+    if (!this.isSeeding) assertWriteReady();
     const user = this.users.get(id);
     if (!user) return null;
     const updated = { ...user, ...updates };
@@ -175,6 +188,7 @@ class FinConsentStore {
 
   // Client operations
   createClient(clientData) {
+    if (!this.isSeeding) assertWriteReady();
     const id = clientData.id || `cli_${crypto.randomUUID()}`;
     const client = {
       id,
@@ -210,6 +224,7 @@ class FinConsentStore {
 
   // Mandate operations
   createMandate(mandateData) {
+    if (!this.isSeeding) assertWriteReady();
     const id = mandateData.id || `man_${crypto.randomUUID()}`;
     const rawMagicToken = mandateData.magicToken || crypto.randomBytes(32).toString('hex');
     const magicTokenHash = mandateData.magicTokenHash || crypto.createHash('sha256').update(rawMagicToken).digest('hex');
@@ -370,6 +385,7 @@ class FinConsentStore {
   }
 
   addMandateChatMessage(mandateId, messageData) {
+    if (!this.isSeeding) assertWriteReady();
     const mandate = this.mandates.get(mandateId);
     if (!mandate) return null;
     if (!mandate.chatMessages) mandate.chatMessages = [];
@@ -390,6 +406,7 @@ class FinConsentStore {
   }
 
   updateMandate(id, updates) {
+    if (!this.isSeeding) assertWriteReady();
     const mandate = this.mandates.get(id);
     if (!mandate) return null;
 
@@ -439,7 +456,7 @@ class FinConsentStore {
           ? m.createdAt.toISOString()
           : new Date(m.createdAt).toISOString();
         return typeof dateStr === 'string' && dateStr.startsWith(currentMonthPrefix);
-      } catch (err) {
+      } catch {
         return false;
       }
     }).length;
@@ -447,6 +464,7 @@ class FinConsentStore {
 
   // Request composer operations (Dedicated request composer UI)
   createRequest(requestData) {
+    if (!this.isSeeding) assertWriteReady();
     const id = requestData.id || `req_${crypto.randomUUID()}`;
     const request = {
       id,
@@ -480,6 +498,7 @@ class FinConsentStore {
   }
 
   updateRequest(id, updates) {
+    if (!this.isSeeding) assertWriteReady();
     const request = this.requests.get(id);
     if (!request) return null;
     const updated = { ...request, ...updates, updatedAt: new Date().toISOString() };
@@ -494,6 +513,7 @@ class FinConsentStore {
 
   // Audit Log operations - strictly immutable, append-only
   createAuditLog(entry) {
+    if (!this.isSeeding) assertWriteReady();
     const id = `aud_${crypto.randomUUID()}`;
     const timestamp = new Date().toISOString();
     const timestampIST = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });

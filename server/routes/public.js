@@ -85,7 +85,7 @@ router.get('/mandates/:token', (req, res) => {
       unlocked.status = 'viewed';
     }
 
-    const maskedPan = client ? `${client.pan.slice(0, 2)}*****${client.pan.slice(-2)}` : '******';
+    const maskedPan = client?.pan ? `XXXXX${client.pan.slice(-5)}` : 'XXXXX0000X';
     const maskedMobile = client ? `******${client.mobile.slice(-4)}` : '******';
 
     return res.json({
@@ -222,7 +222,7 @@ router.post('/mandates/:token/unlock', (req, res) => {
 
     const client = dbStore.findClientById(mandate.clientId);
     const ria = dbStore.findUserById(mandate.riaId);
-    const maskedPan = client ? `${client.pan.slice(0, 2)}*****${client.pan.slice(-2)}` : '******';
+    const maskedPan = client?.pan ? `XXXXX${client.pan.slice(-5)}` : 'XXXXX0000X';
     const maskedMobile = client ? `******${client.mobile.slice(-4)}` : '******';
 
     return res.json({
@@ -481,7 +481,7 @@ router.post('/mandates/:token/verify-otp', otpVerifyLimiter, (req, res) => {
     consentedAtIST: timestampIST,
     authChannel: 'EMAIL_IN_APP_OTP',
     status: 'LEGALLY_SEALED_CONSENTED',
-    statutoryAct: 'Section 65B Indian Evidence Act, 1872 / IT Act 2000',
+    statutoryAct: 'Section 63 Bharatiya Sakshya Adhiniyam (BSA), 2023 / Section 65B Indian Evidence Act',
     dataResidency: 'AWS Mumbai (ap-south-1)',
     preComputedTax: {
       taxPayable: mandate.taxPayable,
@@ -507,13 +507,13 @@ router.post('/mandates/:token/verify-otp', otpVerifyLimiter, (req, res) => {
     payloadHash: sha256Hash,
     metadata: {
       certificate: auditReceipt,
-      statutoryDeclarations: ['SEBI IA Reg 19', 'Section 65B Admissibility', 'Budget 2024 Tax Acceptance'],
+      statutoryDeclarations: ['SEBI IA Reg 19 5-Year Record Retention', 'Section 63 BSA / Section 65B Admissibility', 'Capital Gains Tax Estimate Transparency'],
     },
   });
 
   res.json({
     success: true,
-    message: 'Trade mandate successfully authorized and locked under Section 65B Indian Evidence Act.',
+    message: 'Trade mandate successfully authorized and locked under Section 63 BSA, 2023 / Section 65B Evidence Act.',
     data: {
       mandate: updatedMandate,
       auditCertificate: auditReceipt,

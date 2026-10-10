@@ -35,6 +35,15 @@
 
 ---
 
+## Statutory Process Flow & Consent Lifecycle Architecture
+
+The end-to-end statutory consent lifecycle—spanning proposal formulation, tax engine calculations, dual-envelope delivery via WhatsApp, client authentication, interactive clarification, OTP verification, and Section 65B tamper-evident hash chaining—is illustrated in the formal Graphviz process flow diagram below:
+
+![FinConsent Statutory Advisory Process Flow](docs/diagrams/process-flow.png)
+*Figure 1.0: FinConsent End-to-End Statutory Advisory Process Flow (SEBI Reg 19, HMAC & Section 65B Audit Trail)*
+
+---
+
 ## Act I: The Portfolio Drift & The Compliance Dilemma
 
 It is a Thursday morning in Mumbai. Suresh Narayanan, Principal Officer at Prudent Wealth Advisory, is reviewing client portfolios ahead of the monthly rebalancing window. Following a sustained rally in large-cap domestic equities, Suresh notices significant asset allocation drift in the portfolio of his long-standing HNI client, Rohan Mehta.
@@ -251,18 +260,18 @@ The server verifies the OTP code against `SharedStateStore`. The match is succes
 │ 1. Atomic Token Revocation: The 256-bit magic token is permanently burned and revoked. │
 │    Any subsequent attempt to access the link returns HTTP 410 Gone / 404 Not Found.     │
 │ 2. Mandate Status: Transitions from viewed -> consented.                               │
-│ 3. Section 65B Certificate Compiled: Captures Client IP (49.36.110.12), User-Agent,    │
-│    IST timestamp (08/10/2026, 3:58:45 pm), tax liabilities, and PAN ABCDE1234F.       │
+│ 3. Section 63 BSA / Section 65B Certificate Compiled: Captures Client IP (203.0.113.12),│
+│    User-Agent, IST timestamp (08/10/2026, 3:58:45 pm), tax estimate, & masked PAN.     │
 │ 4. Cryptographic Chaining: Computes payloadHash over the certificate and links it to   │
 │    the previous audit event's prevHash via SHA-256.                                    │
-│ 5. Audit Log Committed: Event CONSENTED immutably stored in ledger.                    │
+│ 5. Audit Log Committed: Event CONSENT_GRANTED immutably stored in ledger.              │
 └────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-Rohan's screen transitions to the official **Section 65B Compliance Receipt**:
+Rohan's screen transitions to the official **Section 63 BSA / Section 65B Compliance Receipt**:
 
 ![Client Consented Receipt](docs/visual-audit/mandate-security/06_consent_locked_evidence.png)
-*Figure 8.1: Section 65B Indian Evidence Act Compliance Receipt displayed to Rohan Mehta. Notice the unique Receipt ID, SHA-256 hash seal, and locked status.*
+*Figure 8.1: Section 63 Bharatiya Sakshya Adhiniyam, 2023 / Section 65B Evidence Act Compliance Receipt displayed to Rohan Mehta. Notice the unique Receipt ID, SHA-256 hash seal, and locked status.*
 
 ![Client Receipt Confirmation Desktop](docs/visual-audit/workflow/08-client-receipt-confirmation-desktop.png)
 *Figure 8.2: Full-screen view of the digitally fingerprinted Compliance Receipt, confirming data residency in AWS Mumbai (ap-south-1).*
@@ -346,23 +355,21 @@ Vikramaditya opens the mandate detail view for Rohan's rebalance and clicks **"C
 ├────────────────────────────────────────────────────────────────────────────────────────┤
 │ The modal renders the complete SEBI Regulation 19 Compliance Dossier Certificate:      │
 │ • Full Chronological Audit Trail from formulation to consent.                          │
-│ • Every Event's SHA-256 Hash Chain verifying zero retroactive alteration.              │
-│ • Client IP Address (49.36.110.12) & Device User-Agent.                                │
+│ • Every Event's SHA-256 Hash Chain verifying zero retroactive alteration in ledger.    │
+│ • Client IP Address (203.0.113.12) & Device User-Agent.                                │
 │ • Synchronized Indian Standard Time (IST) execution timestamp.                         │
-│ • Pre-Computed Capital Gains Breakdown under Finance Act 2024.                         │
-│ • Embedded Section 65B Indian Evidence Act Certificate.                                │
-│ • AWS Mumbai (ap-south-1) Data Residency Attestation.                                  │
+│ • Pre-Computed Capital Gains Breakdown under current statutory provisions.             │
+│ • Embedded Section 63 BSA / Section 65B Electronic Certificate.                       │
+│ • AWS Mumbai (ap-south-1) SEBI Cybersecurity Framework Data Residency Attestation.     │
 └────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-Vikramaditya clicks **"Export PDF Dossier"** and hands the printed, digitally fingerprinted certificate to the SEBI inspector.
+Vikramaditya clicks **"Export PDF Dossier"** and presents the printed, digitally fingerprinted dossier during the regulatory audit.
 
-The inspector examines the document:
-1. Prior informed consent? **Verified.**
-2. Advance tax visibility provided to client? **Verified.**
-3. 5-year tamper-evident audit trail preserved? **Cryptographically proven.**
-4. Electronic evidence admissible under Indian law? **Certified under Section 65B.**
+The compliance review proceeds smoothly:
+1. Prior documented consent? **Documented with verifiable timestamp.**
+2. Pre-trade tax impact visibility provided to client? **Documented.**
+3. 5-year tamper-evident audit trail preserved? **Cryptographically chained in ledger.**
+4. Electronic evidence aligned with current statutory law? **Certified under Section 63 BSA / Section 65B.**
 
-The inspection passes with **zero findings, zero observations, and zero deficiencies**.
-
-Prudent Wealth Advisory has protected its reputation, defended its clients from tax shocks, and established a gold standard in modern Indian WealthTech compliance.
+The audit trail demonstrates comprehensive statutory adherence, significantly reducing compliance exposure and providing full transparency for the advisory practice.

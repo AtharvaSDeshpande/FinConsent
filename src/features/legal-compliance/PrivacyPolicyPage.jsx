@@ -48,42 +48,42 @@ export const PrivacyPolicyPage = () => {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <Box>
             <Typography variant="h6" fontWeight={700} gutterBottom>
-              1. Data Fiduciary Identity & Scope
+              1. Data Protection Scope & Role
             </Typography>
             <Typography variant="body2" color="text.secondary" paragraph>
-              FinConsent operates as a Data Fiduciary under the Digital Personal Data Protection Act, 2023. We provide immutable record-keeping and consent workflow technology to SEBI-Registered Investment Advisers (RIAs).
+              FinConsent processes personal data in accordance with the Digital Personal Data Protection Act, 2023 (DPDP Act). For client mandates initiated by SEBI-Registered Investment Advisers (RIAs), the RIA entity acts as the primary Data Fiduciary, and FinConsent operates as the compliance technology processor ensuring end-to-end auditability and data protection.
             </Typography>
           </Box>
 
           <Box>
             <Typography variant="h6" fontWeight={700} gutterBottom>
-              2. Personal Data Collected & Processed
+              2. Personal Data Processed & Collected
             </Typography>
             <Typography variant="body2" color="text.secondary" paragraph>
-              We collect and process only the minimal personal data required for statutory financial trade consent:
+              We process minimal data necessary for regulatory advisory record-keeping and client verification:
             </Typography>
             <ul>
-              <li><Typography variant="body2" color="text.secondary">Adviser Information: Full name, official email, firm name, and SEBI Registration Number (INAXXXXXXXXXX).</Typography></li>
-              <li><Typography variant="body2" color="text.secondary">Client Information: Full name, Permanent Account Number (PAN), mobile number for SMS OTP, and email address.</Typography></li>
-              <li><Typography variant="body2" color="text.secondary">Electronic Telemetry: Client IP address, User-Agent browser string, and IST timestamps necessary for Section 65B IT Act admissibility.</Typography></li>
+              <li><Typography variant="body2" color="text.secondary">Adviser Information: Full name, official email, firm name, and SEBI Registration Number (INAXXXXXXXXX).</Typography></li>
+              <li><Typography variant="body2" color="text.secondary">Client Information: Full name, masked Permanent Account Number (PAN), mobile number, and registered email address for secure verification.</Typography></li>
+              <li><Typography variant="body2" color="text.secondary">Electronic Verification Telemetry: Client IP address, User-Agent browser string, and Indian Standard Time (IST) timestamps to establish electronic record integrity under Section 63 of Bharatiya Sakshya Adhiniyam, 2023 (BSA) and Section 65B of the Indian Evidence Act.</Typography></li>
             </ul>
           </Box>
 
           <Box>
             <Typography variant="h6" fontWeight={700} gutterBottom>
-              3. Indian Data Residency & Storage Security
+              3. Indian Data Residency & SEBI Cybersecurity Framework
             </Typography>
             <Typography variant="body2" color="text.secondary" paragraph>
-              In strict adherence to Reserve Bank of India (RBI) and SEBI regulatory guidelines, all database records, cryptographic hashes, and audit dossiers are stored exclusively within Indian territorial borders on AWS Mumbai (Region: <code>ap-south-1</code>).
+              In alignment with SEBI&apos;s Cybersecurity and Cyber Resilience Framework (CSCRF) and SEBI Cloud Security Guidelines for Regulated Entities, all database records, cryptographic hashes, and audit dossiers are stored and processed within Indian territorial borders on AWS Mumbai (Region: <code>ap-south-1</code>).
             </Typography>
           </Box>
 
           <Box>
             <Typography variant="h6" fontWeight={700} gutterBottom>
-              4. Statutory 5-Year Data Retention
+              4. 5-Year Regulatory Data Retention
             </Typography>
             <Typography variant="body2" color="text.secondary" paragraph>
-              Under Regulation 19 of the SEBI (Investment Advisers) Regulations, 2013, records of client advice, trade rationale, and prior informed consent must be maintained for a statutory minimum of 5 years (1,825 days). In accordance with DPDP Act Section 8, audit records cannot be erased prior to the expiration of this statutory retention window.
+              Under Regulation 19 of the SEBI (Investment Advisers) Regulations, 2013, records of client advice, rationale, and client agreement/consent records must be maintained for a statutory period of 5 years. In accordance with Section 8(7) of the DPDP Act, 2023, data retention is permitted and mandated where required for compliance with statutory laws, overriding general erasure requests during the mandatory retention window.
             </Typography>
           </Box>
 

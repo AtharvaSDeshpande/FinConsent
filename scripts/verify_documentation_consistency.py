@@ -76,7 +76,7 @@ def audit():
     checks = [
         ("Suresh Narayanan", "Advisor Persona"),
         ("Rohan Mehta", "Client Persona"),
-        ("INA000018421", "SEBI INA Registration"),
+        ("INA000088921", "SEBI INA Registration"),
         ("AES-256-GCM", "Payload Encryption Standard"),
         ("PBKDF2", "Key Derivation Function"),
         ("Section 65B", "Indian Evidence Act Admissibility"),

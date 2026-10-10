@@ -28,6 +28,7 @@
       justify-content: center;
       min-height: 100vh;
       overflow-x: hidden;
+      padding: 16px;
     }
     #slide-viewport {
       width: 1200px;
@@ -44,12 +45,13 @@
       display: none;
       width: 100%;
       height: 100%;
-      padding: 40px 60px;
+      padding: 36px 54px;
       flex-direction: column;
       background: #FFFFFF;
       position: absolute;
       top: 0;
       left: 0;
+      overflow-y: auto;
     }
     .slide.active {
       display: flex;
@@ -60,24 +62,24 @@
       letter-spacing: 0.1em;
       color: var(--indigo);
       text-transform: uppercase;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
     .slide-title {
-      font-size: 24px;
+      font-size: 23px;
       font-weight: 800;
       color: var(--navy);
       margin-bottom: 4px;
     }
     .slide-subtitle {
-      font-size: 13px;
+      font-size: 12.5px;
       color: var(--slate);
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       line-height: 1.4;
     }
     .content-area {
       flex: 1;
       display: flex;
-      gap: 24px;
+      gap: 20px;
       overflow: hidden;
     }
     .col-half {
@@ -89,38 +91,43 @@
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 8px;
-      padding: 20px;
+      padding: 18px;
       height: 100%;
       display: flex;
       flex-direction: column;
     }
     .card h3 {
-      font-size: 15px;
+      font-size: 14.5px;
       font-weight: 700;
       color: var(--navy);
       margin-bottom: 8px;
     }
     .card p, .card li {
-      font-size: 12px;
+      font-size: 11.5px;
       color: var(--slate);
-      line-height: 1.6;
+      line-height: 1.55;
     }
     .card ul {
       padding-left: 18px;
     }
+    .card li {
+      margin-bottom: 6px;
+    }
     .screenshot-img {
       max-width: 100%;
-      max-height: 360px;
+      max-height: 350px;
       object-fit: contain;
       border: 1px solid var(--card-border);
       border-radius: 6px;
       box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      background: #FFFFFF;
     }
     .caption {
       font-size: 11px;
       color: var(--slate);
       font-style: italic;
       margin-top: 8px;
+      line-height: 1.35;
     }
     .code-diagram {
       background: #0A192F;
@@ -142,22 +149,23 @@
     .table-container th {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      padding: 10px;
+      padding: 9px 10px;
       text-align: left;
       font-weight: 700;
       color: var(--navy);
     }
     .table-container td {
       border: 1px solid var(--card-border);
-      padding: 9px 10px;
+      padding: 8px 10px;
       color: var(--slate);
       vertical-align: top;
+      line-height: 1.45;
     }
     .controls {
       display: flex;
       align-items: center;
-      gap: 16px;
-      margin-top: 16px;
+      gap: 14px;
+      margin-top: 14px;
       color: #94A3B8;
       font-size: 13px;
     }
@@ -165,7 +173,7 @@
       background: #1E293B;
       color: #F8FAFC;
       border: 1px solid #334155;
-      padding: 8px 16px;
+      padding: 7px 14px;
       border-radius: 6px;
       cursor: pointer;
       font-size: 12px;
@@ -176,60 +184,70 @@
       background: var(--indigo);
       border-color: var(--indigo);
     }
+    .select-dropdown {
+      background: #1E293B;
+      color: #F8FAFC;
+      border: 1px solid #334155;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      outline: none;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
 
   <div id="slide-viewport">
 
-    <!-- SLIDE 1 -->
+    <!-- SLIDE 1: Title -->
     <div class="slide active">
-      <div style="margin-top: 40px; margin-bottom: 24px;">
-        <div style="width: 48px; height: 4px; background: var(--indigo); margin-bottom: 16px; border-radius: 2px;"></div>
-        <h1 style="font-size: 40px; font-weight: 900; color: var(--navy); letter-spacing: -0.02em;">FINCONSENT</h1>
-        <h2 style="font-size: 20px; font-weight: 600; color: var(--indigo); margin-top: 6px;">Enterprise Statutory Trade Authorization & Tax-Impact Infrastructure for Indian RIAs</h2>
+      <div style="margin-top: 32px; margin-bottom: 20px;">
+        <div style="width: 48px; height: 4px; background: var(--indigo); margin-bottom: 14px; border-radius: 2px;"></div>
+        <h1 style="font-size: 38px; font-weight: 900; color: var(--navy); letter-spacing: -0.02em;">FINCONSENT</h1>
+        <h2 style="font-size: 19px; font-weight: 600; color: var(--indigo); margin-top: 6px;">Enterprise Statutory Trade Authorization & Tax-Impact Infrastructure for Indian RIAs</h2>
       </div>
-      <p style="font-size: 14px; color: var(--slate); line-height: 1.6; max-width: 800px; margin-bottom: 40px;">
-        Purpose-built for SEBI (Investment Advisers) Regulations, 2013 Regulation 19 compliance, pre-trade capital gains tax transparency under Finance Act 2024, and Section 65B tamper-evident electronic evidence.
+      <p style="font-size: 13.5px; color: var(--slate); line-height: 1.6; max-width: 860px; margin-bottom: 32px;">
+        Engineered to support SEBI (Investment Advisers) Regulations, 2013 Regulation 19 compliance, pre-trade capital gains tax transparency under Finance Act 2024, and Section 63 of Bharatiya Sakshya Adhiniyam, 2023 (BSA) tamper-evident electronic evidence.
       </p>
       <div style="display: flex; gap: 20px;">
         <div class="card" style="flex: 1;">
-          <h3>SEBI Regulation 19 Compliance</h3>
-          <p>Enforces non-discretionary prior informed client consent with a statutory 5-year cryptographic audit trail.</p>
+          <h3>SEBI Regulation 19 Record-Keeping</h3>
+          <p>Operationalizes non-discretionary prior client consent with an immutable 5-year cryptographic audit trail for investment advice and rationale.</p>
         </div>
         <div class="card" style="flex: 1;">
-          <h3>Budget 2024 Tax Engine</h3>
-          <p>Automates STCG (20%) & LTCG (12.5%) pre-computations with Section 234B/C quarterly advance tax alerts.</p>
+          <h3>Finance Act 2024 Tax Engine</h3>
+          <p>Pre-computes STCG (20%) & LTCG (12.5% + 4% cess) with quarterly advance tax alerts (Section 208 / 234C).</p>
         </div>
         <div class="card" style="flex: 1;">
-          <h3>Cryptographic Evidence</h3>
-          <p>Dual AES-256-GCM envelope encryption, 6-digit OTP, and Section 65B Indian Evidence Act certificates.</p>
+          <h3>Section 63 BSA Electronic Evidence</h3>
+          <p>Dual-envelope AES-256-GCM encryption, 6-digit OTP verification, and tamper-evident SHA-256 compliance receipts.</p>
         </div>
       </div>
     </div>
 
-    <!-- SLIDE 2 -->
+    <!-- SLIDE 2: Problem -->
     <div class="slide">
       <div class="kicker">Industry Landscape</div>
       <div class="slide-title">The Problem: High-Stakes Friction in Indian Wealth Advisory</div>
-      <div class="slide-subtitle">Why legacy approval methods fail both advisory firms and high-net-worth investors.</div>
+      <div class="slide-subtitle">Why legacy approval channels fail both advisory practices and high-net-worth investors.</div>
       <div class="content-area">
         <div class="card" style="flex: 1;">
           <h3 style="color: var(--rose);">1. Informal WhatsApp Approvals</h3>
           <ul>
-            <li>Advisors routinely collect approvals via WhatsApp, emails, or phone notes.</li>
-            <li>SEBI inspection teams reject informal text messages as non-compliant with Regulation 19.</li>
+            <li>Advisers routinely collect approvals via WhatsApp texts, email replies, or unrecorded phone calls.</li>
+            <li>SEBI inspection teams reject informal text messages as non-compliant with Regulation 19 record-keeping rules.</li>
             <li>Leaves advisers legally exposed to claims of discretionary or unauthorized trading.</li>
-            <li>Zero legal admissibility under Section 65B of the Indian Evidence Act.</li>
+            <li>Inadmissible under Section 63 BSA / Section 65B without certified cryptographic hash continuity and device provenance.</li>
           </ul>
         </div>
         <div class="card" style="flex: 1;">
           <h3 style="color: var(--amber);">2. Capital Gains Tax Shocks</h3>
           <ul>
-            <li>Union Budget 2024 increased STCG to 20% and LTCG to 12.5%.</li>
+            <li>Finance Act 2024 revised STCG to 20% and LTCG to 12.5% (+ 4% cess).</li>
             <li>Rebalancing portfolios triggers significant capital gains without prior investor visibility.</li>
             <li>Clients are blindsided by unexpected year-end tax liabilities.</li>
-            <li>Advance tax penal interest (Sections 234B & 234C) erodes investor trust and fee satisfaction.</li>
+            <li>Advance tax penal interest (Sections 208, 234B & 234C where liability >= ₹10,000) erodes investor trust and fee satisfaction.</li>
           </ul>
         </div>
         <div class="card" style="flex: 1;">
@@ -244,7 +262,7 @@
       </div>
     </div>
 
-    <!-- SLIDE 3 -->
+    <!-- SLIDE 3: Personas -->
     <div class="slide">
       <div class="kicker">The Story</div>
       <div class="slide-title">The Human Context: An RIA and HNI Client Journey</div>
@@ -252,21 +270,127 @@
       <div class="content-area">
         <div class="card" style="flex: 1;">
           <h3>Suresh Narayanan</h3>
-          <p style="color: var(--indigo); font-weight: 600; margin-bottom: 8px;">Principal Officer & Founder, Prudent Wealth Advisory (SEBI Reg: INA000018421)</p>
+          <p style="color: var(--indigo); font-weight: 600; margin-bottom: 8px;">Principal Officer & Founder, Prudent Wealth Advisory (SEBI Reg: INA000088921)</p>
           <ul>
             <li><strong>AUM & Practice:</strong> Manages ₹180 Crores across 75 affluent families under a fee-only, non-discretionary advisory model.</li>
             <li><strong>Challenge:</strong> Equity markets surged post-budget; several client portfolios have drifted 15%+ away from risk mandates.</li>
-            <li><strong>Regulatory Obligation:</strong> Must recommend selling equities and buying debt/gold, but cannot execute without prior written consent and full tax disclosure under SEBI Regulation 19.</li>
+            <li><strong>Regulatory Obligation:</strong> Must recommend selling equities and buying debt and gold ETF, but cannot execute without prior written consent, documented rationale, and 5-year record-keeping under SEBI Regulation 19.</li>
+            <li><strong>Execution Boundary:</strong> FinConsent records consent and maintains audit evidence; trade execution is executed separately via client's broker.</li>
+            <li><strong>Note:</strong> Illustrative persona for workflow demonstration.</li>
           </ul>
         </div>
         <div class="card" style="flex: 1;">
           <h3>Rohan Mehta</h3>
-          <p style="color: var(--indigo); font-weight: 600; margin-bottom: 8px;">HNI Advisory Client | Managing Director, Auto-Tech Firm, Pune (PAN: ABCDE1234F)</p>
+          <p style="color: var(--indigo); font-weight: 600; margin-bottom: 8px;">HNI Advisory Client | Managing Director, Auto-Tech Firm, Pune (Masked PAN: XXXXX1234F)</p>
           <ul>
             <li><strong>Portfolio Context:</strong> Holds a ₹4.2 Crore portfolio. Extremely busy executive who reviews financial proposals on his mobile phone between meetings.</li>
             <li><strong>Expectation:</strong> Values Suresh's advice, but refuses to sign complex paper forms or guess tax liabilities.</li>
             <li><strong>Need:</strong> Demands a frictionless 2-minute mobile authorization flow that clearly explains why securities are being sold and the exact rupee tax liability.</li>
+            <li><strong>Security:</strong> Accesses proposal securely via PAN-last-4 + DOB convenience verification PIN defended online by strict rate limiting.</li>
+            <li><strong>Note:</strong> Illustrative persona with synthetic credentials.</li>
           </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: Operational Friction -->
+    <div class="slide">
+      <div class="kicker">Friction &amp; Risk Analysis</div>
+      <div class="slide-title">Why Current Operational Approaches Break Down</div>
+      <div class="slide-subtitle">Evaluating the systemic vulnerabilities of informal, non-statutory consent channels.</div>
+      <div class="content-area" style="flex-direction: column; gap: 12px;">
+        <div class="card" style="padding: 12px 18px; border-left: 4px solid var(--rose);">
+          <h3 style="color: var(--rose); margin-bottom: 4px;">SEBI Regulation 19 Compliance Exposure</h3>
+          <p>Failing to maintain contemporaneous records of investment advice, rationale, and documented client agreement for 5 years leaves advisers vulnerable during mandatory SEBI inspections and dispute resolutions.</p>
+        </div>
+        <div class="card" style="padding: 12px 18px; border-left: 4px solid var(--amber);">
+          <h3 style="color: var(--amber); margin-bottom: 4px;">Advance Tax Penalties (Sec 208, 234B &amp; 234C)</h3>
+          <p>Selling equities without advance tax warnings risks 1% monthly penal interest if net tax liability reaches ₹10,000; requires planning under Section 234C capital gains installment relief proviso.</p>
+        </div>
+        <div class="card" style="padding: 12px 18px; border-left: 4px solid var(--indigo);">
+          <h3 style="color: var(--indigo); margin-bottom: 4px;">Inadmissible Electronic Evidence (BSA Sec 63 / Sec 65B)</h3>
+          <p>Under Section 63 of Bharatiya Sakshya Adhiniyam, 2023 (and erstwhile Section 65B), raw screenshots lack server hash continuity and device provenance required for court or tribunal admissibility.</p>
+        </div>
+        <div class="card" style="padding: 12px 18px; border-left: 4px solid var(--navy);">
+          <h3 style="color: var(--navy); margin-bottom: 4px;">Operational Delay &amp; Market Slippage</h3>
+          <p>Chasing clients across emails and phone calls causes days of delay, during which market prices drift and optimal rebalancing opportunities evaporate.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: Four Core Pillars -->
+    <div class="slide">
+      <div class="kicker">Platform Architecture</div>
+      <div class="slide-title">FinConsent Solution Overview: The Four Core Pillars</div>
+      <div class="slide-subtitle">An integrated statutory infrastructure bridging advisory formulation and client mobile consent.</div>
+      <div class="content-area">
+        <div class="card" style="flex: 1; border-top: 4px solid var(--indigo);">
+          <h3>1. Pre-Trade Tax Transparency</h3>
+          <p>Dynamic Finance Act 2024 tax engine. Computes STCG (20%) and LTCG (12.5% + 4% cess) in real time, alerting clients to quarterly advance tax deadlines.</p>
+        </div>
+        <div class="card" style="flex: 1; border-top: 4px solid var(--navy);">
+          <h3>2. Dual-Envelope Encryption</h3>
+          <p>AES-256-GCM encryption with dual key wrapping and isolated server master key. Protects sensitive financial assets until client unlocks via PAN last 4 digits and DOB.</p>
+        </div>
+        <div class="card" style="flex: 1; border-top: 4px solid var(--emerald);">
+          <h3>3. Secure Mobile Consent Rail</h3>
+          <p>Direct password-protected 256-bit magic links. 360px responsive mobile layout, mandate clarification chat, and secure email/in-app 6-digit OTP verification.</p>
+        </div>
+        <div class="card" style="flex: 1; border-top: 4px solid var(--amber);">
+          <h3>4. Section 63 BSA Audit Ledger</h3>
+          <p>Append-only forward SHA-256 hash chaining. Emits digitally fingerprinted Regulation 19 compliance dossiers with IP, user-agent, and IST timestamps.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 6: End-to-End User Journey -->
+    <div class="slide">
+      <div class="kicker">Narrative Flow</div>
+      <div class="slide-title">End-to-End User Journey: From Drift to Locked Evidence</div>
+      <div class="slide-subtitle">Chronological storytelling mapping advisor formulation to statutory compliance archive.</div>
+      <div class="content-area">
+        <div class="card" style="flex: 1;">
+          <div style="font-size: 11px; font-weight: 700; color: var(--indigo); margin-bottom: 4px;">STEP 1</div>
+          <h3 style="font-size: 13px;">Drift &amp; Formulation</h3>
+          <p>Suresh detects 15% equity drift. Drafts ₹11.10L rebalance into corporate debt ETF and Gold ETF (secondary market).</p>
+          <p style="margin-top: 8px; font-style: italic; color: var(--muted); font-size: 11px;">[RIA Workspace]</p>
+        </div>
+        <div class="card" style="flex: 1;">
+          <div style="font-size: 11px; font-weight: 700; color: var(--indigo); margin-bottom: 4px;">STEP 2</div>
+          <h3 style="font-size: 13px;">Tax Calculation</h3>
+          <p>Engine calculates ₹11,440 capital gains tax estimate. Generates 48-hour cutoff window and dispatch magic link.</p>
+          <p style="margin-top: 8px; font-style: italic; color: var(--muted); font-size: 11px;">[Tax Engine]</p>
+        </div>
+        <div class="card" style="flex: 1;">
+          <div style="font-size: 11px; font-weight: 700; color: var(--indigo); margin-bottom: 4px;">STEP 3</div>
+          <h3 style="font-size: 13px;">Secure Delivery</h3>
+          <p>Delivered via email magic link (WhatsApp on roadmap). Rohan opens link; sensitive data remains encrypted until PAN+DOB unlock.</p>
+          <p style="margin-top: 8px; font-style: italic; color: var(--muted); font-size: 11px;">[Mobile Delivery]</p>
+        </div>
+        <div class="card" style="flex: 1;">
+          <div style="font-size: 11px; font-weight: 700; color: var(--indigo); margin-bottom: 4px;">STEP 4</div>
+          <h3 style="font-size: 13px;">Review &amp; Chat</h3>
+          <p>Rohan reviews trade baskets, asks clarification in chat. Suresh replies; Rohan accepts terms (Chat != Consent).</p>
+          <p style="margin-top: 8px; font-style: italic; color: var(--muted); font-size: 11px;">[Discussion Rail]</p>
+        </div>
+        <div class="card" style="flex: 1;">
+          <div style="font-size: 11px; font-weight: 700; color: var(--indigo); margin-bottom: 4px;">STEP 5</div>
+          <h3 style="font-size: 13px;">OTP &amp; Evidence</h3>
+          <p>Rohan verifies 6-digit OTP. Token burned; Section 63 BSA compliance dossier locked immutably (trade execution by broker/client).</p>
+          <p style="margin-top: 8px; font-style: italic; color: var(--muted); font-size: 11px;">[Audit Ledger]</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7: Process Flow Diagram -->
+    <div class="slide">
+      <div class="kicker">Process Flow</div>
+      <div class="slide-title">Statutory Process Flow Diagram</div>
+      <div class="slide-subtitle">Deterministic state progression from recommendation to immutable regulatory evidence (Generated via Graphviz).</div>
+      <div class="content-area" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <div style="background: #FFFFFF; border: 1px solid var(--card-border); border-radius: 8px; padding: 10px; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden;">
+          <img src="diagrams/process-flow.png" data-fallback="docs/diagrams/process-flow.png" onerror="if(!this.dataset.retried){this.dataset.retried='1';this.src=this.dataset.fallback;}" alt="Statutory Process Flow Diagram" style="max-width: 100%; max-height: 420px; object-fit: contain; border-radius: 4px;">
+          <div class="caption">Figure 7.1: Statutory Process Flow Diagram — SEBI Regulation 19 advisory formulation, Finance Act 2024 tax calculation, OTP authorization, and Section 63 BSA evidence lock.</div>
         </div>
       </div>
     </div>
@@ -278,17 +402,17 @@
       <div class="slide-subtitle">Real screenshots from Prudent Wealth Advisory's institutional advisory center.</div>
       <div class="content-area">
         <div class="col-half">
-          <img class="screenshot-img" src="../docs/visual-audit/workflow/01-ria-dashboard-firm-workspace.png" alt="RIA Dashboard">
+          <img class="screenshot-img" src="visual-audit/workflow/01-ria-dashboard-firm-workspace.png" data-fallback="docs/visual-audit/workflow/01-ria-dashboard-firm-workspace.png" onerror="if(!this.dataset.retried){this.dataset.retried='1';this.src=this.dataset.fallback;}" alt="RIA Dashboard">
           <div class="caption">Figure 8.1: Authenticated RIA Dashboard showing portfolio overview and practice mandates.</div>
         </div>
         <div class="col-half">
           <div class="card">
             <h3>Advisor Capabilities & Controls</h3>
             <ul>
-              <li><strong>Practice Workspace:</strong> Scoped view displaying active mandate statuses (Draft, Sent, Viewed, Consented, Expired) with real-time 48-hour countdown badges.</li>
-              <li><strong>Frictionless Client Registry:</strong> Client management enforcing PAN syntax ([A-Z]{5}[0-9]{4}[A-Z]) and mobile number formatting.</li>
+              <li><strong>Practice Workspace:</strong> Scoped view displaying active mandate statuses (Draft, Sent, Viewed, Consented, Expired, Revoked) with real-time 48-hour countdown badges.</li>
+              <li><strong>Client Registry:</strong> Client management enforcing PAN syntax ([A-Z]{5}[0-9]{4}[A-Z]), masked presentation (XXXXX1234F), and mobile number formatting.</li>
               <li><strong>Integrated Rebalance Wizard:</strong> Simultaneous formulation of current vs. proposed allocations, sell baskets, buy baskets, and advisory rationale.</li>
-              <li><strong>Instant Emergency Control:</strong> Single-click 'Revoke Link' feature allows advisers to immediately cancel dispatched proposals if market volatility occurs.</li>
+              <li><strong>Instant Emergency Revocation:</strong> Single-click 'Revoke Link' feature allows advisers to immediately cancel dispatched proposals if market volatility occurs.</li>
             </ul>
           </div>
         </div>
@@ -302,17 +426,17 @@
       <div class="slide-subtitle">Rohan Mehta's proposal review interface designed for executive clarity on smartphones.</div>
       <div class="content-area">
         <div class="col-half">
-          <img class="screenshot-img" src="../docs/visual-audit/mandate-security/03_client_mandate_unlocked.png" alt="Client Review">
+          <img class="screenshot-img" src="visual-audit/mandate-security/03_client_mandate_unlocked.png" data-fallback="docs/visual-audit/mandate-security/03_client_mandate_unlocked.png" onerror="if(!this.dataset.retried){this.dataset.retried='1';this.src=this.dataset.fallback;}" alt="Client Review">
           <div class="caption">Figure 9.1: Rohan Mehta's unlocked proposal review showing trade allocations and pre-computed tax.</div>
         </div>
         <div class="col-half">
           <div class="card">
             <h3>Key Client-Facing Elements</h3>
             <ul>
-              <li><strong>Zero-Login Convenience:</strong> Clients tap the link received via WhatsApp/email without remembering passwords or downloading an app.</li>
+              <li><strong>Direct Magic Link Convenience:</strong> Clients tap the link received via email without remembering complex portal passwords or downloading an app.</li>
               <li><strong>Allocation Drift Visualization:</strong> High-contrast visual bars illustrate how portfolio risk is being restored (Equity scaling from 65% down to 50%).</li>
-              <li><strong>Transparent Trade Baskets:</strong> Exact share quantities, current market value, ISIN numbers, and transaction rationale displayed clearly.</li>
-              <li><strong>Tax Accountability:</strong> Pre-computes exact rupee liability (₹11,440) so the client understands the net financial impact before consenting.</li>
+              <li><strong>Transparent Trade Baskets:</strong> Exact share quantities, current market value, ISIN numbers, and transaction rationale displayed clearly (Tata Motors, HDFC Bank -> Bharat Bond, Gold ETF).</li>
+              <li><strong>Tax Accountability:</strong> Pre-computes estimated rupee liability (₹11,440) so the client understands the net financial impact before consenting.</li>
             </ul>
           </div>
         </div>
@@ -326,17 +450,99 @@
       <div class="slide-subtitle">Zero sensitive financial disclosure prior to client authentication.</div>
       <div class="content-area">
         <div class="col-half">
-          <img class="screenshot-img" src="../docs/visual-audit/mandate-security/02_client_password_required.png" alt="Password Gate">
+          <img class="screenshot-img" src="visual-audit/mandate-security/02_client_password_required.png" data-fallback="docs/visual-audit/mandate-security/02_client_password_required.png" onerror="if(!this.dataset.retried){this.dataset.retried='1';this.src=this.dataset.fallback;}" alt="Password Gate">
           <div class="caption">Figure 10.1: Client Password Gate on Mobile. Sensitive portfolio holdings remain encrypted until unlocked.</div>
         </div>
         <div class="col-half">
           <div class="card">
             <h3>PAN + DOB Password Mechanism</h3>
             <ul>
-              <li><strong>Zero PII Exposure:</strong> If a magic link is forwarded, intercepted, or leaked, the recipient sees only the adviser's firm name. Zero stock holdings or tax figures are emitted.</li>
-              <li><strong>Deterministic Derivation:</strong> Password formatted as Last 4 PAN digits + Date of Birth (DDMMYYYY). Example: Rohan's PAN ABCDE1234F + 14/08/1978 = 123414081978.</li>
+              <li><strong>Zero PII Exposure Prior to Unlock:</strong> If a magic link is forwarded, intercepted, or leaked, the recipient sees only the adviser's firm name. Zero stock holdings or tax figures are emitted.</li>
+              <li><strong>Deterministic Verification PIN:</strong> Password formatted as Last 4 PAN digits + Date of Birth (DDMMYYYY). Example: Rohan's PAN XXXXX1234F + 14/08/1978 = 123414081978.</li>
               <li><strong>PBKDF2 Key Derivation:</strong> The password derives a 256-bit cryptographic key using 100,000 SHA-256 iterations to unwrap the Data Encryption Key (DEK).</li>
-              <li><strong>Brute-Force Rate Limiting:</strong> 5 consecutive failed attempts trigger an automatic 15-minute security lockout (HTTP 429).</li>
+              <li><strong>Online & Offline Defenses:</strong> Acknowledges finite PIN entropy (~10^12 combinations); defended online by sliding-window rate limiters (5 failed attempts -> 15 min lockout) and offline by salted PBKDF2.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 11: Multi-Tenancy & RBAC -->
+    <div class="slide">
+      <div class="kicker">Multi-Tenancy &amp; RBAC</div>
+      <div class="slide-title">Authentication, Authorization &amp; Tenant Isolation</div>
+      <div class="slide-subtitle">Architectural barriers guaranteeing strict multi-tenant privacy across advisory practices.</div>
+      <div class="content-area">
+        <div class="col-half">
+          <img class="screenshot-img" src="visual-audit/security/11-cross-ria-denied-foreign-client.png" data-fallback="docs/visual-audit/security/11-cross-ria-denied-foreign-client.png" onerror="if(!this.dataset.retried){this.dataset.retried='1';this.src=this.dataset.fallback;}" alt="Tenant Isolation">
+          <div class="caption">Figure 11.1: Security Test Evidence — Cross-tenant client access attempt rejected with HTTP 403 Forbidden.</div>
+        </div>
+        <div class="col-half">
+          <div class="card">
+            <h3>Tenancy Invariants & Controls</h3>
+            <ul>
+              <li><strong>Firm Tenancy Scoping:</strong> Every database query for clients, mandates, and audit logs is strictly partitioned by authenticated firm ID (req.user.firmName).</li>
+              <li><strong>Zero Cross-RIA Data Leakage:</strong> RIA 1 attempting to query Client or Mandate of RIA 2 receives an immediate HTTP 403 Forbidden with zero data disclosure.</li>
+              <li><strong>Role-Based Access Control (RBAC):</strong> Strict segregation across sebi-ria, hni-client, compliance_officer, admin, and guest personas.</li>
+              <li><strong>Privilege Escalation Defense:</strong> Client users navigating to advisor creation or billing routes are intercepted by React Router ProtectedRoute and Express middleware.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 12: Cryptographic Core -->
+    <div class="slide">
+      <div class="kicker">Cryptographic Core</div>
+      <div class="slide-title">Data Security Architecture &amp; Dual-Envelope Encryption</div>
+      <div class="slide-subtitle">Institutional cryptographic defense protecting financial mandates at rest and in transit.</div>
+      <div class="content-area">
+        <div class="card" style="flex: 1;">
+          <h3>Payload Encryption</h3>
+          <ul>
+            <li><strong>Algorithm:</strong> AES-256-GCM</li>
+            <li><strong>Key:</strong> Unique 256-bit random Data Encryption Key (DEK) per mandate.</li>
+            <li><strong>IV:</strong> 12-byte random initialization vector.</li>
+            <li><strong>Auth Tag:</strong> 16-byte authentication tag ensuring ciphertext integrity and anti-tampering.</li>
+          </ul>
+        </div>
+        <div class="card" style="flex: 1;">
+          <h3 style="color: var(--indigo);">Dual Key Wrapping</h3>
+          <ul>
+            <li><strong>Server Wrapping:</strong> DEK encrypted with isolated Server Master Key (SERVER_MASTER_KEY) via AES-256-GCM for RIA dashboard access.</li>
+            <li><strong>Client Wrapping:</strong> DEK encrypted with key derived from PBKDF2(PAN_last_4 + DOB, salt, 100,000 rounds).</li>
+            <li><strong>Zero Plaintext:</strong> Neither plaintext DEK nor client password stored in DB.</li>
+          </ul>
+        </div>
+        <div class="card" style="flex: 1;">
+          <h3 style="color: var(--emerald);">Transit &amp; Storage</h3>
+          <ul>
+            <li><strong>Magic Token Hashing:</strong> 256-bit raw token stored in DB strictly as SHA-256 digest (magicTokenHash).</li>
+            <li><strong>In-Transit Security:</strong> Forced TLS 1.3 with Helmet HSTS (1-year max-age: 31,536,000 seconds).</li>
+            <li><strong>Zero Secret Logs:</strong> Passwords, OTPs, and bearer tokens sanitized from all logs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 13: OTP Verification -->
+    <div class="slide">
+      <div class="kicker">Consent Verification</div>
+      <div class="slide-title">OTP &amp; Consent Integrity: Anti-Tamper Authorization</div>
+      <div class="slide-subtitle">Statutory verification guaranteeing explicit non-discretionary consent.</div>
+      <div class="content-area">
+        <div class="col-half">
+          <img class="screenshot-img" src="visual-audit/security/06-client-otp-modal.png" data-fallback="docs/visual-audit/security/06-client-otp-modal.png" onerror="if(!this.dataset.retried){this.dataset.retried='1';this.src=this.dataset.fallback;}" alt="OTP Modal">
+          <div class="caption">Figure 13.1: 6-Digit Mobile OTP Verification Modal with 5-minute statutory countdown.</div>
+        </div>
+        <div class="col-half">
+          <div class="card">
+            <h3>Statutory Authorization Safeguards</h3>
+            <ul>
+              <li><strong>Mandatory Declarations:</strong> Clients must actively check 3 statutory declarations (Regulation 19 Informed Consent, Capital Gains Acceptance, Section 63 BSA Electronic Evidence).</li>
+              <li><strong>Dynamic 6-Digit OTP:</strong> Generated via CSPRNG with 5-minute TTL; delivered via registered email and in-app display (SMS disabled by policy; WhatsApp roadmap).</li>
+              <li><strong>Brute-Force Lockout:</strong> Maximum 3 verification attempts permitted. A 3rd failed attempt immediately locks verification and burns the token (HTTP 429).</li>
+              <li><strong>Single-Use Atomic Revocation:</strong> The instant consent succeeds, the magic token is burned. Re-accessing the URL returns HTTP 410 Gone, preventing replay attacks.</li>
             </ul>
           </div>
         </div>
@@ -346,23 +552,65 @@
     <!-- SLIDE 14: Audit Trail -->
     <div class="slide">
       <div class="kicker">Audit Infrastructure</div>
-      <div class="slide-title">Audit Trail & Compliance Evidence: Cryptographic Proof</div>
-      <div class="slide-subtitle">Chained SHA-256 audit ledger meeting Section 65B and Regulation 19 standards.</div>
+      <div class="slide-title">Audit Trail &amp; Compliance Evidence: Cryptographic Proof</div>
+      <div class="slide-subtitle">Chained SHA-256 audit ledger meeting Section 63 BSA and SEBI Regulation 19 standards.</div>
       <div class="content-area">
         <div class="col-half">
-          <img class="screenshot-img" src="../docs/visual-audit/mandate-security/06_consent_locked_evidence.png" alt="Compliance Receipt">
-          <div class="caption">Figure 14.1: Section 65B Indian Evidence Act Compliance Receipt issued upon successful consent.</div>
+          <img class="screenshot-img" src="visual-audit/mandate-security/06_consent_locked_evidence.png" data-fallback="docs/visual-audit/mandate-security/06_consent_locked_evidence.png" onerror="if(!this.dataset.retried){this.dataset.retried='1';this.src=this.dataset.fallback;}" alt="Compliance Receipt">
+          <div class="caption">Figure 14.1: Section 63 BSA / Section 65B Compliance Receipt issued upon successful consent.</div>
         </div>
         <div class="col-half">
           <div class="card">
             <h3>Legal Admissibility & Hash Chaining</h3>
             <ul>
               <li><strong>Forward Hash Chaining:</strong> Each log entry hashes the previous record: payloadHash = SHA256(prevHash + timestamp + event + payload). Any retroactive tampering breaks the entire chain.</li>
-              <li><strong>Section 65B Certificate:</strong> Captures client device IP (49.36.110.12), browser User-Agent, exact IST timestamp, and masked PAN (AB*****4F).</li>
-              <li><strong>5-Year Regulatory Preservation:</strong> Designed to satisfy SEBI Regulation 19 mandatory 5-year retention requirements.</li>
+              <li><strong>Section 63 BSA Certificate:</strong> Captures client device IP (RFC 5737 203.0.113.12), browser User-Agent, exact IST timestamp, and masked PAN (XXXXX1234F).</li>
+              <li><strong>5-Year Regulatory Preservation:</strong> Designed to satisfy SEBI Regulation 19 mandatory 5-year retention requirements for investment advice and rationale.</li>
               <li><strong>Verified Disaster Recovery:</strong> Non-destructive drill restored 1,460 audit logs with zero broken hash links.</li>
             </ul>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 15: Mandate Lifecycle -->
+    <div class="slide">
+      <div class="kicker">State Machine</div>
+      <div class="slide-title">Mandate Lifecycle &amp; State Model</div>
+      <div class="slide-subtitle">Strict server-enforced state transitions with zero direct status manipulation.</div>
+      <div class="content-area">
+        <div class="card" style="flex: 1;">
+          <pre class="code-diagram">               ┌────────────────────────────────────────────────────────┐
+               │                                                        │
+               ▼                                                        │
+          ┌─────────┐            RIA Dispatches Link       ┌──────────┐ │
+          │  DRAFT  │ ───────────────────────────────────> │   SENT   │ │
+          └─────────┘                                      └──────────┘ │
+               │                                                │       │
+               │                                                │ Client Inputs
+               │                                                │ PAN + DOB Password
+               │                                                ▼       │
+               │                                           ┌──────────┐ │
+               │                                           │  VIEWED  │ │ (In Review)
+               │                                           └──────────┘ │
+               │                                                │       │
+               │                                                │ 1. Accept Declarations
+               │ 48-Hour Cutoff                                 │ 2. Verify 6-Digit OTP
+               │ Elapsed                                        ▼       │
+               │                                           ┌───────────┐│
+               ├─────────────────────────────────────────> │ CONSENTED ││ (Immutable Lock)
+               │                                           └───────────┘│
+               │                                                        │
+               │ Advisory Revocation / Market Drift                     │
+               ▼                                                        │
+          ┌─────────┐                                                   │
+          │ REVOKED │ &lt;─────────────────────────────────────────────────┘ (Manual RIA Revoke)
+          └─────────┘
+               ▲
+               │ Cutoff Elapsed Prior to Consent
+          ┌─────────┐
+          │ EXPIRED │ (48h Window Elapsed)
+          └─────────┘</pre>
         </div>
       </div>
     </div>
@@ -374,19 +622,207 @@
       <div class="slide-subtitle">Why in-app discussion is vital for client trust, but legally distinct from trade consent.</div>
       <div class="content-area">
         <div class="col-half">
-          <img class="screenshot-img" src="../docs/visual-audit/mandate-security/04_client_chat_question.png" alt="Mandate Chat">
+          <img class="screenshot-img" src="visual-audit/mandate-security/04_client_chat_question.png" data-fallback="docs/visual-audit/mandate-security/04_client_chat_question.png" onerror="if(!this.dataset.retried){this.dataset.retried='1';this.src=this.dataset.fallback;}" alt="Mandate Chat">
           <div class="caption">Figure 16.1: Rohan posts an inquiry regarding Tata Motors in the password-protected chat rail.</div>
         </div>
         <div class="col-half">
           <div class="card">
-            <h3 style="color: var(--rose);">Statutory Separation of Communication & Consent</h3>
+            <h3 style="color: var(--rose);">Statutory Separation of Communication &amp; Consent</h3>
             <ul>
               <li><strong>Real-Time Contextual Discussion:</strong> Allows clients to ask specific allocation or yield questions directly within the mandate context, eliminating scattered WhatsApp threads.</li>
               <li><strong>Complete Audit Archiving:</strong> Every message posted by client or advisor is committed to the immutable audit log under CHAT_MESSAGE_SENT.</li>
               <li><strong>⚠️ CHAT DOES NOT CONSTITUTE CONSENT:</strong> Under SEBI Regulation 19, informal dialogue ('Yes go ahead', 'Proceed') CANNOT authorize transactions.</li>
-              <li><strong>Uncompromising Consent Rail:</strong> Trade execution strictly requires formal statutory declaration checkboxes followed by 6-digit Mobile OTP verification.</li>
+              <li><strong>Uncompromising Consent Rail:</strong> Trade authorization strictly requires formal statutory declaration checkboxes followed by 6-digit OTP verification.</li>
             </ul>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 17: Tax Engine -->
+    <div class="slide">
+      <div class="kicker">Tax Engine</div>
+      <div class="slide-title">Tax-Impact Transparency &amp; Client Decision Support</div>
+      <div class="slide-subtitle">Eliminating investor tax shocks with pre-trade Finance Act 2024 calculations.</div>
+      <div class="content-area">
+        <div class="card" style="flex: 1;">
+          <h3>Finance Act 2024 Statutory Engine</h3>
+          <ul>
+            <li><strong>Short-Term Capital Gains (STCG):</strong><br>20.0% (Section 111A, Income Tax Act)<br>Applied to ₹55,000 gain on Tata Motors = ₹11,000</li>
+            <li><strong>Long-Term Capital Gains (LTCG):</strong><br>12.5% (Section 112A, Income Tax Act)<br>Applied above annual aggregate ₹1,25,000 exemption limit.<br>₹1,25,000 gain on HDFC Bank is exempt = ₹0</li>
+            <li><strong>Health &amp; Education Cess:</strong> 4% on base tax = ₹440</li>
+            <li><strong>Estimated Rupee Tax Liability:</strong> ₹11,440</li>
+            <li><strong>Tax Disclaimers:</strong> Excludes individual surcharges (up to 15% on equity capital gains) and prior carried-forward losses. Decision-support estimate only.</li>
+          </ul>
+        </div>
+        <div class="card" style="flex: 1;">
+          <h3 style="color: var(--amber);">Advance Tax Planning &amp; Caveats (Sec 208 &amp; 234C)</h3>
+          <p style="margin-bottom: 8px;">Advance tax applies when estimated net annual tax liability reaches or exceeds ₹10,000, displaying statutory installment deadlines:</p>
+          <ul>
+            <li><strong>1st Installment (15%):</strong> On or before 15th June</li>
+            <li><strong>2nd Installment (45%):</strong> On or before 15th September</li>
+            <li><strong>3rd Installment (75%):</strong> On or before 15th December</li>
+            <li><strong>4th Installment (100%):</strong> On or before 15th March</li>
+            <li><strong>Proviso to Section 234C:</strong> Relieves penal interest for installments prior to the capital gains realization date if remaining tax is paid in subsequent installments.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 18: Multilingual Localization -->
+    <div class="slide">
+      <div class="kicker">Accessibility &amp; i18n</div>
+      <div class="slide-title">Multilingual Localization Capability: 8 Languages</div>
+      <div class="slide-subtitle">Delivering advisory transparency in regional and international languages.</div>
+      <div class="content-area">
+        <div class="card" style="flex: 1;">
+          <h3>Multilingual Architecture &amp; Legal Formatting Invariants</h3>
+          <ul style="font-size: 13px; line-height: 1.8; margin-top: 10px;">
+            <li><strong>8 Supported Languages:</strong> English (en), Hindi (hi), Tamil (ta), Bengali (bn), Gujarati (gu), German (de), Japanese (ja), Korean (ko).</li>
+            <li><strong>Universal Accessibility:</strong> HNIs review proposals, disclosures, and receipts in their preferred language.</li>
+            <li><strong>Standardized Financial Numerals:</strong> Under regulatory standards, all rupee amounts (₹), trade quantities, percentages, and ISIN codes remain strictly in ASCII English numerals across all locales, eliminating ambiguity during legal disputes.</li>
+            <li><strong>Profile Language Selection:</strong> Advisers and clients can switch languages seamlessly via navigation bar or profile settings.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 19: Technical Architecture -->
+    <div class="slide">
+      <div class="kicker">System Topology</div>
+      <div class="slide-title">Technical Architecture Diagram: Security &amp; Service Boundaries</div>
+      <div class="slide-subtitle">High-level system topology illustrating frontend, API, security engine, and storage tiers.</div>
+      <div class="content-area">
+        <div class="card" style="flex: 1;">
+          <pre class="code-diagram">┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                                   CLIENT &amp; ADVISOR CLIENTS                             │
+│   • Desktop Advisory Hub (React 18 / MUI / Vite)       • Mobile Client Review (360px)  │
+└───────────────────────────────────────────▲────────────────────────────────────────────┘
+                                            │ HTTPS / TLS 1.3 (Helmet HSTS)
+┌───────────────────────────────────────────▼────────────────────────────────────────────┐
+│                             API GATEWAY &amp; SECURITY MIDDLEWARE                          │
+│   • Express REST API (Node.js ESM)                     • CORS Strict Whitelist         │
+│   • JWT Auth &amp; TOTP Staff MFA                          • Distributed Sliding Rate Limit│
+│   • Tenancy Scoping Middleware (Firm Isolation)        • Input Sanitization &amp; Masking  │
+└───────────────────────────────────────────▲────────────────────────────────────────────┘
+                                            │
+┌───────────────────────────────────────────▼────────────────────────────────────────────┐
+│                             FINCONSENT CORE BUSINESS ENGINES                           │
+│   • Mandate State Machine Engine                       • Finance Act 2024 Tax Engine   │
+│   • Dual-Envelope AES-256-GCM Crypto Engine            • PBKDF2 Client Key Derivation  │
+│   • In-App Mandate Clarification Chat Rail             • OTP Verification &amp; Lockout    │
+└───────────────────────────────────────────▲────────────────────────────────────────────┘
+                                            │
+┌───────────────────────────────────────────▼────────────────────────────────────────────┐
+│                               PERSISTENT DATA &amp; AUDIT TIERS                            │
+│   • MongoDB Atlas (AWS Mumbai ap-south-1)              • Dedicated SERVER_MASTER_KEY   │
+│   • Append-Only SHA-256 Chained Audit Ledger           • Point-in-Time Recovery (PITR) │
+└────────────────────────────────────────────────────────────────────────────────────────┘</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 20: Threat Scenarios -->
+    <div class="slide">
+      <div class="kicker">Threat Modeling</div>
+      <div class="slide-title">Security Threat Scenarios &amp; Evidenced Protections</div>
+      <div class="slide-subtitle">Proven runtime boundary enforcement against malicious and accidental vectors.</div>
+      <div class="content-area">
+        <div class="col-half">
+          <img class="screenshot-img" src="visual-audit/security/17-otp-lockout-after-3-failures.png" data-fallback="docs/visual-audit/security/17-otp-lockout-after-3-failures.png" onerror="if(!this.dataset.retried){this.dataset.retried='1';this.src=this.dataset.fallback;}" alt="OTP Lockout">
+          <div class="caption">Figure 20.1: Security Test Evidence — OTP lockout engaged after 3 failed verification attempts.</div>
+        </div>
+        <div class="col-half">
+          <div class="card">
+            <h3>Threat Modeling &amp; Defenses</h3>
+            <ul>
+              <li><strong>Credential Stuffing &amp; OTP Brute-Force:</strong> Sliding-window rate limiters block rapid bursts; 3 failed OTPs permanently lock the token (HTTP 429).</li>
+              <li><strong>Cross-Tenant IDOR:</strong> Tampering with mandate or client UUIDs across RIA practices rejected with HTTP 403 Forbidden.</li>
+              <li><strong>Expired / Replay Attacks:</strong> Opening links past the 48-hour cutoff or after successful consent returns HTTP 410 Gone / Revoked.</li>
+              <li><strong>Token Sniffing &amp; Database Breaches:</strong> Plaintext magic tokens are never persisted in the database (stored strictly as SHA-256 hashes).</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 21: Operational Validation -->
+    <div class="slide">
+      <div class="kicker">Evidence Base</div>
+      <div class="slide-title">Operational &amp; Testing Validation: Grounded in Real Runs</div>
+      <div class="slide-subtitle">Concrete evidence demonstrating zero regressions across automated and browser tests.</div>
+      <div class="content-area">
+        <div class="card" style="flex: 1;">
+          <div style="font-size: 26px; font-weight: 800; color: var(--emerald); margin-bottom: 4px;">200 / 200</div>
+          <div style="font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 8px;">Vitest Tests Passing</div>
+          <p>15 automated test suites running across tax calculation, security, RBAC, i18n, and API regressions (100% pass rate).</p>
+        </div>
+        <div class="card" style="flex: 1;">
+          <div style="font-size: 26px; font-weight: 800; color: var(--indigo); margin-bottom: 4px;">81 Images</div>
+          <div style="font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 8px;">Browser Visual Audit</div>
+          <p>42 baseline, 25 security, and 14 mandate-security screenshots verifying desktop and mobile viewports.</p>
+        </div>
+        <div class="card" style="flex: 1;">
+          <div style="font-size: 26px; font-weight: 800; color: var(--navy); margin-bottom: 4px;">1,460 Logs</div>
+          <div style="font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 8px;">Disaster Recovery Drill</div>
+          <p>Synthetic non-destructive restore drill verified 1,460 audit logs with zero broken cryptographic hash links.</p>
+        </div>
+        <div class="card" style="flex: 1;">
+          <div style="font-size: 26px; font-weight: 800; color: var(--amber); margin-bottom: 4px;">0 Breaks</div>
+          <div style="font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 8px;">SHA-256 Integrity</div>
+          <p>Full mathematical continuity verified across all state changes, guaranteeing tamper-evident audit records.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 22: Hosting Architecture -->
+    <div class="slide">
+      <div class="kicker">Infrastructure</div>
+      <div class="slide-title">Deployment &amp; Hosting Architecture: Indian Data Sovereignty</div>
+      <div class="slide-subtitle">Compliance with SEBI Cybersecurity Framework (CSCRF) and DPDP directives.</div>
+      <div class="content-area">
+        <div class="card" style="flex: 1;">
+          <h3>Infrastructure Specifications</h3>
+          <ul style="font-size: 13px; line-height: 1.8; margin-top: 10px;">
+            <li><strong>Territorial Data Residency:</strong> In strict compliance with SEBI CSCRF and DPDP Act directives, all primary databases, cryptographic keys, and audit ledgers reside exclusively in AWS Asia Pacific (Mumbai) region (ap-south-1).</li>
+            <li><strong>Multi-Stage Production Containers:</strong> Multi-stage Docker build packaging optimized Vite static assets and hardened Express Node.js runtime.</li>
+            <li><strong>Orchestration &amp; Health:</strong> Container architecture with production environment boundaries and automated /api/health checks.</li>
+            <li><strong>Key Isolation:</strong> Envelope Server Master Key (SERVER_MASTER_KEY) isolated from application authentication secrets (JWT_SECRET).</li>
+            <li><strong>Zero Third-Party Tracking:</strong> Zero external advertising pixels, external analytics beacons, or overseas CDN assets, ensuring complete client privacy.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 23: Business Value -->
+    <div class="slide">
+      <div class="kicker">Business Impact</div>
+      <div class="slide-title">Business Value &amp; Practice Impact for Advisory Firms</div>
+      <div class="slide-subtitle">Quantifiable efficiency, compliance security, and investor satisfaction gains.</div>
+      <div class="content-area">
+        <div class="card" style="flex: 1;">
+          <h3 style="color: var(--emerald);">Inspection-Ready Compliance</h3>
+          <ul>
+            <li>Downloadable Section 63 BSA / Section 65B compliance dossiers provide contemporaneous regulatory evidence.</li>
+            <li>Replaces weeks of manual audit trail compilation with instantaneous verification.</li>
+            <li>Safeguards RIA practice and principal officers against claims of unauthorized or discretionary trading.</li>
+          </ul>
+        </div>
+        <div class="card" style="flex: 1;">
+          <h3 style="color: var(--indigo);">Pre-Trade Tax Transparency</h3>
+          <ul>
+            <li>Complete pre-trade capital gains tax visibility eliminates investor surprise.</li>
+            <li>Proactively alerts clients to quarterly advance tax obligations under Section 208 and 234C.</li>
+            <li>Elevates advisory relationship from administrative chasing to high-trust strategic wealth planning.</li>
+          </ul>
+        </div>
+        <div class="card" style="flex: 1;">
+          <h3 style="color: var(--navy);">Streamlined Mobile Turnaround</h3>
+          <ul>
+            <li>Accelerates client review and consent turnaround to under 2 hours on mobile.</li>
+            <li>Minimizes market slippage during high-volatility rebalancing windows.</li>
+            <li>Secure password-protected magic link delivery without requiring client app installation.</li>
+          </ul>
         </div>
       </div>
     </div>
@@ -413,8 +849,8 @@
             </tr>
             <tr>
               <td><strong>Capital Gains Tax</strong></td>
-              <td>Post-trade surprise tax bill; penal interest under Sections 234B/C.</td>
-              <td>Pre-trade Union Budget 2024 calculation with quarterly advance tax alert.</td>
+              <td>Post-trade surprise tax bill; penal interest under Sections 208 &amp; 234B/C.</td>
+              <td>Pre-trade Finance Act 2024 calculation with quarterly advance tax alert.</td>
             </tr>
             <tr>
               <td><strong>Client Security</strong></td>
@@ -422,28 +858,158 @@
               <td>Dual-envelope AES-256-GCM encryption with PAN+DOB client password gate.</td>
             </tr>
             <tr>
-              <td><strong>Audit & Legal Trail</strong></td>
-              <td>Scattered screenshots and PDFs; inadmissible under Section 65B.</td>
-              <td>Append-only forward SHA-256 ledger emitting certified Section 65B compliance dossier.</td>
+              <td><strong>Audit &amp; Legal Trail</strong></td>
+              <td>Scattered screenshots and PDFs; inadmissible under Section 63 BSA.</td>
+              <td>Append-only forward SHA-256 ledger emitting certified Section 63 BSA compliance dossier.</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- SLIDE 25: Closing -->
+    <!-- SLIDE 25: Appendix A -->
     <div class="slide">
-      <div class="kicker">Next Steps</div>
-      <div class="slide-title">Conclusion & Next Steps: Deploying FinConsent</div>
-      <div class="slide-subtitle">Accelerating advisory compliance, investor trust, and practice scalability.</div>
+      <div class="kicker">Appendix A</div>
+      <div class="slide-title">Technical Deep-Dive: Cryptographic Invariants &amp; Key Derivation</div>
+      <div class="slide-subtitle">Formal mathematical specifications for envelope encryption and PBKDF2 KDF.</div>
       <div class="content-area">
         <div class="card" style="flex: 1;">
-          <h3>Implementation & Onboarding Path</h3>
-          <ul style="font-size: 13px; line-height: 1.8; margin-top: 12px;">
-            <li><strong>1. Immediate Compliance Upgrade:</strong> Onboard RIA practice in under 10 minutes; configure SEBI INA registration number and firm compliance contacts.</li>
-            <li><strong>2. Client Roster Migration:</strong> Import advisory clients with validated PANs, mobile numbers, and DOB attributes.</li>
-            <li><strong>3. Pilot Rebalancing Run:</strong> Execute live mandates with select client families to demonstrate pre-trade tax transparency and frictionless mobile OTP consent.</li>
-            <li><strong>4. Regulatory Peace of Mind:</strong> Rest assured knowing every trade authorization is cryptographically preserved in AWS Mumbai under Section 65B standards.</li>
+          <h3>Cryptographic Implementation Specifications</h3>
+          <ul style="font-size: 13px; line-height: 1.8; margin-top: 10px;">
+            <li><strong>Cipher:</strong> AES-256-GCM (Galois/Counter Mode) with 12-byte random IV and 16-byte authentication tag.</li>
+            <li><strong>Key Derivation Function:</strong> PBKDF2 with SHA-256 digest, 100,000 rounds in production (1,000 in test mode), and 16-byte random salt.</li>
+            <li><strong>Key Derivation Input:</strong> Normalized string concatenation of PAN last 4 digits + DOB in DDMMYYYY format.</li>
+            <li><strong>Dual Wrapping:</strong> Server DEK wrapped with isolated SERVER_MASTER_KEY; Client DEK wrapped with Client Derived Key.</li>
+            <li><strong>Invariant:</strong> Server never stores client plaintext password or unencrypted DEK in database.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 26: Appendix B -->
+    <div class="slide">
+      <div class="kicker">Appendix B</div>
+      <div class="slide-title">Technical Deep-Dive: Role-Based Authorization &amp; Tenant Scoping</div>
+      <div class="slide-subtitle">Detailed API permission matrix across all platform roles.</div>
+      <div class="content-area">
+        <table class="table-container">
+          <thead>
+            <tr>
+              <th>API Route / Resource</th>
+              <th>RIA (sebi-ria)</th>
+              <th>Client (hni-client)</th>
+              <th>Compliance (compliance_officer)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>/api/mandates (POST / Create)</strong></td>
+              <td>ALLOWED (Scoped to firm)</td>
+              <td>FORBIDDEN (HTTP 403)</td>
+              <td>FORBIDDEN (Read-only)</td>
+            </tr>
+            <tr>
+              <td><strong>/api/mandates/:id/dispatch</strong></td>
+              <td>ALLOWED (Own mandates only)</td>
+              <td>FORBIDDEN (HTTP 403)</td>
+              <td>FORBIDDEN (Read-only)</td>
+            </tr>
+            <tr>
+              <td><strong>/api/public/mandates/:t/unlock</strong></td>
+              <td>N/A (Uses dashboard)</td>
+              <td>ALLOWED (Valid password)</td>
+              <td>N/A (Uses compliance hub)</td>
+            </tr>
+            <tr>
+              <td><strong>/api/public/mandates/:t/verify-otp</strong></td>
+              <td>FORBIDDEN</td>
+              <td>ALLOWED (Valid 6-digit OTP)</td>
+              <td>FORBIDDEN</td>
+            </tr>
+            <tr>
+              <td><strong>/api/requests (Scrutiny)</strong></td>
+              <td>ALLOWED (Submit requests)</td>
+              <td>ALLOWED (View own requests)</td>
+              <td>ALLOWED (Full Adjudication)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SLIDE 27: Appendix C -->
+    <div class="slide">
+      <div class="kicker">Appendix C</div>
+      <div class="slide-title">Technical Deep-Dive: Audit Schema &amp; Section 63 BSA Admissibility</div>
+      <div class="slide-subtitle">Evidentiary record structures required by Indian legal standards.</div>
+      <div class="content-area">
+        <div class="card" style="flex: 1;">
+          <h3>Section 63 BSA Electronic Evidence Mandatory Attributes</h3>
+          <p style="margin-bottom: 8px;">Under Section 63 of Bharatiya Sakshya Adhiniyam, 2023 (BSA) and Section 65B of erstwhile Indian Evidence Act, secondary electronic records require:</p>
+          <ul style="font-size: 12.5px; line-height: 1.7;">
+            <li><strong>1. Origin Identification:</strong> Client IP Address (RFC 5737 203.0.113.12) and browser User-Agent recorded at execution time.</li>
+            <li><strong>2. Synchronized Timestamp:</strong> Server-side NTP timestamping localized to Indian Standard Time (IST).</li>
+            <li><strong>3. Hash Integrity Seal:</strong> SHA-256 payloadHash computed over the immutable consent certificate.</li>
+            <li><strong>4. Device Custody Proof:</strong> Evidence that the computer system was operating properly during record generation.</li>
+            <li><strong>5. Regulation 19 Admissibility:</strong> Cryptographically chained forward hashes guarantee zero retroactive modifications.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 28: Appendix D -->
+    <div class="slide">
+      <div class="kicker">Appendix D</div>
+      <div class="slide-title">Operational Considerations: Implemented State vs. Roadmap</div>
+      <div class="slide-subtitle">Clear demarcation between current production capabilities and future roadmap milestones.</div>
+      <div class="content-area">
+        <div class="card" style="flex: 1;">
+          <h3 style="color: var(--emerald);">Implemented Production Capabilities</h3>
+          <ul>
+            <li>Full non-discretionary mandate formulation &amp; tax engine.</li>
+            <li>AES-256-GCM dual-envelope encryption &amp; PBKDF2 password gate.</li>
+            <li>256-bit magic links with SHA-256 database hashing &amp; 48h cutoff.</li>
+            <li>In-app mandate chat with explicit non-consent separation.</li>
+            <li>Section 63 BSA electronic compliance receipts with SHA-256 hash chaining.</li>
+            <li>Multi-tenant isolation, RBAC, staff TOTP MFA, and distributed rate limiting.</li>
+            <li>8 supported languages with English ASCII numerals.</li>
+          </ul>
+        </div>
+        <div class="card" style="flex: 1;">
+          <h3 style="color: var(--indigo);">Documented Scope &amp; Future Roadmap</h3>
+          <ul>
+            <li><strong>Production TRAI DLT SMS Gateway:</strong> Current setup delivers OTP via email and in-app display (SMS disabled by policy); commercial SMS requires onboarding a TRAI DLT-registered aggregator.</li>
+            <li><strong>WhatsApp Channel Delivery:</strong> Currently dispatched via secure email magic links; direct WhatsApp Business API delivery is on the product roadmap.</li>
+            <li><strong>CloudHSM Key Management:</strong> Envelope Server Master Key isolated via environment config; AWS CloudHSM or KMS recommended for institutional banking tiers.</li>
+            <li><strong>Direct Broker Execution:</strong> FinConsent intentionally halts at locked statutory consent; execution is handled by client/broker terminal (API execution on roadmap).</li>
+            <li><strong>External RFC 3161 Time Stamping:</strong> Anchoring ledger roots to an external Time Stamping Authority (TSA).</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 29: Pilot Proposal -->
+    <div class="slide">
+      <div class="kicker">Pilot Proposal &amp; Next Steps</div>
+      <div class="slide-title">Institutional Pilot Proposal &amp; Implementation Roadmap</div>
+      <div class="slide-subtitle">Structured 4-week pilot deployment for fee-only advisory practices with verified commercial terms.</div>
+      <div class="content-area">
+        <div class="card" style="flex: 1;">
+          <h3>4-Week Phased Implementation Roadmap</h3>
+          <ul>
+            <li><strong>Week 1: Practice Setup &amp; Governance Configuration</strong><br>Configure SEBI INA registration number (e.g. INA000088921), firm compliance contacts, and staff TOTP MFA.</li>
+            <li><strong>Week 2: Client Roster Ingestion &amp; Masked Verification</strong><br>Import advisory client profiles with validated PAN syntax (XXXXX1234F), DOB attributes, and configure practice rebalancing templates.</li>
+            <li><strong>Week 3: Controlled Pilot Rebalancing Run</strong><br>Execute live mandates with 10–25 client families; demonstrate pre-trade tax visibility and frictionless mobile OTP consent.</li>
+            <li><strong>Week 4: Compliance Officer Review &amp; Production Rollout</strong><br>Audit Section 63 BSA compliance receipts with firm Compliance Officer; transition full practice to automated FinConsent workflows.</li>
+          </ul>
+        </div>
+        <div class="card" style="flex: 1;">
+          <h3 style="color: var(--indigo);">Verified Commercial Terms &amp; Pilot Inquiries</h3>
+          <ul>
+            <li><strong>Verified Pro Practice Tier:</strong> ₹2,499 / month (+ 18% GST statutory cess)<br>Includes up to 100 active mandates/month, unlimited client roster, complete tax engine, and statutory 5-year cryptographic audit ledger retention.</li>
+            <li><strong>Zero Execution Surcharges:</strong> FinConsent charges no basis points (bps) or AUM percentages.</li>
+            <li><strong>Synthetic Demonstration Data:</strong> All demonstration credentials and client examples are synthetic.</li>
+            <li><strong>Practice Inquiries &amp; Pilot Onboarding:</strong><br>Official Inquiries: <a href="mailto:compliance@finconsent.in" style="color: var(--indigo); text-decoration: none; font-weight: 600;">compliance@finconsent.in</a><br>Demonstration Workspace: Prudent Wealth Advisory (SEBI Reg: INA000088921)</li>
           </ul>
         </div>
       </div>
@@ -453,23 +1019,38 @@
 
   <div class="controls">
     <button class="btn" id="prev-btn">◀ Previous</button>
-    <span id="slide-indicator">Slide 1 of 10</span>
+    <select class="select-dropdown" id="slide-select"></select>
     <button class="btn" id="next-btn">Next ▶</button>
     <button class="btn" id="full-btn">⛶ Fullscreen</button>
   </div>
 
   <script>
     const slides = document.querySelectorAll('.slide');
-    const indicator = document.getElementById('slide-indicator');
+    const select = document.getElementById('slide-select');
     let currentIdx = 0;
 
+    // Populate dropdown
+    slides.forEach((s, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      const titleEl = s.querySelector('.slide-title') || s.querySelector('h1');
+      const titleText = titleEl ? titleEl.textContent : `Slide ${i + 1}`;
+      opt.textContent = `Slide ${i + 1}: ${titleText.substring(0, 36)}`;
+      select.appendChild(opt);
+    });
+
     function showSlide(idx) {
+      if (idx < 0 || idx >= slides.length) return;
       slides.forEach((s, i) => {
         s.classList.toggle('active', i === idx);
       });
-      indicator.textContent = `Slide ${idx + 1} of ${slides.length}`;
+      select.value = idx;
       currentIdx = idx;
     }
+
+    select.addEventListener('change', (e) => {
+      showSlide(parseInt(e.target.value, 10));
+    });
 
     document.getElementById('prev-btn').addEventListener('click', () => {
       if (currentIdx > 0) showSlide(currentIdx - 1);

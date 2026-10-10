@@ -14,3 +14,8 @@
 20261009-051500-fix-api-regressions | End-to-end API regression audit, contract fix, and full verification suite | shipped
 20261009-125500-ui-revamp-styling-polish | Fullstack Builder UI revamp, visual audit, and styling polish | shipped
 20261009-145500-documentation-and-presentation | Documentation overhaul, narrative user journey, and 29-slide executive PowerPoint presentation | shipped
+20261009-185443-regenerate-processflow-graphviz | Regenerated statutory ProcessFlow diagram using Graphviz WASM and synchronized all presentation decks and guides | shipped
+20261010-095703-fix-website-factual-legal-tax-security-a | Remediate website legal, tax, security, compliance and data consistency | shipped
+20261010-104659-regenerate-client-presentation-remediate | Regenerate client presentation PPTX and HTML with complete legal, tax, security, and pilot proposal remediations | shipped
+20261010-110627-fix-prod-deploy-mongo-render | Fix Render port binding, MongoDB Atlas connectivity, readiness probes, and prevent in-memory fallback | shipped
+

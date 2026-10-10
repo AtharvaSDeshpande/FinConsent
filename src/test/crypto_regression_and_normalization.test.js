@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import crypto from 'node:crypto';
+import { Buffer } from 'node:buffer';
 import app from '../../server/index.js';
 import { dbStore } from '../../server/db/store.js';
 import { runSeed } from '../../server/db/seed.js';

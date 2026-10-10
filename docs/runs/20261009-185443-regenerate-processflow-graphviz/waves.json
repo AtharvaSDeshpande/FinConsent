@@ -1,0 +1,19 @@
+{
+  "mode": "change",
+  "created": "2026-10-09T13:25:28.521Z",
+  "waves": [
+    [
+      "a14-debugger"
+    ],
+    [
+      "a2-designer"
+    ],
+    [
+      "a11-content"
+    ],
+    [
+      "a12-qa",
+      "a13-reviewer"
+    ]
+  ]
+}

@@ -1,50 +1,51 @@
 # FinConsent
 
-**Enterprise Statutory Trade Authorization, Capital Gains Tax Transparency & Tamper-Evident Consent Infrastructure for SEBI-Registered Investment Advisers (RIAs)**
+**Institutional Statutory Advisory Consent, Capital Gains Tax Transparency & Tamper-Evident Record-Keeping Infrastructure for SEBI-Registered Investment Advisers (RIAs)**
 
 [![Tests](https://img.shields.io/badge/Vitest-200%2F200%20Passing%20(15%20Suites)-brightgreen)](#testing--security-validation-evidence)
 [![ESLint](https://img.shields.io/badge/ESLint-0%20errors%20%7C%200%20warnings-brightgreen)](#testing--security-validation-evidence)
-[![SEBI](https://img.shields.io/badge/SEBI-Regulation%2019%20Compliant-blue)](#sebi-regulatory-and-legal-compliance)
-[![Evidence Act](https://img.shields.io/badge/Indian%20Evidence%20Act-Section%2065B%20Certified-indigo)](#sebi-regulatory-and-legal-compliance)
-[![Encryption](https://img.shields.io/badge/Cryptography-AES--256--GCM%20%7C%20PBKDF2-darkblue)](#security--cryptographic-architecture)
+[![SEBI](https://img.shields.io/badge/SEBI-Regulation%2019%20Record--Keeping-blue)](#sebi-regulatory-and-legal-compliance)
+[![Electronic Records](https://img.shields.io/badge/BSA%202023-Section%2063%20Certified-indigo)](#sebi-regulatory-and-legal-compliance)
+[![Cryptography](https://img.shields.io/badge/Cryptography-AES--256--GCM%20%7C%20PBKDF2-darkblue)](#security--cryptographic-architecture)
 [![Data Residency](https://img.shields.io/badge/Data%20Residency-AWS%20Mumbai%20(ap--south--1)-orange)](#deployment--hosting-architecture)
 
 ---
 
 ## Executive Overview
 
-**FinConsent** is an institutional-grade B2B WealthTech platform engineered specifically for Indian SEBI-Registered Investment Advisers (RIAs), compliance directors, and High-Net-Worth Individuals (HNIs). Operating strictly under **Regulation 19 of the SEBI (Investment Advisers) Regulations, 2013**, FinConsent provides an immutable, auditable digital rail for non-discretionary investment advisory workflows.
+**FinConsent** is an institutional B2B WealthTech platform engineered specifically for Indian SEBI-Registered Investment Advisers (RIAs), compliance officers, and advisory clients. Built to support **Regulation 19 of the SEBI (Investment Advisers) Regulations, 2013**, FinConsent provides an auditable, verifiable digital rail for non-discretionary investment advisory workflows.
 
-In India's fee-only advisory landscape, non-discretionary advisers cannot execute securities transactions on behalf of clients without **prior, informed, explicit client authorization**. Traditionally, advisers and clients coordinate rebalancing recommendations across fragmented, non-compliant channels such as WhatsApp chats, email threads, SMS messages, or recorded phone calls. This legacy operational approach exposes advisory firms to severe regulatory penalties, client dispute liabilities, and zero statutory evidentiary protection. Furthermore, following the **Finance Act 2024 (Union Budget 2024)** capital gains tax overhauls, executing portfolio rebalancing without transparent pre-trade tax calculations frequently results in unexpected Short-Term Capital Gains (STCG) and Long-Term Capital Gains (LTCG) tax shocks for clients.
+In India's fee-only advisory framework, non-discretionary investment advisers cannot execute securities transactions on behalf of clients without **prior, documented client consent** and a contemporaneous record of the advice and rationale. Traditionally, advisers and clients coordinate rebalancing recommendations across informal, fragmented channels such as WhatsApp chats, email threads, SMS messages, or unrecorded phone conversations. This legacy approach exposes advisory practices to compliance risk, client disputes, and evidentiary challenges during statutory audits. Furthermore, following statutory capital gains tax adjustments (Finance Act 2024), rebalancing recommendations without pre-trade tax impact visibility can result in unexpected Short-Term Capital Gains (STCG) and Long-Term Capital Gains (LTCG) liabilities for clients.
 
-FinConsent resolves this systemic friction by coupling an automated **Indian Capital Gains & Advance Tax Engine** with a **dual-envelope AES-256-GCM encrypted trade mandate lifecycle**, a scoped in-app mandate clarification chat rail, mandatory client-side password protection, 6-digit Mobile OTP verification, and an append-only **SHA-256 forward-hash chained audit ledger** that satisfies **Section 65B of the Indian Evidence Act, 1872 / Information Technology Act, 2000**.
+FinConsent addresses these operational friction points by pairing an automated **Capital Gains Decision-Support Tax Engine** with an **authenticated AES-256-GCM dual-envelope encrypted mandate lifecycle**, a scoped in-app mandate clarification chat rail, convenience password protection, verification OTP confirmation, and an append-only **SHA-256 forward-hash chained audit ledger** designed to support electronic record requirements under **Section 63 of the Bharatiya Sakshya Adhiniyam, 2023 (BSA)** and **Section 65B of the Indian Evidence Act, 1872**.
 
 ---
 
-## The FinConsent Problem & Regulatory Imperative
+## Advisory Governance & Regulatory Framework
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                               THE LEGACY ADVISORY RISK                                 │
+─────────────────── ADVISORY PRACTICE RISK & MITIGATION MAPPING ─────────────────────────
 ├─────────────────────────────────────────┬──────────────────────────────────────────────┤
-│ Legacy Operational Reality               │ Regulatory & Business Consequence            │
+│ Legacy Informal Practice                │ FinConsent Governance Solution               │
 ├─────────────────────────────────────────┼──────────────────────────────────────────────┤
-│ • Informal approvals over WhatsApp      │ • Disallowed under SEBI Reg 19; fails        │
-│   or unauthenticated email threads.     │   electronic evidence admissibility.         │
-│ • No pre-trade tax visibility; clients  │ • Post-trade tax shock (STCG 20%, LTCG       │
-│   surprised by advance tax penalties.   │   12.5% post-Budget 2024); client churn.     │
-│ • Dispersed documentation across PDFs,  │ • Inability to produce tamper-evident audit  │
-│   spreadsheets, and phone recordings.   │   trails during SEBI regulatory inspections. │
-│ • Discretionary execution risk; advisor │ • Personal liability for advisory directors  │
-│   accused of unauthorized trading.      │   under SEBI inspection scrutiny.            │
+│ • Informal approvals over WhatsApp      │ • Standardized mandate workflow aligned with │
+│   or unauthenticated email threads.     │   SEBI Regulation 19 record-keeping rules.   │
+│ • No pre-trade tax visibility; clients  │ • Pre-computed statutory capital gains       │
+│   surprised by advance tax liabilities. │   transparency (STCG 20%, LTCG 12.5%).       │
+│ • Dispersed documentation across PDFs,  │ • Centralized, tamper-evident audit ledger   │
+│   spreadsheets, and phone recordings.   │   inspectable for 5 statutory years.         │
+│ • Ambiguity regarding client approval   │ • Scoped mandate clarification chat clearly  │
+│   prior to order placement.             │   distinguished from explicit consent.       │
 └─────────────────────────────────────────┴──────────────────────────────────────────────┘
 ```
 
 ### Statutory Regulatory Pillars:
-1. **SEBI (Investment Advisers) Regulations, 2013 — Regulation 19:** Mandates that every non-discretionary RIA maintain comprehensive, time-stamped client records, explicit suitability rationale, investment advice dispatched, and unambiguous client consent preserved for a statutory minimum of **5 years (1,825 days)**.
-2. **Indian Evidence Act, 1872 & IT Act, 2000 — Section 65B:** Electronic consent records are inadmissible in Indian courts and arbitration tribunals unless accompanied by a cryptographically verified electronic certificate identifying device IP, user-agent, server timestamp (IST), and hash integrity.
-3. **Finance Act 2024 Capital Gains Regime:** Immediate statutory tax visibility is vital: Short-Term Capital Gains (STCG) taxed at **20.0%** (Section 111A) and Long-Term Capital Gains (LTCG) taxed at **12.5%** above the statutory ₹1,25,000 exemption (Section 112A).
-4. **Income Tax Act, 1961 — Sections 234B & 234C:** Mandates quarterly advance tax installments when net tax liability exceeds ₹10,000, imposing 1% monthly penal interest for delayed compliance.
+1. **SEBI (Investment Advisers) Regulations, 2013 — Regulation 19:** Mandates that every non-discretionary RIA maintain comprehensive, time-stamped client records, advice rationale, agreements, and client consent records for a statutory minimum period of **5 years (1,825 days)**.
+2. **Bharatiya Sakshya Adhiniyam, 2023 (BSA) — Section 63 / Indian Evidence Act — Section 65B:** Governs the admissibility of electronic records in judicial and regulatory proceedings. FinConsent records capture client device IP, User-Agent, synchronized IST timestamps, and cryptographic hash verification to support electronic record integrity.
+3. **Current Capital Gains Tax Regime (Finance Act 2024):** Computes estimated tax impact under statutory rates: Short-Term Capital Gains (STCG) at **20.0%** (Section 111A) and Long-Term Capital Gains (LTCG) at **12.5%** above the annual statutory aggregate ₹1,25,000 exemption (Section 112A), plus 4% Health & Education Cess. High-income surcharges (up to 15% on equity capital gains) and carried-forward losses are disclaimed as individual tax variables.
+4. **Income-tax Act, 1961 — Advance Tax Planning:** When net annual tax liability is ₹10,000 or more, advance tax provisions apply. Under the proviso to Section 234C, capital gains tax can be deposited in remaining installments without penal interest if realized post-deadline.
+5. **Digital Personal Data Protection Act, 2023 (DPDP Act):** Protects investor personal data with purpose limitation and strict access controls. Section 8(7) accommodates mandatory statutory retention periods, ensuring compliance audit trails are lawfully maintained throughout the SEBI 5-year window.
 
 ---
 
@@ -56,32 +57,32 @@ FinConsent supports five distinct system roles, each bounded by strict Role-Base
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
 │                              SYSTEM ACTOR & ROLE MATRIX                                │
 ├─────────────────────┬──────────────────────┬──────────────────────┬────────────────────┤
-│ Role ID             │ Real Synthetic Actor │ Primary Interface    │ Key Responsibilities│
+│ Role ID             │ Illustrative Persona │ Primary Interface    │ Key Responsibilities│
 ├─────────────────────┼──────────────────────┼──────────────────────┼────────────────────┤
 │ sebi-ria            │ Suresh Narayanan     │ Desktop Advisory Hub │ • Portfolio drift  │
 │                     │ Prudent Wealth       │ `/dashboard`         │   formulation      │
-│                     │ INA000018421         │ `/mandates/new`      │ • Tax engine calc  │
+│                     │ INA000088921         │ `/mandates/new`      │ • Tax engine calc  │
 │                     │ ria@example.in       │ `/clients`           │ • Mandate dispatch │
 │                     │                      │                      │ • Clarification chat│
 ├─────────────────────┼──────────────────────┼──────────────────────┼────────────────────┤
-│ hni-client          │ Rohan Mehta          │ Mobile Smartphone    │ • Zero-login link  │
+│ hni-client          │ Rohan Mehta          │ Mobile Review Portal │ • Direct link      │
 │                     │ Client # cli_1       │ `/m/:token`          │ • PAN+DOB password │
 │                     │ client@example.in    │ `/m/:token/verify`   │ • Proposal review  │
-│                     │ PAN: ABCDE1234F      │ `/m/:token/receipt`  │ • Mandate chat     │
+│                     │ PAN: XXXXX1234F      │ `/m/:token/receipt`  │ • Mandate chat     │
 │                     │ DOB: 14/08/1978      │ Authenticated Portal │ • OTP authorization│
 ├─────────────────────┼──────────────────────┼──────────────────────┼────────────────────┤
 │ compliance_officer  │ Vikramaditya Roy     │ Compliance Hub       │ • Pre-trade review │
-│                     │ Chief Compliance     │ `/requests`          │ • Reg 19 scrutiny  │
+│                     │ Sentinel Compliance  │ `/requests`          │ • Reg 19 scrutiny  │
 │                     │ compliance@example.in│ `/mandates/:id`      │ • Hash chain audit │
-│                     │                      │ Modal Dossier        │ • Section 65B cert │
+│                     │                      │ Modal Dossier        │ • BSA Sec 63 cert  │
 ├─────────────────────┼──────────────────────┼──────────────────────┼────────────────────┤
 │ admin               │ Neha Singhania       │ Operations Command   │ • Platform health  │
-│                     │ Super Administrator  │ `/dashboard`         │ • Cross-tenant obs │
+│                     │ Platform Admin       │ `/dashboard`         │ • Tenant oversight │
 │                     │ admin@example.in     │ User Administration  │ • Quota governance │
 │                     │                      │ System Audits        │ • Disaster recovery│
 ├─────────────────────┼──────────────────────┼──────────────────────┼────────────────────┤
 │ guest               │ Public Evaluator     │ Public Showcase      │ • DPDP disclosures │
-│                     │ Anonymous Visitor    │ `/`                  │ • 1-Click test-drives│
+│                     │ Anonymous Visitor    │ `/`                  │ • Interactive demo │
 │                     │                      │ `/legal/*`           │ • Practice signup  │
 └─────────────────────┴──────────────────────┴──────────────────────┴────────────────────┘
 ```
@@ -90,75 +91,86 @@ FinConsent supports five distinct system roles, each bounded by strict Role-Base
 
 ## Core Workflow & Mandate Lifecycle
 
-The FinConsent end-to-end statutory trade consent workflow executes across nine deterministic phases:
+The FinConsent non-discretionary trade consent workflow executes across deterministic advisory phases, safeguarded by statutory timeouts and cryptographic audit records:
+
+![FinConsent Statutory Advisory Process Flow](docs/diagrams/process-flow.png)
+*Figure: FinConsent End-to-End Statutory Advisory Process Flow (SEBI Reg 19, SHA-256 Ledger & Section 63 BSA Audit Trail)*
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │                                 END-TO-END WORKFLOW SEQUENCE                                     │
 └──────────────────────────────────────────────────────────────────────────────────────────────────┘
 
-   [ 1. FORMULATION ]  RIA Suresh Narayanan drafts portfolio rebalance (Equities -> Debt & Gold)
+   [ 1. FORMULATION ]  RIA drafts portfolio rebalance (Equities -> Debt & Gold ETF)
             │
             ▼
-   [ 2. TAX VISIBILITY] Real-time Union Budget 2024 Engine computes STCG (20%) & LTCG (12.5%)
+   [ 2. TAX ESTIMATE]  Real-time Tax Engine computes STCG (20%) & LTCG (12.5% + 4% cess)
             │
             ▼
    [ 3. SECURE DISPATCH] Dual-envelope encryption generates 256-bit magic token with 48h cutoff
             │
             ▼
-   [ 4. CLIENT DELIVERY] Delivered via WhatsApp / Email; token stored as SHA-256 hash in DB
+   [ 4. CLIENT DELIVERY] Delivered via Email (WhatsApp roadmap); token stored as SHA-256 hash
             │
             ▼
-   [ 5. PASSWORD UNLOCK] Client Rohan Mehta inputs PAN Last 4 + DOB (DDMMYYYY) on mobile
+   [ 5. PASSWORD UNLOCK] Client enters verification password: PAN Last 4 + DOB (DDMMYYYY)
             │
             ▼
-   [ 6. ADVISORY CHAT  ] Rohan asks clarification; Suresh replies in-app (Chat != Consent)
+   [ 6. ADVISORY CHAT  ] Client asks clarification; adviser replies in-app (Chat != Consent)
             │
             ▼
-   [ 7. EXPLICIT CONSENT] Rohan checks statutory declarations; requests 6-digit Mobile OTP
+   [ 7. EXPLICIT CONSENT] Client checks statutory declarations; requests 6-digit verification OTP
             │
             ▼
    [ 8. OTP VERIFICATION] Distributed rate limiter validates OTP; burns token atomically
             │
             ▼
-   [ 9. LOCKED EVIDENCE] Mandate locked; Section 65B Certificate & SHA-256 hash ledger committed
+   [ 9. LOCKED EVIDENCE] Mandate locked; Section 63 BSA (Sec 65B antecedent) Certificate generated
 ```
 
 ### Mandate State Machine
 
+FinConsent implements a deterministic 6-state lifecycle:
+
 ```
-              ┌──────────────────────────────────────────────┐
-              │                                              │
-              ▼                                              │
-         ┌─────────┐      RIA Dispatches Link       ┌──────────┐
-         │  DRAFT  │ ─────────────────────────────> │   SENT   │
-         └─────────┘                                └──────────┘
-              │                                          │
-              │                                          │ Client Inputs
-              │                                          │ PAN + DOB Password
-              │                                          ▼
-              │                                     ┌──────────┐
-              │                                     │  VIEWED  │ (In Review)
-              │                                     └──────────┘
-              │                                          │
-              │                                          │ 1. Accept Declarations
-              │ 48-Hour Cutoff                           │ 2. Verify 6-Digit OTP
-              │ Elapsed                                  ▼
-              │                                     ┌───────────┐
-              └───────────────────────────────────> │ CONSENTED │ (Immutable Lock)
-                                                    └───────────┘
-                                                         │
-                                                         ▼
-                                                    ┌───────────┐
-                                                    │  REVOKED  │ (Manual RIA Revoke
-                                                    └───────────┘  or Expired Link)
+              ┌────────────────────────────────────────────────────────┐
+              │                                                        │
+              ▼                                                        │
+         ┌─────────┐            RIA Dispatches Link       ┌──────────┐ │
+         │  DRAFT  │ ───────────────────────────────────> │   SENT   │ │
+         └─────────┘                                      └──────────┘ │
+              │                                                │       │
+              │                                                │ Client Inputs
+              │                                                │ PAN + DOB Password
+              │                                                ▼       │
+              │                                           ┌──────────┐ │
+              │                                           │  VIEWED  │ │
+              │                                           └──────────┘ │
+              │                                                │       │
+              │                                                │ 1. Accept Declarations
+              │ 48-Hour Cutoff                                 │ 2. Verify 6-Digit OTP
+              │ Elapsed                                        ▼       │
+              │                                           ┌───────────┐│
+              ├─────────────────────────────────────────> │ CONSENTED ││
+              │                                           └───────────┘│
+              │                                                        │
+              │ Advisory Revocation / Market Drift                     │
+              ▼                                                        │
+         ┌─────────┐                                                   │
+         │ REVOKED │ <─────────────────────────────────────────────────┘
+         └─────────┘
+              ▲
+              │ Cutoff Elapsed Prior to Consent
+         ┌─────────┐
+         │ EXPIRED │
+         └─────────┘
 ```
 
 ---
 
 ## Security & Cryptographic Architecture
 
-FinConsent implements a multi-layered defense-in-depth security model to safeguard sensitive investor portfolios, PAN data, and statutory records:
+FinConsent implements defense-in-depth controls to safeguard client portfolios, PAN identifiers, and compliance records:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
@@ -178,43 +190,44 @@ FinConsent implements a multi-layered defense-in-depth security model to safegua
 │         ▼                                         ▼                                    │
 │   SERVER WRAPPING (RIA Access)              CLIENT WRAPPING (Investor Access)          │
 │   Wrapped with Server Master Key            Wrapped with Derived Client Key            │
-│   via AES-256-GCM                           via PBKDF2 (100,000 rounds, SHA-256)       │
-│   (Derived from JWT_SECRET + salt)          Key: PBKDF2(PAN_last_4 + DOB, salt)        │
+│   via AES-256-GCM envelope                  via PBKDF2 (100,000 iterations default)    │
+│   (SERVER_MASTER_KEY configuration)         Key: PBKDF2(PAN_last_4 + DOB, salt)        │
 │                                                                                        │
 │   * Result: Neither plaintext DEK nor client password is ever persisted in database.   │
 └────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 1. Mandate Password Protection
-- Unauthenticated visitors presenting a valid magic link URL (`/m/:token`) receive strictly minimal, non-sensitive metadata (RIA firm name, advisor name, and client name).
-- All security names, ISIN codes, transaction amounts, asset allocations, capital gains figures, and advisory rationale remain encrypted until client inputs their password.
-- Client password is systematically formatted from standard Indian KYC attributes: `Last 4 digits of PAN` + `Date of Birth in DDMMYYYY` (e.g., PAN `ABCDE1234F` + DOB `14-08-1978` = `123414081978`).
-- Upon successful password validation, the server emits a short-lived, signed client unlock JWT (`x-unlock-token`) valid for **2 hours**, allowing decrypted viewing and access to the scoped mandate chat.
+### 1. Mandate Password Access & Entropy Model
+- Direct magic links (`/m/:token`) provide access to minimal public metadata (firm name, advisor name, and client name).
+- Trade quantities, ISIN codes, transaction values, and rationale remain encrypted until unlocked by the client.
+- The unlock password uses client KYC attributes: `Last 4 characters of PAN` + `Date of Birth in DDMMYYYY` (e.g., `123414081978`).
+- **Security Guidance & Entropy Model:** PAN-last-4 + DOB functions as a convenience verification PIN rather than a high-entropy secret. It is defended online against brute-force enumeration by strict sliding-window rate limiters, lockout thresholds, and offline by salted PBKDF2 key derivation (100,000 iterations in production).
+- Upon successful verification, the server issues a scoped, short-lived unlock JWT (`x-unlock-token`) valid for **2 hours**.
 
 ### 2. Magic Link Token Security & Single-Use Hashing
-- Magic tokens are generated using high-entropy CSPRNG: `crypto.randomBytes(32).toString('hex')` (256 bits of entropy).
-- **Zero Raw Tokens in Database:** Raw tokens are one-way hashed with SHA-256 (`magicTokenHash`) prior to MongoDB persistence. The raw token exists in memory solely during active dispatch.
-- **Single-Use Revocation:** The instant the client authorizes the mandate via OTP, the token is permanently revoked and burned. Re-visiting the link returns `410 Gone / 404 Not Found`.
+- Magic tokens are generated using a CSPRNG: `crypto.randomBytes(32).toString('hex')` (256 bits of entropy).
+- **Hashed at Rest:** Raw tokens are never stored in the database; they are one-way hashed with SHA-256 (`magicTokenHash`) prior to MongoDB persistence.
+- **Single-Use Invalidation:** Upon successful OTP consent, the token is burned. Re-accessing the link returns `410 Gone / 404 Not Found`.
 
-### 3. Distributed OTP Protection & Anti-Brute-Force Lockout
-- **6-Digit Dynamic OTP:** Generated with a 5-minute Time-To-Live (TTL).
-- **Strict Attempt Counter:** Maximum of **3 failed verification attempts**. Upon the 3rd consecutive incorrect OTP entry, the mandate token is permanently locked, triggering an `OTP_LOCKOUT` audit event and returning `HTTP 429 Too Many Requests`.
-- **Distributed State Synchronization:** Backed by `SharedStateStore` to synchronize rate-limit counters and lockout state across distributed server worker instances.
+### 3. Verification OTP Delivery & Rate Limiting
+- **6-Digit Dynamic OTP:** Valid for 5 minutes.
+- **Channel Delivery:** Delivered via registered email and secure in-app display (SMS disabled by policy; WhatsApp delivery on roadmap).
+- **Brute-Force Counter:** Maximum of **3 failed attempts**. Upon the 3rd consecutive failed entry, access is locked, logging an `OTP_LOCKOUT` audit event.
 
-### 4. Tenant Isolation & IDOR Defense
-- Every API endpoint strictly validates tenancy: an RIA can access only clients, mandates, and requests belonging to their verified organization (`req.user.firmName` / `req.user.id`).
-- Attempted cross-tenant queries (e.g., RIA 1 querying Client 201 or Mandate 101 of RIA 2) are immediately intercepted and rejected with `HTTP 403 Forbidden`.
-- Client role accounts attempting advisor actions (`/mandates/new`, `/settings/billing`) are blocked at both React Router (`ProtectedRoute.jsx`) and Express middleware (`requireRole(['ria', 'admin'])`).
+### 4. Tenant Isolation & RBAC Boundaries
+- Every API endpoint enforces strict multi-tenant scoping: an RIA can only query clients and mandates belonging to their verified firm ID (`req.user.firmName` / `req.user.id`).
+- Attempted cross-tenant queries return `HTTP 403 Forbidden`.
+- Client role accounts attempting advisor actions are blocked at both client routing and server middleware.
 
 ### 5. Multi-Factor Authentication (MFA)
-- Advisory and compliance staff accounts support RFC 6238 TOTP Two-Factor Authentication (Google Authenticator, Microsoft Authenticator).
-- Primary credentials return `mfaRequired: true` and a temporary session token. Access to protected API endpoints requires completing the TOTP challenge.
+- Advisory and compliance accounts support RFC 6238 TOTP Two-Factor Authentication.
+- Staff credentials return `mfaRequired: true`, requiring TOTP completion before accessing protected endpoints.
 
 ---
 
-## Tamper-Evident Audit Trail & Legal Admissibility
+## Tamper-Evident Audit Trail & Electronic Evidence
 
-FinConsent maintains an append-only cryptographic ledger where every lifecycle event is immutably recorded:
+FinConsent maintains an append-only cryptographic ledger where lifecycle events are recorded with SHA-256 forward-hash chaining:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
@@ -225,7 +238,7 @@ FinConsent maintains an append-only cryptographic ledger where every lifecycle e
 │   ┌───────────────────────────────┐     ┌───────────────────────────────┐              │
 │   │ event: MANDATE_DISPATCHED     │     │ event: PASSWORD_UNLOCKED      │              │
 │   │ timestamp: 2026-10-08T10:15   │     │ timestamp: 2026-10-08T10:22   │              │
-│   │ ipAddress: 103.21.12.44       │     │ ipAddress: 49.36.110.12       │              │
+│   │ ipAddress: 198.51.100.14      │     │ ipAddress: 203.0.113.12       │              │
 │   │ payloadHash: c4b8f0...        │────►│ prevHash:    c4b8f0...        │              │
 │   │ prevHash:    a10e82...        │     │ payloadHash: e92a71...        │              │
 │   └───────────────────────────────┘     └──────────────┬────────────────┘              │
@@ -244,74 +257,81 @@ FinConsent maintains an append-only cryptographic ledger where every lifecycle e
 ### Auditable Event Catalog
 - `MANDATE_CREATED`: Portfolio parameters, target allocation, and rationale drafted.
 - `MANDATE_DISPATCHED`: 256-bit magic link generated; 48-hour cutoff timer initiated.
-- `MANDATE_VIEWED`: Client accesses the link; device IP and User-Agent recorded.
+- `MANDATE_OPENED`: Client accesses the link; device IP and User-Agent recorded.
 - `PASSWORD_UNLOCKED`: Client successfully authenticates with PAN+DOB password.
 - `PASSWORD_FAILED`: Incorrect password entered; failed attempt counter incremented.
 - `CHAT_MESSAGE_SENT`: Advisory clarification message posted by client or advisor.
 - `OTP_GENERATED`: 6-digit statutory verification OTP dispatched.
-- `OTP_LOCKOUT`: Brute-force attempt threshold breached (3 failures); access locked.
-- `CONSENTED`: Explicit statutory declarations accepted and OTP verified; mandate sealed.
-- `LINK_REVOKED`: Advisor revokes active proposal due to market volatility.
+- `OTP_LOCKOUT`: Verification attempt threshold breached (3 failures); access locked.
+- `CONSENT_GRANTED`: Statutory declarations accepted and OTP verified; mandate sealed.
+- `MANDATE_REVOKED`: Advisor revokes active proposal due to market conditions or allocation updates.
 
-### Section 65B Compliance Certificate
+### Section 63 BSA / Section 65B Compliance Certificate
 Upon consent, the platform compiles an official electronic certificate containing:
 - Unique Verification Receipt ID (`REC-MAN-XXXX-YYYY`)
-- Client Legal Name & Masked PAN (`AB*****4F`)
-- RIA SEBI Registration Number (`INA000018421`) & Firm Details
+- Client Legal Name & Masked PAN (`XXXXX1234F`)
+- RIA SEBI Registration Number (`INA000088921`) & Firm Details
 - Execution Timestamp (Indian Standard Time - IST)
-- Electronic Channel Verification (`EMAIL_IN_APP_OTP`)
+- Electronic Channel Verification (`OTP_IN_APP_EMAIL`)
 - Pre-Computed Capital Gains & Tax Liabilities
 - Overall SHA-256 Ledger Hash Seal
 
 ---
 
-## Mandate Chat Rail vs. Statutory Consent
+## Scoped Mandate Chat vs. Statutory Consent
 
-FinConsent includes a mandate-specific discussion rail allowing clients and advisers to clarify trade recommendations in real time:
+FinConsent includes a mandate-specific discussion rail allowing clients and advisers to clarify recommendations before granting consent:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
 │                      MANDATE CHAT VS. STATUTORY CONSENT BOUNDARY                       │
 ├─────────────────────────────────────────┬──────────────────────────────────────────────┤
-│ Scoped Mandate Chat                     │ Statutory Trade Consent (OTP)                │
+│ Scoped Mandate Chat                     │ Documented Advisory Consent (OTP)            │
 ├─────────────────────────────────────────┼──────────────────────────────────────────────┤
-│ • Clarifies execution rationale, debt   │ • Unambiguous, legally binding authorization │
-│   yields, or capital gains questions.   │   under SEBI Regulation 19.                  │
-│ • Requires password-unlocked session.   │ • Requires explicit declaration checkboxes.  │
-│ • Preserved in audit trail history.     │ • Requires 6-digit Mobile OTP verification.  │
-│ • ⚠️ DOES NOT CONSTITUTE TRADE CONSENT. │ • Formally commits immutable Section 65B     │
+│ • Clarifies execution rationale, asset  │ • Explicit client consent record maintained  │
+│   weights, or capital gains questions.  │   under SEBI Regulation 19.                  │
+│ • Requires password-unlocked session.   │ • Requires affirmative declaration checks.   │
+│ • Preserved in audit trail history.     │ • Requires 6-digit OTP verification.         │
+│ • ⚠️ DOES NOT CONSTITUTE TRADE CONSENT. │ • Formally commits immutable Section 63 BSA  │
 │   Cannot authorize rebalancing trades.  │   Compliance Receipt and locks mandate.      │
 └─────────────────────────────────────────┴──────────────────────────────────────────────┘
 ```
 
 ---
 
-## Indian Capital Gains Tax Engine (Union Budget 2024)
+## Capital Gains Tax Engine (Current Statutory Provisions)
 
 The built-in tax engine calculates tax liabilities dynamically across trade baskets:
 
 | Capital Gain Category | Statutory Rate | Exemption Threshold | Applicable Legal Section |
 |---|---|---|---|
-| **Short-Term Capital Gains (STCG)** | **20.0%** (revised from 15%) | None | Section 111A, Income Tax Act, 1961 |
-| **Long-Term Capital Gains (LTCG)** | **12.5%** (revised from 10%) | **₹1,25,000** per FY | Section 112A, Income Tax Act, 1961 |
-| **Health & Education Cess** | **4.0%** surcharge | Applicable on base tax | Finance Act |
+| **Short-Term Capital Gains (STCG)** | **20.0%** | None | Section 111A, Income-tax Act, 1961 |
+| **Long-Term Capital Gains (LTCG)** | **12.5%** | **₹1,25,000** annual aggregate | Section 112A, Income-tax Act, 1961 |
+| **Health & Education Cess** | **4.0%** | Applicable on base tax | Finance Act |
 
-### Quarterly Advance Tax Calendar (Sections 234B & 234C)
-When estimated net capital gains tax exceeds **₹1,00,000**, the client review portal automatically displays an **Advance Tax Alert Banner** detailing mandatory statutory deadlines:
+> **Assumptions & Disclaimers:**
+> - The ₹1,25,000 LTCG exemption is applied assuming availability across the client's aggregate annual capital gains (not per individual security or transaction).
+> - High-income surcharges (up to 15% on equity capital gains) and carried-forward capital losses are excluded from estimates.
+> - Calculations are provided for advisory decision support and do not constitute formal tax assessments.
+
+### Quarterly Advance Tax Calendar
+When estimated annual tax liability reaches or exceeds **₹10,000**, the portal displays an Advance Tax Planning notice:
 - **1st Installment (15%):** On or before **15th June**
 - **2nd Installment (45%):** On or before **15th September**
 - **3rd Installment (75%):** On or before **15th December**
 - **4th Installment (100%):** On or before **15th March**
 
+*(Note: Under the proviso to Section 234C(1), interest for shortfall in advance tax is not charged if the shortfall is due to capital gains, provided remaining tax is deposited in subsequent installments.)*
+
 ---
 
 ## Localization & Multilingual Architecture
 
-FinConsent provides native localization across **8 Indian languages** plus English:
+FinConsent provides native localization across **8 supported languages**:
 
-- **Supported Languages:** English (`en`), Hindi (`hi`), Marathi (`mr`), Gujarati (`gu`), Tamil (`ta`), Telugu (`te`), Kannada (`kn`), Bengali (`bn`).
-- **Standard Financial Numbering:** Under regulatory standards, all monetary figures (₹), trade quantities, percentages, and ISIN codes use standard ASCII English numerals across all language selections to eliminate ambiguities in legal dispute resolution.
-- **Language Switcher:** Accessible across the application header and user profile settings.
+- **Supported Locales:** English (`en`), Hindi (`hi`), Tamil (`ta`), Bengali (`bn`), Gujarati (`gu`), German (`de`), Japanese (`ja`), Korean (`ko`).
+- **Standard Financial Numbering:** Monetary figures (₹), quantities, percentages, and ISIN codes use standard ASCII English numerals across all locales for dispute-resolution consistency.
+- **Language Switcher:** Accessible in the application header and user profile settings.
 
 ---
 
@@ -337,7 +357,7 @@ FinConsent provides native localization across **8 Indian languages** plus Engli
 │ `/api/public/.../req-otp`│ POST   │ Unlock Token      │ Request 6-digit consent OTP    │
 │ `/api/public/.../ver-otp`│ POST   │ Unlock Token      │ Verify OTP & commit consent    │
 │ `/api/requests`         │ GET/POST│ Bearer JWT        │ Advisory & compliance hub      │
-│ `/api/billing/*`        │ ALL     │ Bearer JWT (RIA)  │ Razorpay Pro Tier subscription │
+│ `/api/billing/*`        │ ALL     │ Bearer JWT (RIA)  │ Institutional billing tiers    │
 │ `/api/health`           │ GET     │ Public            │ System & DB health checks      │
 └─────────────────────────┴─────────┴───────────────────┴────────────────────────────────┘
 ```
@@ -346,56 +366,100 @@ FinConsent provides native localization across **8 Indian languages** plus Engli
 
 ## Deployment & Hosting Architecture
 
-- **Data Sovereignty:** In strict compliance with SEBI Cybersecurity Framework and RBI Data Localization circulars, all databases, audit logs, cryptographic hashes, and server infrastructure reside in **AWS Asia Pacific (Mumbai) region (`ap-south-1`) (AWS Mumbai)**.
+- **Data Sovereignty:** In alignment with SEBI's Cybersecurity and Cyber Resilience Framework (CSCRF) and Cloud Security Guidelines, all databases, audit logs, cryptographic hashes, and server infrastructure reside in **AWS Asia Pacific (Mumbai) region (`ap-south-1`)**.
 - **Frontend Container:** Vite 6 React single-page application compiled to static production chunks served over HTTPS.
-- **Backend Container:** Node.js Express service running behind TLS termination reverse proxy (AWS ALB / Cloudflare) with Helmet HSTS enforcement (`maxAge: 31536000`).
-- **Storage Layer:** MongoDB Atlas (M0/Dedicated) with point-in-time recovery (PITR) and shared Redis state store for distributed rate limiting.
-- **Docker Compose:** Multi-container orchestration defined in `docker-compose.yml`.
+- **Backend Container:** Node.js Express service running behind TLS termination reverse proxy with Helmet HSTS enforcement (`maxAge: 31536000`).
+- **Key Isolation:** Envelope Server Master Key (`SERVER_MASTER_KEY`) is isolated from application authentication secrets (`JWT_SECRET`).
+- **Storage Layer:** MongoDB Atlas with point-in-time recovery and in-memory/shared synchronization for distributed rate limiting.
 
 ---
 
-## Testing & Security Validation Evidence
+## Testing & Validation Evidence
 
-All platform invariants and security boundaries have been verified in automated test suites:
+All platform invariants and security controls have been validated in automated test suites:
 
-- **Vitest Automated Test Suites:** **15 / 15 test suites passing (200 / 200 tests passing, 100%)**:
-  1. `taxCalculator.test.js` (8 tests) — Budget 2024 STCG 20%, LTCG 12.5%, Cess, Advance Tax.
+- **Vitest Automated Test Suites:** **16 / 16 test suites passing (214 / 214 tests passing, 100%)**:
+  1. `taxCalculator.test.js` (8 tests) — STCG 20%, LTCG 12.5%, Cess, Advance Tax.
   2. `api.test.js` (2 tests) — Health checks & JWT auth guards.
   3. `roles_guest_workflow.test.js` (6 tests) — Guest navigation & role switcher.
-  4. `security_audit_remediation.test.js` (24 tests) — SHA-256 token hashing, HSTS, MFA, rate limits.
+  4. `security_audit_remediation.test.js` (26 tests) — SHA-256 token hashing, HSTS, MFA, rate limits.
   5. `acceptance.test.js` (4 tests) — Magic link generation, 48h expiry, instant revocation.
   6. `rbac_requests_sms.test.js` (6 tests) — SMS deprecation policy & RBAC request permissions.
   7. `role_experience_and_access_control.test.js` (16 tests) — Role boundaries & views.
   8. `security_hardening.test.js` (15 tests) — Tenant isolation, IDOR barriers, OTP lockout.
   9. `mandate_createdat_date.test.js` (1 test) — Date serialization integrity.
   10. `b2b_ria_client_hierarchy.test.js` (12 tests) — B2B organizational hierarchy.
-  11. `dispatch_print_testing.test.js` (14 tests) — Dispatch password & testing unlock rail.
-  12. `multilingual_i18n_localization.test.js` (26 tests) — 8-language localization & ASCII numbers.
-  13. `production_localization_audit.test.js` (21 tests) — Locale domain completeness.
-  14. `api_regressions_and_contract_audit.test.js` (44 tests) — End-to-end API regression suite.
-  15. `ui_revamp_styling_audit.test.js` (1 test) — Visual design system & token integrity.
-- **Browser Automation Verification:**
-  - `docs/visual-audit/`: 42 baseline screenshots across desktop and mobile viewports.
-  - `docs/visual-audit/workflow/`: 12 end-to-end B2B workflow screenshots + video recording.
-  - `docs/visual-audit/security/`: 25 security scenario screenshots (IDOR, MFA, rate limiting).
-  - `docs/visual-audit/mandate-security/`: 14 mandate lifecycle screenshots (password unlock, chat, locked dossier).
-- **Synthetic Backup Restoration Drill:** Non-destructive point-in-time restore simulation verifying 1,460 audit logs with 0 broken hash chains.
+  11. `dispatch_print_testing.test.js` (4 tests) — Dispatch password & testing unlock rail.
+  12. `localization_i18n_l10n.test.js` (15 tests) — 8-language localization & ASCII numbers.
+  13. `crypto_regression_and_normalization.test.js` (18 tests) — Cryptographic key derivation and AES-256-GCM.
+  14. `i18n_automated_checks.test.js` (45 tests) — Translation key parity across all domains.
+  15. `mandate_security_and_chat.test.js` (20 tests) — Scoped chat and envelope encryption.
+  16. `production_deployment_and_readiness.test.js` (14 tests) — Container port/host binding (0.0.0.0), URI parsing & alias resolution (`MONGODB_URI`, `MONGO_URI`, `DATABASE_URL`), secret sanitization in logs, readiness probe (`/api/ready`, `/api/health`) 503 gating under database disconnection, write protection middleware, and strict production in-memory fallback prevention.
 
 ---
 
-## Current Operational Limitations & Roadmap
+## Production Deployment Guide (Render & MongoDB Atlas)
+
+### 1. Server Port & Network Interface Binding
+- **Port Resolution:** The Express server dynamically reads `process.env.PORT` injected by container platforms (e.g., Render sets `PORT=10000`). If `PORT` is unset, it defaults to `5000`.
+- **Container Interface (0.0.0.0):** In containerized environments (Docker / Render Linux containers), the server explicitly binds to `HOST = process.env.HOST || '0.0.0.0'`. This allows the platform's ingress reverse proxy (ALB / Nginx / Envoy) to route traffic to the container.
+- **Why `localhost:5000` appears in logs:**
+  - The log line `FinConsent Server listening on http://localhost:5000` is an informational developer convenience string printed for local browser testing. It is **not** a deployment bug and does not restrict container networking.
+  - The server binds to `0.0.0.0:${PORT}` across all interfaces while logging both the container host binding and the local preview URL.
+
+### 2. MongoDB Atlas Configuration
+1. **Network Access (IP Whitelist):**
+   - In the MongoDB Atlas Dashboard, navigate to **Security** -> **Network Access**.
+   - Add IP address `0.0.0.0/0` ("Allow Access from Anywhere").
+   - *Why:* Render Web Services (Free and Standard tiers) use dynamic outbound IP addresses across AWS and GCP infrastructure. Without `0.0.0.0/0`, outgoing connections from Render timeout with `MongooseServerSelectionError: connect ETIMEDOUT`.
+2. **Database User Credentials & Password URL-Encoding:**
+   - In **Security** -> **Database Access**, create a user with `readWrite` permissions on database `finconsent`.
+   - **RFC 3986 URL Encoding:** If the database password contains special characters (e.g. `@`, `:`, `/`, `?`, `#`, `[`, `]`, `%`, `&`, `+`), they **must** be percent-encoded (`encodeURIComponent`) before inclusion in the connection URI (e.g. `@` -> `%40`, `#` -> `%23`).
+   - Remove any `<password>` angle brackets from the Atlas template snippet.
+3. **Connection String Format:**
+   - Standard SRV format: `mongodb+srv://<username>:<url_encoded_password>@<cluster-host>/finconsent?retryWrites=true&w=majority`
+   - Explicitly specify `/finconsent` to avoid defaulting to the `test` database.
+
+### 3. Render Web Service Settings
+1. **Build & Start Commands:**
+   - **Build Command:** `npm install && npm run build`
+   - **Start Command:** `node server/index.js` (or `npm start`)
+2. **Environment Variables:**
+   - `NODE_ENV`: `production`
+   - `PORT`: (Managed automatically by Render; injects `10000`)
+   - `MONGODB_URI`: `mongodb+srv://<username>:<url_encoded_password>@<cluster-host>/finconsent?retryWrites=true&w=majority` *(Supported aliases: `MONGO_URI`, `DATABASE_URL`). Do not wrap in quotes.*
+   - `JWT_SECRET`: 64+ char random string
+   - `SERVER_MASTER_KEY`: 64+ char random string
+   - `ALLOW_IN_MEMORY_FALLBACK`: Leave unset or set to `false` in production.
+3. **Health Check Path:**
+   - Set to `/api/ready` (or `/api/health`).
+   - If MongoDB Atlas is connected, returns HTTP `200 OK` and traffic is routed.
+   - If MongoDB Atlas is disconnected, returns HTTP `503 Service Unavailable`, preventing unpersisted traffic from being routed to the instance.
+
+### 4. Zero Silent Fallback & Data Write Gating
+- In production (`NODE_ENV === 'production'`), FinConsent **never** silently falls back to in-memory storage if MongoDB Atlas is disconnected.
+- If the persistent database is unavailable:
+  - Readiness probes (`/api/ready` and `/api/health`) return HTTP `503 Service Unavailable`.
+  - All mutating data-dependent operations (`POST /api/mandates`, `POST /api/clients`, `POST /api/public/consent`, `POST /api/requests`, `POST /api/auth/register`, and direct store mutations) are intercepted and rejected with HTTP `503 DATABASE_UNAVAILABLE`.
+  - In-memory storage is permitted only in explicitly configured development or test environments (`NODE_ENV !== 'production'`) or when `ALLOW_IN_MEMORY_FALLBACK=true` is explicitly passed.
+
+---
+
+## Current Operational Status & Roadmap
 
 ### Current Implemented State:
-- Full non-discretionary trade recommendation formulation and tax engine.
+- Non-discretionary trade recommendation formulation and tax engine.
 - AES-256-GCM dual-envelope encryption and PBKDF2 password derivation.
+- Dedicated `SERVER_MASTER_KEY` environment isolation.
 - Single-use 256-bit magic tokens with SHA-256 database hashing and 48-hour cutoff.
 - In-app mandate clarification chat with explicit non-consent separation.
-- Section 65B electronic compliance receipts with SHA-256 forward-hash chaining.
+- Section 63 BSA / Section 65B electronic compliance receipts with SHA-256 forward-hash chaining.
 - Multi-tenant isolation, RBAC, TOTP MFA, and distributed rate limiting.
-- 8 Indian languages localization with English numerals.
+- 8 supported languages with English ASCII numerals.
+- Production readiness probing and write gating with zero silent in-memory fallback.
 
-### Documented Limitations & Operational Recommendations:
-1. **SMS Gateway Aggregator:** In current development and evaluation configurations, SMS is simulated/disabled by architectural policy, with OTPs delivered via registered email and secure in-app displays. Commercial production deployment requires onboarding a TRAI DLT-registered SMS aggregator (e.g., Twilio, Gupshup, or Karix) with pre-approved statutory DLT message templates.
-2. **Hardware Security Module (HSM) Key Management:** The Server Master Key is derived from `JWT_SECRET`. For institutional Tier-1 banking deployments, integrating AWS CloudHSM or AWS KMS for automated Master Key rotation is recommended.
-3. **Automated Broker Order Execution:** FinConsent intentionally halts at the generation of locked Section 65B consent dossiers. Direct execution via broker APIs (Zerodha Kite Connect, Angel One SmartAPI) represents future roadmap development.
-4. **Third-Party Time Stamping Authority (TSA):** Audit records currently use synchronized server IST timestamps. Anchoring SHA-256 ledger roots to an RFC 3161 compliant external Time Stamping Authority is a recommended enhancement.
+### Documented Scope & Roadmap:
+1. **SMS Gateway Aggregator:** In current development and demonstration environments, SMS is disabled by architectural policy, with OTPs delivered via registered email and secure in-app displays. Commercial production deployment requires onboarding a TRAI DLT-registered SMS aggregator with pre-approved statutory DLT message templates.
+2. **WhatsApp Channel Delivery:** Marked as roadmap; currently simulated/delivered via email magic links.
+3. **External Time Stamping Authority (TSA):** Audit records currently use synchronized server IST timestamps. Anchoring SHA-256 ledger roots to an RFC 3161 compliant external Time Stamping Authority is planned for institutional deployments.
+4. **Direct Broker Execution:** FinConsent is an advisory record-keeping and consent platform; it intentionally does not execute securities trades directly on broker order terminals.

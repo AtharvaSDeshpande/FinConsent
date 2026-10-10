@@ -312,7 +312,7 @@ export async function runSeed() {
     taxPayable: 139750,
     advanceTaxQuarter: 'Q4 - Due 15th March',
     advanceTaxAlert: 'High capital gains realization requires statutory advance tax installment payment.',
-    advisorRationale: 'Vikram Shah equity allocation exceeded statutory risk profile tolerance (78% vs 60%). Rebalancing ₹40L into Bharat Bond ETF and SGB locks in guaranteed retirement yields and provides an inflation hedge.',
+    advisorRationale: 'Vikram Shah equity allocation exceeded targeted risk profile tolerance (78% vs 60%). Rebalancing ₹40L into Bharat Bond ETF and Gold ETF aligns with target asset allocation yields and provides a portfolio inflation hedge.',
     cutoffTimestamp: pastDate(10),
     createdAt: pastDate(12),
     updatedAt: pastDate(11),
@@ -330,7 +330,7 @@ export async function runSeed() {
     magicToken: null,
     currentAllocation: { equity: 50, debt: 40, gold: 10, cash: 0 },
     proposedAllocation: { equity: 50, debt: 45, gold: 5, cash: 0 },
-    sellBasket: [{ securityName: 'Sovereign Gold Bond 2025', units: 100, saleValue: 720000, purchaseValue: 500000, gainType: 'LTCG' }],
+    sellBasket: [{ securityName: 'Gold ETF (Secondary Market)', units: 100, saleValue: 720000, purchaseValue: 500000, gainType: 'LTCG' }],
     buyBasket: [{ securityName: 'Corporate Bond Fund - Direct Plan', approxValue: 720000 }],
     stcgAmount: 0,
     ltcgAmount: 220000,
@@ -460,7 +460,7 @@ export async function runSeed() {
     clientId: clientRohan.id,
     mandateId: mandateA.id,
     eventType: 'MANDATE_CREATED',
-    ipAddress: '103.21.12.8',
+    ipAddress: '198.51.100.14',
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0',
     channel: 'SYSTEM_API',
     timestamp: mandateA.createdAt,
@@ -472,9 +472,9 @@ export async function runSeed() {
     clientId: clientRohan.id,
     mandateId: mandateA.id,
     eventType: 'MANDATE_DISPATCHED',
-    ipAddress: '103.21.12.8',
+    ipAddress: '198.51.100.14',
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0',
-    channel: 'WHATSAPP_EMAIL (SMS Disabled)',
+    channel: 'EMAIL_SECURE_LINK (WhatsApp Roadmap / SMS Deprecated)',
     timestamp: pastDate(1, 1),
     metadata: { magicToken: mandateA.magicToken, status: 'sent' },
   });
@@ -598,7 +598,7 @@ export async function runSeed() {
       riaId: assignedRia.id,
       clientId: client.id,
       eventType: 'CLIENT_ONBOARDED',
-      ipAddress: `103.21.${(c % 100) + 1}.8`,
+      ipAddress: `198.51.100.${(c % 200) + 1}`,
       userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0',
       channel: 'RIA_WORKSPACE',
       timestamp: createdAt,
@@ -607,7 +607,7 @@ export async function runSeed() {
   }
 
   // Generate background mandates to reach ~350 mandates & 1000+ audit logs
-  const statuses = ['draft', 'sent', 'viewed', 'consented', 'expired'];
+  const statuses = ['draft', 'sent', 'viewed', 'consented', 'expired', 'revoked'];
   const securitiesPool = [
     { name: 'HDFC Bank Ltd', price: 1650, type: 'STCG' },
     { name: 'Reliance Industries Ltd', price: 2950, type: 'LTCG' },
@@ -632,6 +632,7 @@ export async function runSeed() {
     if (status === 'consented') daysAgo = Math.floor(5 + (m % 320));
     else if (status === 'expired') daysAgo = Math.floor(3 + (m % 60));
     else if (status === 'draft') daysAgo = Math.floor(m % 5);
+    else if (status === 'revoked') daysAgo = Math.floor(2 + (m % 20));
 
     const createdAt = pastDate(daysAgo, 4);
     const cutoffTimestamp = new Date(new Date(createdAt).getTime() + 48 * 60 * 60 * 1000).toISOString();
@@ -661,7 +662,7 @@ export async function runSeed() {
       ],
       buyBasket: [
         { securityName: 'ICICI Prudential All Seasons Bond', approxValue: 250000 },
-        { securityName: 'Sovereign Gold Bond Tranche 2026', approxValue: 150000 },
+        { securityName: 'Nippon India Gold BeES ETF', approxValue: 150000 },
       ],
       stcgAmount: stcgGain,
       ltcgAmount: ltcgGain,
@@ -678,8 +679,8 @@ export async function runSeed() {
       approvedAt: status === 'consented' ? pastDate(Math.max(0, daysAgo - 1), 2) : undefined,
       consentedAt: status === 'consented' ? pastDate(Math.max(0, daysAgo - 1), 2) : undefined,
       isApproved: status === 'consented',
-      isRevoked: status === 'consented',
-      magicToken: status === 'consented' ? null : `tok_${m}_${String(Math.random()).slice(2, 10)}`,
+      isRevoked: status === 'revoked',
+      magicToken: (status === 'consented' || status === 'revoked') ? null : `tok_${m}_${String(Math.random()).slice(2, 10)}`,
     });
 
     dbStore.createAuditLog({
@@ -687,7 +688,7 @@ export async function runSeed() {
       clientId: client.id,
       mandateId: mandate.id,
       eventType: 'MANDATE_CREATED',
-      ipAddress: `103.21.${(m % 100) + 1}.8`,
+      ipAddress: `198.51.100.${(m % 200) + 1}`,
       userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0',
       channel: 'SYSTEM_API',
       timestamp: createdAt,
@@ -700,9 +701,9 @@ export async function runSeed() {
         clientId: client.id,
         mandateId: mandate.id,
         eventType: 'MANDATE_DISPATCHED',
-        ipAddress: `103.21.${(m % 100) + 1}.8`,
+        ipAddress: `198.51.100.${(m % 200) + 1}`,
         userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0',
-        channel: 'WHATSAPP_EMAIL (SMS Disabled)',
+        channel: 'EMAIL_SECURE_LINK (WhatsApp Roadmap / SMS Deprecated)',
         timestamp: pastDate(daysAgo, 3),
         metadata: { cutoffTimestamp, status },
       });
@@ -714,7 +715,7 @@ export async function runSeed() {
         clientId: client.id,
         mandateId: mandate.id,
         eventType: 'MANDATE_OPENED',
-        ipAddress: `49.37.${(m % 200) + 1}.44`,
+        ipAddress: `203.0.113.${(m % 200) + 1}`,
         userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X)',
         channel: 'MOBILE_BROWSER',
         timestamp: pastDate(daysAgo, 2),
@@ -729,7 +730,7 @@ export async function runSeed() {
         clientId: client.id,
         mandateId: mandate.id,
         eventType: 'OTP_GENERATED',
-        ipAddress: `49.37.${(m % 200) + 1}.44`,
+        ipAddress: `203.0.113.${(m % 200) + 1}`,
         userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X)',
         channel: 'IN_APP_EMAIL (SMS Disabled by Policy)',
         timestamp: pastDate(daysAgo, 1),
@@ -741,7 +742,7 @@ export async function runSeed() {
         clientId: client.id,
         mandateId: mandate.id,
         eventType: 'CONSENT_GRANTED',
-        ipAddress: `49.37.${(m % 200) + 1}.44`,
+        ipAddress: `203.0.113.${(m % 200) + 1}`,
         userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X)',
         verificationMethod: 'OTP_IN_APP_EMAIL',
         otpVerificationId: otpVerId,
@@ -749,7 +750,7 @@ export async function runSeed() {
         metadata: {
           status: 'Consented & Locked',
           declarationsAcknowledged: [
-            'SEBI Regulation 19 Informed Consent',
+            'Client Informed Consent (SEBI Regulation 19 Compliance Record)',
             `Acknowledged Capital Gains Tax of ₹${taxPayable.toLocaleString('en-IN')}`,
           ],
         },

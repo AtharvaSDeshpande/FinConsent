@@ -339,6 +339,41 @@ router.post('/:id/revoke-link', requireRole(['ria', 'admin']), (req, res) => {
   res.json({ success: true, data: { ...updated, magicToken: newToken } });
 });
 
+// Revoke Mandate Recommendation (sets status to 'revoked', invalidates link, logs audit event)
+router.post('/:id/revoke', requireRole(['ria', 'admin']), (req, res) => {
+  const mandate = dbStore.findMandateById(req.params.id);
+  if (!mandate) {
+    return res.status(404).json({ success: false, error: 'Mandate not found' });
+  }
+
+  if (mandate.riaId !== req.user.id && req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, error: 'Unauthorized: You can only revoke mandates belonging to your advisory firm' });
+  }
+
+  if (mandate.status === 'consented' || mandate.status === 'approved') {
+    return res.status(400).json({ success: false, error: 'Cannot revoke an already consented mandate' });
+  }
+
+  const updated = dbStore.updateMandate(mandate.id, {
+    status: 'revoked',
+    isRevoked: true,
+    revokedAt: new Date().toISOString(),
+  });
+
+  dbStore.createAuditLog({
+    riaId: mandate.riaId,
+    clientId: mandate.clientId,
+    mandateId: mandate.id,
+    eventType: 'MANDATE_REVOKED',
+    ipAddress: req.ip || '127.0.0.1',
+    userAgent: req.headers['user-agent'] || 'API-Client',
+    channel: 'SYSTEM_API',
+    metadata: { reason: req.body?.reason || 'Adviser revoked mandate recommendation' },
+  });
+
+  res.json({ success: true, message: 'Mandate successfully revoked', data: updated });
+});
+
 // SEBI Regulation 19 Compliance Dossier (RBAC: RIA, Compliance Officer, Admin)
 router.get('/:id/dossier', requireRole(['ria', 'compliance_officer', 'admin']), (req, res) => {
   const mandate = dbStore.findMandateById(req.params.id);

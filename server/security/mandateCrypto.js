@@ -15,10 +15,12 @@ export function getDefaultKdfRounds() {
 }
 
 /**
- * Server-side Master Key derivation from JWT_SECRET and stored/default KDF parameters.
+ * Server-side Master Key derivation.
+ * Prioritizes dedicated SERVER_MASTER_KEY, isolating application/JWT secrets
+ * from cryptographic data encryption master keys.
  */
 export function getServerMasterKey(kdfOptions = null) {
-  const secret = process.env.JWT_SECRET || 'finconsent_master_key_default_2026';
+  const secret = process.env.SERVER_MASTER_KEY || (process.env.NODE_ENV !== 'production' ? process.env.JWT_SECRET : null) || 'finconsent_master_key_default_2026';
   const rounds = Number(kdfOptions?.rounds) || getDefaultKdfRounds();
   const digest = kdfOptions?.digest || KDF_DIGEST;
   let salt = 'finconsent_server_salt_v1';

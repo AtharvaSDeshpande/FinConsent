@@ -1,0 +1,23 @@
+{
+  "mode": "change",
+  "created": "2026-10-10T04:28:21.016Z",
+  "waves": [
+    [
+      "a14-debugger"
+    ],
+    [
+      "a4-backend",
+      "a6-auth",
+      "a3-tax-engine",
+      "a3-mandate-builder",
+      "a3-client-review",
+      "a5-data",
+      "a11-content",
+      "a7-i18n"
+    ],
+    [
+      "a12-qa",
+      "a13-reviewer"
+    ]
+  ]
+}

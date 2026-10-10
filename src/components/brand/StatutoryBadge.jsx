@@ -65,6 +65,13 @@ export const StatutoryBadge = ({ status = 'DRAFT', size = 'small' }) => {
       border: 'rgba(239, 68, 68, 0.35)',
       icon: <WarningAmberRoundedIcon sx={{ fontSize: 13, color: '#DC2626' }} />,
     },
+    REVOKED: {
+      label: 'Mandate Revoked',
+      bg: 'rgba(254, 242, 242, 0.8)',
+      color: '#991B1B',
+      border: 'rgba(239, 68, 68, 0.35)',
+      icon: <WarningAmberRoundedIcon sx={{ fontSize: 13, color: '#DC2626' }} />,
+    },
   };
 
   const current = configs[norm] || configs.DRAFT;
@@ -97,7 +104,7 @@ export const StatutoryBadge = ({ status = 'DRAFT', size = 'small' }) => {
 };
 
 export const ExpirationCountdownBadge = ({ cutoffTimestamp, status }) => {
-  if (!cutoffTimestamp || status === 'consented' || status === 'approved') {
+  if (!cutoffTimestamp || status === 'consented' || status === 'approved' || status === 'revoked') {
     return null;
   }
 

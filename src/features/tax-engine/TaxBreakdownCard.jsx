@@ -126,6 +126,16 @@ export const TaxBreakdownCard = ({ stcgAmount = 0, ltcgAmount = 0, customTitle =
           {formatCurrency(tax.totalTax)}
         </Typography>
       </Box>
+
+      {/* Statutory Assumptions & Advisory Disclaimer */}
+      <Box sx={{ mt: 2.5, pt: 1.5, borderTop: '1px dashed #E2E8F0' }}>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.7rem', lineHeight: 1.45 }}>
+          <strong>Tax Engine Assumptions:</strong> Rates computed under current statutory capital gains provisions (STCG: 20%, LTCG: 12.5% + 4% Health & Education Cess). Assumes the statutory ₹1,25,000 LTCG annual exemption is available across the client&apos;s aggregate annual capital gains (not per individual security). Excludes applicable high-income surcharge (up to 15% on equity capital gains) and any prior unabsorbed capital losses.
+        </Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5, fontSize: '0.68rem', fontStyle: 'italic' }}>
+          * Advisory decision-support estimate; not a formal tax assessment or substitute for client tax filings.
+        </Typography>
+      </Box>
     </Card>
   );
 };
