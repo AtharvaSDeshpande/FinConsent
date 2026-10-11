@@ -13,8 +13,8 @@ if (!fs.existsSync(SECURITY_DIR)) {
 }
 
 const CHROME_PATH = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-const BASE_URL = 'http://localhost:5173';
-const API_URL = 'http://localhost:5000';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:5173';
+const API_URL = process.env.API_URL || 'http://localhost:5000';
 
 async function loginApi(email, password = 'Password@123') {
   const res = await fetch(`${API_URL}/api/auth/login`, {

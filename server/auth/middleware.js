@@ -29,7 +29,18 @@ export function requireAuth(req, res, next) {
     });
   }
 
-  const user = dbStore.findUserById(decoded.userId);
+  let user = dbStore.findUserById(decoded.userId);
+  if (!user && (decoded.role === 'guest' || decoded.userId?.startsWith('guest_'))) {
+    user = {
+      id: decoded.userId,
+      name: 'Guest Visitor',
+      email: 'guest@finconsent.in',
+      role: 'guest',
+      isGuest: true,
+      plan: 'guest',
+      permissions: ['view_public', 'view_disclosures', 'preview_demo', 'switch_persona'],
+    };
+  }
   if (!user) {
     return res.status(401).json({ success: false, error: 'User account not found' });
   }

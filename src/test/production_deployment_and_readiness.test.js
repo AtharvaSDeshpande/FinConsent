@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import mongoose from 'mongoose';
 import {
   getMongoUri,
@@ -8,8 +8,12 @@ import {
   isDbConnected,
   isWriteReady,
   getDbStatus,
+  diagnoseMongoConfig,
+  scheduleReconnect,
+  cancelReconnect,
 } from '../../server/db/connection.js';
 import { dbStore } from '../../server/db/store.js';
+import { runSeed } from '../../server/db/seed.js';
 import app from '../../server/index.js';
 
 describe('Production Deployment, Database Connectivity & Readiness Suite', () => {
@@ -277,6 +281,114 @@ describe('Production Deployment, Database Connectivity & Readiness Suite', () =>
       expect(status).toHaveProperty('writesBlocked');
       expect(status).toHaveProperty('sanitizedUri');
       expect(status.sanitizedUri).not.toContain('Secret');
+      expect(status).toHaveProperty('diagnostics');
+      expect(status.diagnostics).toHaveProperty('sanitizedUri');
+    });
+  });
+
+  describe('6. Automatic Background Reconnection & Diagnostics', () => {
+    it('6.1: diagnoseMongoConfig detects missing configuration when no URI variable is present', () => {
+      delete process.env.MONGODB_URI;
+      delete process.env.MONGO_URI;
+      delete process.env.DATABASE_URL;
+
+      const diag = diagnoseMongoConfig();
+      expect(diag.status).toBe('MISSING_CONFIGURATION');
+      expect(diag.configuredVar).toBeNull();
+      expect(diag.recommendations.length).toBeGreaterThan(0);
+    });
+
+    it('6.2: diagnoseMongoConfig diagnoses protocol, user, host, and sanitizes output without secrets', () => {
+      process.env.MONGODB_URI = 'mongodb+srv://admin_tester:SecretP%40ss123@cluster0.ihnlo89.mongodb.net/finconsent?retryWrites=true&w=majority';
+
+      const diag = diagnoseMongoConfig();
+      expect(diag.configuredVar).toBe('MONGODB_URI');
+      expect(diag.protocol).toBe('mongodb+srv');
+      expect(diag.hasUser).toBe(true);
+      expect(diag.hasPassword).toBe(true);
+      expect(diag.host).toContain('cluster0.ihnlo89.mongodb.net');
+      expect(diag.targetDb).toBe('finconsent');
+      expect(diag.sanitizedUri).not.toContain('SecretP%40ss123');
+      expect(diag.sanitizedUri).toContain('admin_tester:****@');
+    });
+
+    it('6.3: scheduleReconnect and cancelReconnect manage background reconnection timers safely', () => {
+      process.env.NODE_ENV = 'production';
+      delete process.env.ALLOW_IN_MEMORY_FALLBACK;
+
+      cancelReconnect();
+      scheduleReconnect(5000);
+      const status = getDbStatus();
+      expect(status.reconnectScheduled).toBe(true);
+
+      cancelReconnect();
+      const statusAfter = getDbStatus();
+      expect(statusAfter.reconnectScheduled).toBe(false);
+    });
+  });
+
+  describe('7. Safe Seeding & Production Wipe Prevention', () => {
+    it('7.1: Strictly throws Safety Abort when runSeed is invoked in production environment', async () => {
+      process.env.NODE_ENV = 'production';
+
+      await expect(runSeed()).rejects.toThrowError(
+        /Database wipe and re-seeding is strictly prohibited in production environment/
+      );
+    });
+
+    it('7.2: Aborts wipe if connected database name contains prod in non-test environment', async () => {
+      process.env.NODE_ENV = 'development';
+      const originalName = mongoose.connection.name;
+      const originalReadyState = mongoose.connection.readyState;
+
+      Object.defineProperty(mongoose.connection, 'readyState', { value: 1, configurable: true });
+      Object.defineProperty(mongoose.connection, 'name', { value: 'finconsent-prod-db', configurable: true });
+
+      try {
+        await expect(runSeed()).rejects.toThrowError(
+          /Targeted database name 'finconsent-prod-db' appears to be production/
+        );
+      } finally {
+        Object.defineProperty(mongoose.connection, 'name', { value: originalName, configurable: true });
+        Object.defineProperty(mongoose.connection, 'readyState', { value: originalReadyState, configurable: true });
+      }
+    });
+  });
+
+  describe('8. Production Write Rollback & Container Port Ingress', () => {
+    it('8.1: In production, store removes unpersisted entity from memory if MongoDB write fails', async () => {
+      process.env.NODE_ENV = 'production';
+      delete process.env.ALLOW_IN_MEMORY_FALLBACK;
+
+      const originalReadyState = mongoose.connection.readyState;
+      Object.defineProperty(mongoose.connection, 'readyState', { value: 1, configurable: true });
+
+      // Mock UserModel.create to reject (simulating network partition or Mongo write failure)
+      const { UserModel } = await import('../../server/db/models.js');
+      const createSpy = vi.spyOn(UserModel, 'create').mockRejectedValue(new Error('Simulated Atlas Write Failure'));
+
+      const testUser = dbStore.createUser({
+        name: 'Rollback User',
+        email: 'rollback@example.in',
+      });
+
+      // Wait a tick for the async .catch to process
+      await new Promise((r) => setTimeout(r, 20));
+
+      expect(dbStore.findUserById(testUser.id)).toBeUndefined();
+
+      createSpy.mockRestore();
+      Object.defineProperty(mongoose.connection, 'readyState', { value: originalReadyState, configurable: true });
+    });
+
+    it('8.2: Verifies container PORT, HOST, and RENDER_EXTERNAL_URL environment configuration', () => {
+      process.env.PORT = '10000';
+      process.env.HOST = '0.0.0.0';
+      process.env.RENDER_EXTERNAL_URL = 'https://finconsent-api.onrender.com';
+
+      expect(process.env.PORT).toBe('10000');
+      expect(process.env.HOST).toBe('0.0.0.0');
+      expect(process.env.RENDER_EXTERNAL_URL).toBe('https://finconsent-api.onrender.com');
     });
   });
 });

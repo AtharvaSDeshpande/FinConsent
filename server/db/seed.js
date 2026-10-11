@@ -4,7 +4,7 @@ import { UserModel, ClientModel, MandateModel, AuditLogModel, RequestModel } fro
 import mongoose from 'mongoose';
 
 // Realistic Indian WealthTech and SEBI Advisory Seeder
-export async function runSeed() {
+export async function runSeed(options = {}) {
   console.log('[Seed] Initiating realistic platform database seeder...');
   const startTime = Date.now();
 
@@ -25,6 +25,9 @@ export async function runSeed() {
       throw new Error(`[Safety Abort] Targeted database name '${dbName}' appears to be production. Aborting wipe.`);
     }
   }
+
+  // Destructive reset requires explicit authorization
+  const allowReset = options?.reset === true || process.env.ALLOW_SEED_RESET === 'true';
 
   // Deterministic bcrypt hash for 'Password@123'
   const defaultPasswordHash = '$2a$10$20gor5UMRbxD0N2.5fuZ1OAk5eTmWZCa6Aj2b5AKHVOfVU8SoIwwa';
@@ -801,27 +804,46 @@ export async function runSeed() {
 
   // Synchronize documents into live MongoDB Atlas cluster (skipped in automated tests for speed)
   if (mongoose.connection.readyState === 1 && process.env.NODE_ENV !== 'test') {
-    console.log('[Seed] Synchronizing and inserting documents into live MongoDB Atlas collections...');
+    console.log('[Seed] Synchronizing documents into live MongoDB Atlas collections...');
     try {
-      await Promise.all([
-        UserModel.deleteMany({}),
-        ClientModel.deleteMany({}),
-        MandateModel.deleteMany({}),
-        AuditLogModel.deleteMany({}),
-        RequestModel.deleteMany({}),
-      ]);
-
       const usersList = Array.from(dbStore.users.values());
       const clientsList = Array.from(dbStore.clients.values());
       const mandatesList = Array.from(dbStore.mandates.values());
       const auditLogsList = dbStore.auditLogs;
       const requestsList = Array.from(dbStore.requests.values());
 
-      await UserModel.insertMany(usersList, { ordered: false });
-      await ClientModel.insertMany(clientsList, { ordered: false });
-      await MandateModel.insertMany(mandatesList, { ordered: false });
-      await AuditLogModel.insertMany(auditLogsList, { ordered: false });
-      await RequestModel.insertMany(requestsList, { ordered: false });
+      if (allowReset) {
+        console.log('[Seed] Explicit collection wipe authorized (ALLOW_SEED_RESET=true). Clearing existing records...');
+        await Promise.all([
+          UserModel.deleteMany({}),
+          ClientModel.deleteMany({}),
+          MandateModel.deleteMany({}),
+          AuditLogModel.deleteMany({}),
+          RequestModel.deleteMany({}),
+        ]);
+
+        await UserModel.insertMany(usersList, { ordered: false });
+        await ClientModel.insertMany(clientsList, { ordered: false });
+        await MandateModel.insertMany(mandatesList, { ordered: false });
+        await AuditLogModel.insertMany(auditLogsList, { ordered: false });
+        await RequestModel.insertMany(requestsList, { ordered: false });
+      } else {
+        console.log('[Seed] Safe non-destructive upsert mode active (repeatable without duplicates or wipes)...');
+        // Bulk upsert by unique ID to guarantee idempotency and avoid duplicates
+        const userOps = usersList.map((u) => ({ updateOne: { filter: { id: u.id }, update: { $set: u }, upsert: true } }));
+        const clientOps = clientsList.map((c) => ({ updateOne: { filter: { id: c.id }, update: { $set: c }, upsert: true } }));
+        const mandateOps = mandatesList.map((m) => ({ updateOne: { filter: { id: m.id }, update: { $set: m }, upsert: true } }));
+        const auditOps = auditLogsList.map((a) => ({ updateOne: { filter: { id: a.id }, update: { $set: a }, upsert: true } }));
+        const reqOps = requestsList.map((r) => ({ updateOne: { filter: { id: r.id }, update: { $set: r }, upsert: true } }));
+
+        await Promise.all([
+          UserModel.bulkWrite(userOps, { ordered: false }),
+          ClientModel.bulkWrite(clientOps, { ordered: false }),
+          MandateModel.bulkWrite(mandateOps, { ordered: false }),
+          AuditLogModel.bulkWrite(auditOps, { ordered: false }),
+          RequestModel.bulkWrite(reqOps, { ordered: false }),
+        ]);
+      }
 
       const [mUsers, mClients, mMandates, mAudit, mRequests] = await Promise.all([
         UserModel.countDocuments(),
@@ -871,7 +893,8 @@ export async function runSeed() {
 }
 
 if (process.argv[1] && process.argv[1].endsWith('seed.js')) {
-  runSeed()
+  const shouldReset = process.argv.includes('--reset') || process.argv.includes('--force-reset');
+  runSeed({ reset: shouldReset })
     .then(async () => {
       if (mongoose.connection.readyState === 1) {
         await mongoose.disconnect();

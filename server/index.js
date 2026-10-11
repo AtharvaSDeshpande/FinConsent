@@ -221,7 +221,13 @@ const isMainScript = process.argv[1] && (
 
 if (isMainScript && process.env.NODE_ENV !== 'test') {
   app.listen(PORT, HOST, () => {
-    console.log(`FinConsent Server listening on http://${HOST}:${PORT} (bound to container interface ${HOST}; local preview: http://localhost:${PORT})`);
+    const publicUrl = process.env.RENDER_EXTERNAL_URL || process.env.PUBLIC_URL || null;
+    console.log(`[Server] FinConsent API listening on http://${HOST}:${PORT} (bound to container interface ${HOST}; internal listening address: http://localhost:${PORT})`);
+    if (publicUrl) {
+      console.log(`[Deployment] Public gateway URL: ${publicUrl} (internal container address http://localhost:${PORT} is routed via Render reverse proxy)`);
+    } else {
+      console.log(`[Deployment] Internal address http://localhost:${PORT} serves container-local requests. Public ingress routes via upstream reverse proxy.`);
+    }
   });
 }
 

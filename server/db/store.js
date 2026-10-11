@@ -147,7 +147,12 @@ class FinConsentStore {
     this.users.set(id, user);
 
     if (!this.isSeeding && mongoose.connection.readyState === 1) {
-      UserModel.create(user).catch((err) => console.warn('[Mongo Sync Error]', err.message));
+      UserModel.create(user).catch((err) => {
+        console.error('[Mongo Write Failure - User]:', err.message);
+        if (process.env.NODE_ENV === 'production') {
+          this.users.delete(id);
+        }
+      });
     }
 
     return user;
@@ -180,7 +185,12 @@ class FinConsentStore {
     this.users.set(id, updated);
 
     if (!this.isSeeding && mongoose.connection.readyState === 1) {
-      UserModel.updateOne({ id }, { $set: updates }).catch((err) => console.warn('[Mongo Sync Error]', err.message));
+      UserModel.updateOne({ id }, { $set: updates }).catch((err) => {
+        console.error('[Mongo Write Failure - Update User]:', err.message);
+        if (process.env.NODE_ENV === 'production') {
+          this.users.set(id, user);
+        }
+      });
     }
 
     return updated;
@@ -198,7 +208,12 @@ class FinConsentStore {
     this.clients.set(id, client);
 
     if (!this.isSeeding && mongoose.connection.readyState === 1) {
-      ClientModel.create(client).catch((err) => console.warn('[Mongo Sync Error]', err.message));
+      ClientModel.create(client).catch((err) => {
+        console.error('[Mongo Write Failure - Client]:', err.message);
+        if (process.env.NODE_ENV === 'production') {
+          this.clients.delete(id);
+        }
+      });
     }
 
     return client;
@@ -301,7 +316,13 @@ class FinConsentStore {
     }
 
     if (!this.isSeeding && mongoose.connection.readyState === 1) {
-      MandateModel.create(storedMandate).catch((err) => console.warn('[Mongo Sync Error]', err.message));
+      MandateModel.create(storedMandate).catch((err) => {
+        console.error('[Mongo Write Failure - Mandate]:', err.message);
+        if (process.env.NODE_ENV === 'production') {
+          this.mandates.delete(id);
+          this.activeMagicTokens.delete(id);
+        }
+      });
     }
 
     // Return object with transparently decrypted data and transient magicToken
@@ -430,7 +451,12 @@ class FinConsentStore {
     this.mandates.set(id, updated);
 
     if (!this.isSeeding && mongoose.connection.readyState === 1) {
-      MandateModel.updateOne({ id }, { $set: copy, $unset: { magicToken: 1 } }).catch((err) => console.warn('[Mongo Sync Error]', err.message));
+      MandateModel.updateOne({ id }, { $set: copy, $unset: { magicToken: 1 } }).catch((err) => {
+        console.error('[Mongo Write Failure - Update Mandate]:', err.message);
+        if (process.env.NODE_ENV === 'production') {
+          this.mandates.set(id, mandate);
+        }
+      });
     }
 
     return {
@@ -476,7 +502,12 @@ class FinConsentStore {
     this.requests.set(id, request);
 
     if (!this.isSeeding && mongoose.connection.readyState === 1) {
-      RequestModel.create(request).catch((err) => console.warn('[Mongo Sync Error]', err.message));
+      RequestModel.create(request).catch((err) => {
+        console.error('[Mongo Write Failure - Request]:', err.message);
+        if (process.env.NODE_ENV === 'production') {
+          this.requests.delete(id);
+        }
+      });
     }
 
     return request;
@@ -505,7 +536,12 @@ class FinConsentStore {
     this.requests.set(id, updated);
 
     if (!this.isSeeding && mongoose.connection.readyState === 1) {
-      RequestModel.updateOne({ id }, { $set: updates }).catch((err) => console.warn('[Mongo Sync Error]', err.message));
+      RequestModel.updateOne({ id }, { $set: updates }).catch((err) => {
+        console.error('[Mongo Write Failure - Update Request]:', err.message);
+        if (process.env.NODE_ENV === 'production') {
+          this.requests.set(id, request);
+        }
+      });
     }
 
     return updated;
@@ -541,7 +577,13 @@ class FinConsentStore {
         ...logEntry,
         hash: payloadHash,
         previousHash: prevHash,
-      }).catch((err) => console.warn('[Mongo Sync Error]', err.message));
+      }).catch((err) => {
+        console.error('[Mongo Write Failure - AuditLog]:', err.message);
+        if (process.env.NODE_ENV === 'production') {
+          const idx = this.auditLogs.findIndex((a) => a.id === id);
+          if (idx !== -1) this.auditLogs.splice(idx, 1);
+        }
+      });
     }
 
     return logEntry;
