@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Generates an interactive, standalone HTML presentation viewer (docs/FinConsent-Client-Presentation.html
-and FinConsent-Client-Presentation.html) mirroring the 29-slide PowerPoint deck with:
+and FinConsent-Client-Presentation.html) mirroring the 30-slide PowerPoint deck with:
   - 16:9 widescreen layout with auto-scaling to fit any display
   - Large titles (32px / 2rem), body text (14-15px), uppercase kickers
   - Compact content-sized cards (~8px rounded corners, subtle 1px border, no top/side stripes)
@@ -488,7 +488,7 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 1 of 29</span>
+          <span>Slide 1 of 30</span>
         </div>
       </div>
 
@@ -498,22 +498,31 @@ def build_presentation():
         <div class="slide-title">The Operational Crisis Facing Indian Investment Advisers</div>
         <div class="slide-subtitle">Why legacy approval methods fail both regulatory audits and investor trust.</div>
         <div class="content-area" style="flex-direction: column; gap: 14px; justify-content: center;">
-          <div class="card" style="border-left: 5px solid var(--rose); background: #FFF5F5;">
-            <h3 style="color: var(--rose);">1. Informal WhatsApp &amp; Email Approvals (Regulatory Rejection)</h3>
-            <p>Advisers routinely gather approvals over text messages or calls. SEBI inspection teams reject informal communications under Regulation 19 record-keeping rules, leaving RIAs vulnerable to claims of unauthorized trading. Such communications fail Section 63 BSA electronic admissibility standards.</p>
+          <div class="card" style="background: var(--card-bg); border: 1px solid var(--card-border); display: flex; flex-direction: row; align-items: flex-start; gap: 14px;">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--rose-light); color: var(--rose); font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">1</div>
+            <div>
+              <h3 style="color: var(--rose); margin-bottom: 4px;">Informal WhatsApp &amp; Email Approvals (Regulatory Rejection)</h3>
+              <p>Advisers routinely gather approvals over text messages or calls. SEBI inspection teams reject informal communications under Regulation 19 record-keeping rules, leaving RIAs vulnerable to claims of unauthorized trading. Such communications fail Section 63 BSA electronic admissibility standards.</p>
+            </div>
           </div>
-          <div class="card" style="border-left: 5px solid var(--amber); background: #FFFBEB;">
-            <h3 style="color: var(--amber);">2. Post-Trade Capital Gains Tax Shocks (Investor Friction)</h3>
-            <p>Finance Act 2024 increased STCG to 20% and LTCG to 12.5% (+ 4% cess). When rebalancing occurs without pre-trade tax visibility, investors are blindsided by unexpected tax liabilities and penalty interest under Section 208 and 234C where liability reaches ₹10,000.</p>
+          <div class="card" style="background: var(--card-bg); border: 1px solid var(--card-border); display: flex; flex-direction: row; align-items: flex-start; gap: 14px;">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--amber-light); color: var(--amber); font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">2</div>
+            <div>
+              <h3 style="color: var(--amber); margin-bottom: 4px;">Post-Trade Capital Gains Tax Shocks (Investor Friction)</h3>
+              <p>Finance Act 2024 increased STCG to 20% and LTCG to 12.5% (+ 4% cess). When rebalancing occurs without pre-trade tax visibility, investors are blindsided by unexpected tax liabilities and penalty interest under Section 208 and 234C where liability reaches ₹10,000.</p>
+            </div>
           </div>
-          <div class="card" style="border-left: 5px solid var(--navy); background: #F8FAFC;">
-            <h3 style="color: var(--navy);">3. Fragmented Audit Trails (Inadmissible in Disputes)</h3>
-            <p>Advice, rationale, client responses, and execution logs live in disconnected silos. Compiling annual compliance records takes weeks. Raw screenshots lack cryptographic hash continuity and device provenance, rendering them contestable before regulatory authorities.</p>
+          <div class="card" style="background: var(--card-bg); border: 1px solid var(--card-border); display: flex; flex-direction: row; align-items: flex-start; gap: 14px;">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--indigo-light); color: var(--navy); font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">3</div>
+            <div>
+              <h3 style="color: var(--navy); margin-bottom: 4px;">Fragmented Audit Trails (Inadmissible in Disputes)</h3>
+              <p>Advice, rationale, client responses, and execution logs live in disconnected silos. Compiling annual compliance records takes weeks. Raw screenshots lack cryptographic hash continuity and device provenance, rendering them contestable before regulatory authorities.</p>
+            </div>
           </div>
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 2 of 29</span>
+          <span>Slide 2 of 30</span>
         </div>
       </div>
 
@@ -570,7 +579,7 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 3 of 29</span>
+          <span>Slide 3 of 30</span>
         </div>
       </div>
 
@@ -599,7 +608,7 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 4 of 29</span>
+          <span>Slide 4 of 30</span>
         </div>
       </div>
 
@@ -633,7 +642,7 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 5 of 29</span>
+          <span>Slide 5 of 30</span>
         </div>
       </div>
 
@@ -663,14 +672,14 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 6 of 29</span>
+          <span>Slide 6 of 30</span>
         </div>
       </div>
 
       <!-- SLIDE 7: Main Journey & Exception Flows -->
       <div class="slide" data-notes="State transitions in FinConsent are strictly unidirectional. Once Consented or Expired, a mandate cannot be edited or revived.">
         <div class="kicker">Process Architecture</div>
-        <div class="slide-title">Statutory State Progression: Happy Path &amp; Exception Boundaries</div>
+        <div class="slide-title">Statutory State Progression: Journey &amp; Exception Paths</div>
         <div class="slide-subtitle">Deterministic finite-state machine governing advisory recommendations and legal evidence.</div>
         <div class="content-area">
           <div class="col-half">
@@ -698,7 +707,7 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 7 of 29</span>
+          <span>Slide 7 of 30</span>
         </div>
       </div>
 
@@ -736,7 +745,7 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 8 of 29</span>
+          <span>Slide 8 of 30</span>
         </div>
       </div>
 
@@ -769,7 +778,7 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 9 of 29</span>
+          <span>Slide 9 of 30</span>
         </div>
       </div>
 
@@ -783,7 +792,7 @@ def build_presentation():
             <div class="phone-frame">
               <div class="phone-notch"></div>
               <div class="phone-screen">
-                <img data-src="visual-audit/mandate-security/02_client_password_required.png" alt="Client Password Gate">
+                <img data-src="visual-audit/mandate-security/07_mobile_unlock_screen.png" alt="Client Password Gate">
               </div>
             </div>
             <div class="caption">Figure 10.1: Client Password Gate on Mobile</div>
@@ -808,7 +817,7 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 10 of 29</span>
+          <span>Slide 10 of 30</span>
         </div>
       </div>
 
@@ -852,7 +861,7 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 11 of 29</span>
+          <span>Slide 11 of 30</span>
         </div>
       </div>
 
@@ -894,7 +903,7 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 12 of 29</span>
+          <span>Slide 12 of 30</span>
         </div>
       </div>
 
@@ -938,7 +947,7 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 13 of 29</span>
+          <span>Slide 13 of 30</span>
         </div>
       </div>
 
@@ -982,7 +991,7 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 14 of 29</span>
+          <span>Slide 14 of 30</span>
         </div>
       </div>
 
@@ -998,7 +1007,7 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 15 of 29</span>
+          <span>Slide 15 of 30</span>
         </div>
       </div>
 
@@ -1012,7 +1021,7 @@ def build_presentation():
             <div class="phone-frame">
               <div class="phone-notch"></div>
               <div class="phone-screen">
-                <img data-src="visual-audit/mandate-security/04_client_chat_question.png" alt="Client Chat Question">
+                <img data-src="visual-audit/mandate-security/09_mobile_chat_discussion.png" alt="Client Chat Question">
               </div>
             </div>
             <div class="caption">Figure 16.1: Rohan posts an inquiry regarding Tata Motors.</div>
@@ -1036,7 +1045,7 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 16 of 29</span>
+          <span>Slide 16 of 30</span>
         </div>
       </div>
 
@@ -1107,7 +1116,7 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 17 of 29</span>
+          <span>Slide 17 of 30</span>
         </div>
       </div>
 
@@ -1141,7 +1150,7 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 18 of 29</span>
+          <span>Slide 18 of 30</span>
         </div>
       </div>
 
@@ -1150,37 +1159,14 @@ def build_presentation():
         <div class="kicker">System Topology</div>
         <div class="slide-title">Technical Architecture: Security &amp; Service Boundaries</div>
         <div class="slide-subtitle">High-level system topology illustrating frontend, API, security engine, and storage tiers.</div>
-        <div class="content-area" style="flex-direction: column; align-items: center; justify-content: center;">
-          <div style="background: #0A192F; color: #38BDF8; font-family: monospace; font-size: 12px; padding: 18px; border-radius: 8px; width: 100%; overflow: auto; line-height: 1.45;">
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                                   CLIENT &amp; ADVISOR CLIENTS                             │
-│   • Desktop Advisory Hub (React 18 / MUI / Vite)       • Mobile Client Review (360px)  │
-└───────────────────────────────────────────▲────────────────────────────────────────────┘
-                                            │ HTTPS / TLS 1.3 (Helmet HSTS)
-┌───────────────────────────────────────────▼────────────────────────────────────────────┐
-│                             API GATEWAY &amp; SECURITY MIDDLEWARE                          │
-│   • Express REST API (Node.js ESM)                     • CORS Strict Whitelist         │
-│   • JWT Auth &amp; TOTP Staff MFA                          • Distributed Sliding Rate Limit│
-│   • Tenancy Scoping Middleware (Firm Isolation)        • Input Sanitization &amp; Masking  │
-└───────────────────────────────────────────▲────────────────────────────────────────────┘
-                                            │
-┌───────────────────────────────────────────▼────────────────────────────────────────────┐
-│                             FINCONSENT CORE BUSINESS ENGINES                           │
-│   • Mandate State Machine Engine                       • Finance Act 2024 Tax Engine   │
-│   • Dual-Envelope AES-256-GCM Crypto Engine            • PBKDF2 Client Key Derivation  │
-│   • In-App Mandate Clarification Chat Rail             • OTP Verification &amp; Lockout    │
-└───────────────────────────────────────────▲────────────────────────────────────────────┘
-                                            │
-┌───────────────────────────────────────────▼────────────────────────────────────────────┐
-│                               PERSISTENT DATA &amp; AUDIT TIERS                            │
-│   • MongoDB Atlas (AWS Mumbai ap-south-1)              • Dedicated SERVER_MASTER_KEY   │
-│   • Append-Only SHA-256 Chained Audit Ledger           • Point-in-Time Recovery (PITR) │
-└────────────────────────────────────────────────────────────────────────────────────────┘
+        <div class="content-area" style="align-items: center; justify-content: center;">
+          <div style="width: 100%; height: 100%; max-height: 440px;" class="svg-wrapper">
+            {svg_deploy}
           </div>
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 19 of 29</span>
+          <span>Slide 19 of 30</span>
         </div>
       </div>
 
@@ -1224,7 +1210,7 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 20 of 29</span>
+          <span>Slide 20 of 30</span>
         </div>
       </div>
 
@@ -1235,29 +1221,29 @@ def build_presentation():
         <div class="slide-subtitle">Concrete evidence demonstrating zero regressions across automated and browser tests.</div>
         <div class="content-area">
           <div class="card" style="flex: 1; align-items: center; justify-content: center; text-align: center;">
-            <div style="font-size: 48px; font-weight: 900; color: var(--emerald); line-height: 1;">230 / 230</div>
+            <div style="font-size: 48px; font-weight: 900; color: var(--emerald); line-height: 1; white-space: nowrap;">230 / 230</div>
             <div style="font-size: 15px; font-weight: 700; color: var(--navy); margin: 8px 0 6px 0;">Automated Tests Passing</div>
             <p style="font-size: 13px;">17 test suites running across tax calculation, security, RBAC, i18n, and API regressions (100% pass rate).</p>
           </div>
           <div class="card" style="flex: 1; align-items: center; justify-content: center; text-align: center;">
-            <div style="font-size: 56px; font-weight: 900; color: var(--indigo); line-height: 1;">81</div>
+            <div style="font-size: 56px; font-weight: 900; color: var(--emerald); line-height: 1;">81</div>
             <div style="font-size: 15px; font-weight: 700; color: var(--navy); margin: 8px 0 6px 0;">Screenshots Captured</div>
             <p style="font-size: 13px;">42 baseline, 25 security, and 14 mandate-security screenshots verifying desktop and mobile viewports.</p>
           </div>
           <div class="card" style="flex: 1; align-items: center; justify-content: center; text-align: center;">
-            <div style="font-size: 56px; font-weight: 900; color: var(--navy); line-height: 1;">1,460</div>
+            <div style="font-size: 56px; font-weight: 900; color: var(--emerald); line-height: 1;">1,460</div>
             <div style="font-size: 15px; font-weight: 700; color: var(--navy); margin: 8px 0 6px 0;">Records Disaster Drill</div>
             <p style="font-size: 13px;">Synthetic non-destructive restore drill verified 1,460 audit logs with zero broken cryptographic hash links.</p>
           </div>
           <div class="card" style="flex: 1; align-items: center; justify-content: center; text-align: center;">
-            <div style="font-size: 56px; font-weight: 900; color: var(--amber); line-height: 1;">0</div>
+            <div style="font-size: 56px; font-weight: 900; color: var(--emerald); line-height: 1;">0</div>
             <div style="font-size: 15px; font-weight: 700; color: var(--navy); margin: 8px 0 6px 0;">Broken Hash Chains</div>
             <p style="font-size: 13px;">Full mathematical continuity verified across all state changes, guaranteeing tamper-evident audit records.</p>
           </div>
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 21 of 29</span>
+          <span>Slide 21 of 30</span>
         </div>
       </div>
 
@@ -1296,7 +1282,7 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 22 of 29</span>
+          <span>Slide 22 of 30</span>
         </div>
       </div>
 
@@ -1336,7 +1322,7 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 23 of 29</span>
+          <span>Slide 23 of 30</span>
         </div>
       </div>
 
@@ -1380,11 +1366,44 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 24 of 29</span>
+          <span>Slide 24 of 30</span>
         </div>
       </div>
 
-      <!-- SLIDE 25: Appendix A -->
+      <!-- SLIDE 25: Appendix Section Divider -->
+      <div class="slide dark-theme" data-notes="This divider introduces the technical appendices, detailing formal cryptographic proofs, RBAC matrices, and legal evidentiary standards.">
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+          <div class="kicker">TECHNICAL APPENDICES</div>
+          <h1 style="font-size: 38px; font-weight: 900; color: #FFFFFF; margin-bottom: 12px;">Regulatory Specifications &amp; Architectural Proofs</h1>
+          <p style="font-size: 15px; color: #CBD5E1; max-width: 900px; line-height: 1.6; margin-bottom: 32px;">
+            Comprehensive formal specifications, mathematical invariants, access control matrices, and evidentiary frameworks supporting FinConsent's compliance architecture.
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+            <div class="card" style="background: #0F172A; border-color: #334155;">
+              <h3 style="color: #A5B4FC; font-size: 14px;">Appendix A: Cryptography</h3>
+              <p style="font-size: 12.5px; color: #94A3B8;">AES-256-GCM, 100k-round PBKDF2 &amp; dual-envelope key wrapping specifications.</p>
+            </div>
+            <div class="card" style="background: #0F172A; border-color: #334155;">
+              <h3 style="color: #A5B4FC; font-size: 14px;">Appendix B: Access Matrix</h3>
+              <p style="font-size: 12.5px; color: #94A3B8;">Granular API route permissions and firm tenancy scoping invariants across roles.</p>
+            </div>
+            <div class="card" style="background: #0F172A; border-color: #334155;">
+              <h3 style="color: #A5B4FC; font-size: 14px;">Appendix C: BSA §63 Ledger</h3>
+              <p style="font-size: 12.5px; color: #94A3B8;">Mandatory electronic evidence attributes, hash chaining schema &amp; court admissibility.</p>
+            </div>
+            <div class="card" style="background: #0F172A; border-color: #334155;">
+              <h3 style="color: #A5B4FC; font-size: 14px;">Appendix D: Operational Scope</h3>
+              <p style="font-size: 12.5px; color: #94A3B8;">Strict demarcation of implemented production state vs future product roadmap.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bar">
+          <span>FinConsent | Statutory RIA Infrastructure</span>
+          <span>Slide 25 of 30</span>
+        </div>
+      </div>
+
+      <!-- SLIDE 26: Appendix A -->
       <div class="slide" data-notes="Appendix A outlines the formal cryptographic specifications: AES-256-GCM, 100,000 rounds of PBKDF2, and zero plaintext secret storage.">
         <div class="kicker">Appendix A</div>
         <div class="slide-title">Technical Deep-Dive: Cryptographic Invariants &amp; Key Derivation</div>
@@ -1403,14 +1422,14 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 25 of 29</span>
+          <span>Slide 26 of 30</span>
         </div>
       </div>
 
-      <!-- SLIDE 26: Appendix B -->
+      <!-- SLIDE 27: Appendix B -->
       <div class="slide" data-notes="Appendix B provides the role-based access matrix. Every API endpoint enforces strict authorization rules.">
         <div class="kicker">Appendix B</div>
-        <div class="slide-title">Technical Deep-Dive: Role-Based Authorization Matrix</div>
+        <div class="slide-title">Role-Based Authorization Matrix (RBAC)</div>
         <div class="slide-subtitle">Detailed API permission matrix with monospaced endpoints and coloured permission chips.</div>
         <div class="content-area">
           <table class="table-container">
@@ -1458,14 +1477,14 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 26 of 29</span>
+          <span>Slide 27 of 30</span>
         </div>
       </div>
 
-      <!-- SLIDE 27: Appendix C -->
+      <!-- SLIDE 28: Appendix C -->
       <div class="slide" data-notes="Appendix C details the exact criteria required under Section 63 of Bharatiya Sakshya Adhiniyam, 2023 for electronic records to be admitted in court.">
         <div class="kicker">Appendix C</div>
-        <div class="slide-title">Technical Deep-Dive: Audit Schema &amp; Section 63 BSA Admissibility</div>
+        <div class="slide-title">Audit Schema &amp; Section 63 BSA Admissibility</div>
         <div class="slide-subtitle">Evidentiary record structures required by Indian legal standards.</div>
         <div class="content-area">
           <div style="flex: 1.1;">
@@ -1491,11 +1510,11 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 27 of 29</span>
+          <span>Slide 28 of 30</span>
         </div>
       </div>
 
-      <!-- SLIDE 28: Appendix D -->
+      <!-- SLIDE 29: Appendix D -->
       <div class="slide" data-notes="Appendix D provides transparency on implemented features versus roadmap enhancements like WhatsApp delivery and direct broker execution.">
         <div class="kicker">Appendix D</div>
         <div class="slide-title">Operational Considerations: Implemented State vs. Roadmap</div>
@@ -1529,11 +1548,11 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 28 of 29</span>
+          <span>Slide 29 of 30</span>
         </div>
       </div>
 
-      <!-- SLIDE 29: Pilot Proposal -->
+      <!-- SLIDE 30: Pilot Proposal -->
       <div class="slide" data-notes="To begin, we propose a 4-week pilot starting with 10-25 families. The Pro Practice plan is ₹2,499/month with zero AUM surcharges. Inquiries: compliance@finconsent.in.">
         <div class="kicker">Pilot Proposal &amp; Next Steps</div>
         <div class="slide-title">Institutional Pilot Proposal &amp; Implementation Roadmap</div>
@@ -1572,7 +1591,7 @@ def build_presentation():
         </div>
         <div class="footer-bar">
           <span>FinConsent | Statutory RIA Infrastructure</span>
-          <span>Slide 29 of 29</span>
+          <span>Slide 30 of 30</span>
         </div>
       </div>
 
@@ -1703,7 +1722,7 @@ def build_presentation():
     with open(OUTPUT_HTML_ROOT, "w", encoding="utf-8") as f:
         f.write(html)
 
-    print(f"[SUCCESS] Interactive presentation HTML created with 29 slides & embedded SVG diagrams at:")
+    print(f"[SUCCESS] Interactive presentation HTML created with 30 slides & embedded SVG diagrams at:")
     print(f"  - {OUTPUT_HTML}")
     print(f"  - {OUTPUT_HTML_ROOT}")
 

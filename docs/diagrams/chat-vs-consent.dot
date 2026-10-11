@@ -1,13 +1,14 @@
 digraph ChatVsConsent {
-    
-    bgcolor="#FFFFFF";
-    fontname="Helvetica,Arial,sans-serif";
-    fontsize=14;
-    pad="0.25,0.25";
-    nodesep=0.4;
-    ranksep=0.45;
-    splines=ortho;
 
+    graph [
+        bgcolor="#FFFFFF",
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=14,
+        pad="0.25,0.25",
+        nodesep=0.4,
+        ranksep=0.45,
+        splines=ortho
+    ];
     node [
         fontname="Helvetica,Arial,sans-serif",
         fontsize=12,
@@ -18,7 +19,6 @@ digraph ChatVsConsent {
         penwidth=1.5,
         margin="0.15,0.12"
     ];
-
     edge [
         fontname="Helvetica,Arial,sans-serif",
         fontsize=12,
