@@ -1,0 +1,62 @@
+digraph EnvelopeEncryption {
+    
+    bgcolor="#FFFFFF";
+    fontname="Helvetica,Arial,sans-serif";
+    fontsize=14;
+    pad="0.25,0.25";
+    nodesep=0.4;
+    ranksep=0.45;
+    splines=ortho;
+
+    node [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        shape=box,
+        style="rounded,filled",
+        fillcolor="#F8FAFC",
+        color="#CBD5E1",
+        penwidth=1.5,
+        margin="0.15,0.12"
+    ];
+
+    edge [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        color="#64748B",
+        fontcolor="#334155",
+        penwidth=1.5
+    ];
+
+    rankdir=TB;
+
+    plain [label="PLAINTEXT MANDATE DATA\nClient Holdings, PAN, Tax Liability & Trade Baskets",
+           color="#0A192F", fillcolor="#F1F5F9", fontcolor="#0A192F", fontsize=13];
+
+    dek [label="UNIQUE DATA ENCRYPTION KEY (DEK)\nGenerated via CSPRNG (256-bit Random Key)",
+         color="#D97706", fillcolor="#FEF3C7", fontcolor="#92400E", fontsize=13, penwidth=2.0];
+
+    cipher [label="ENCRYPTED PAYLOAD AT REST (AES-256-GCM)\nCiphertext + 12-byte IV + 16-byte Authentication Tag",
+            color="#059669", fillcolor="#D1FAE5", fontcolor="#065F46", fontsize=13, penwidth=2.0];
+
+    plain -> cipher [label="AES-256-GCM Encrypt", color="#059669", penwidth=2.0];
+    dek -> cipher [label="Key Input", color="#D97706"];
+
+    subgraph cluster_dual_wrapping {
+        label="Dual Key Wrapping Architecture (Zero Plaintext Stored in Database)";
+        fontname="Helvetica,Arial,sans-serif";
+        fontsize=13;
+        fontcolor="#4F46E5";
+        color="#818CF8";
+        style="rounded,dashed";
+        fillcolor="#F8FAFC";
+
+        wrap_server [label="SERVER-WRAPPED DEK\nEncrypted with isolated SERVER_MASTER_KEY\n(For RIA Dashboard Management)",
+                     color="#4F46E5", fillcolor="#EEF2FF", fontcolor="#312E81"];
+
+        wrap_client [label="CLIENT-WRAPPED DEK\nEncrypted with PBKDF2(PAN_last_4 + DOB)\n(For Mobile Client Password Unlock)",
+                     color="#059669", fillcolor="#ECFDF5", fontcolor="#065F46"];
+    }
+
+    dek -> wrap_server [label="Server Master Key Wrap", color="#4F46E5"];
+    dek -> wrap_client [label="Client PBKDF2 Wrap", color="#059669"];
+}

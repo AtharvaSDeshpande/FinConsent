@@ -1,0 +1,42 @@
+digraph MainJourneyFlow {
+    
+    bgcolor="#FFFFFF";
+    fontname="Helvetica,Arial,sans-serif";
+    fontsize=14;
+    pad="0.25,0.25";
+    nodesep=0.4;
+    ranksep=0.45;
+    splines=ortho;
+
+    node [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        shape=box,
+        style="rounded,filled",
+        fillcolor="#F8FAFC",
+        color="#CBD5E1",
+        penwidth=1.5,
+        margin="0.15,0.12"
+    ];
+
+    edge [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        color="#64748B",
+        fontcolor="#334155",
+        penwidth=1.5
+    ];
+
+    rankdir=LR;
+
+    s_draft [label="DRAFT\nAdvisor Prepares Baskets\n& Advisory Rationale", color="#64748B", fillcolor="#F1F5F9"];
+    s_sent  [label="SENT\nEncrypted Magic Link\nDispatched with 48h Window", color="#4F46E5", fillcolor="#EEF2FF", fontcolor="#312E81"];
+    s_view  [label="VIEWED / IN REVIEW\nClient Unlocks via PAN+DOB\nFull Tax & Baskets Revealed", color="#D97706", fillcolor="#FEF3C7", fontcolor="#92400E"];
+    s_cons  [label="CONSENTED\n3 Declarations Accepted\n6-Digit OTP Verified", color="#059669", fillcolor="#D1FAE5", fontcolor="#065F46", penwidth=2.5];
+    s_lock  [label="EVIDENCE LOCKED\nSHA-256 Chained Hash\nSec 63 BSA Receipt Emitted", color="#0A192F", fillcolor="#E2E8F0", fontcolor="#0A192F", penwidth=2.0];
+
+    s_draft -> s_sent [label="Dispatch"];
+    s_sent -> s_view [label="Password Unlock"];
+    s_view -> s_cons [label="OTP Verified"];
+    s_cons -> s_lock [label="Atomic Seal"];
+}

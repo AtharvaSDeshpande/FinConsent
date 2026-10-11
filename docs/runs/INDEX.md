@@ -20,4 +20,6 @@
 20261010-110627-fix-prod-deploy-mongo-render | Fix Render port binding, MongoDB Atlas connectivity, readiness probes, and prevent in-memory fallback | shipped
 20261010-130900-fix-reshare-remind-blank-screen | Fix buttons like Reshare most urgent links or Remind Client causing blank screen via React hook order & ErrorBoundary | shipped
 20261011-092700-audit-and-remediate-production-compliance | Audit and remediate production deployment, Atlas connectivity, write rollback, and compliance | shipped
+20261011-095200-remediate-presentation-visual-critique | Visual critique remediation across all 29 slides, SVG diagrams, phone/browser frames, native stats, and PPTX/HTML regeneration | ready
+
 

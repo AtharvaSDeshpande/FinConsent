@@ -1,0 +1,47 @@
+digraph OtpAttempts {
+    
+    bgcolor="#FFFFFF";
+    fontname="Helvetica,Arial,sans-serif";
+    fontsize=14;
+    pad="0.25,0.25";
+    nodesep=0.4;
+    ranksep=0.45;
+    splines=ortho;
+
+    node [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        shape=box,
+        style="rounded,filled",
+        fillcolor="#F8FAFC",
+        color="#CBD5E1",
+        penwidth=1.5,
+        margin="0.15,0.12"
+    ];
+
+    edge [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        color="#64748B",
+        fontcolor="#334155",
+        penwidth=1.5
+    ];
+
+    rankdir=LR;
+
+    req [label="OTP REQUESTED\nCSPRNG 6-Digit Code\n5m TTL | Email & In-App", color="#4F46E5", fillcolor="#EEF2FF", fontcolor="#312E81"];
+    att1 [label="ATTEMPT 1\nIncorrect Code Entered", color="#D97706", fillcolor="#FEF3C7"];
+    att2 [label="ATTEMPT 2\nIncorrect Code Entered", color="#D97706", fillcolor="#FEF3C7"];
+    att3 [label="ATTEMPT 3 (FINAL)\n3rd Consecutive Failure", color="#E11D48", fillcolor="#FEE2E2", fontcolor="#9F1239"];
+
+    success [label="VERIFIED & BURNED\nSingle-Use Atomic Revocation\nProceeds to Evidence Lock", color="#059669", fillcolor="#D1FAE5", fontcolor="#065F46", penwidth=2.5];
+    locked [label="LOCKED OUT (HTTP 429)\nToken Immediately Burned\nClient Must Contact Advisor", color="#E11D48", fillcolor="#E11D48", fontcolor="#FFFFFF", penwidth=2.5];
+
+    req -> success [label="Valid 6 Digits", color="#059669", penwidth=2.0];
+    req -> att1 [label="Invalid Code", color="#D97706"];
+    att1 -> success [label="Valid 6 Digits", color="#059669"];
+    att1 -> att2 [label="Invalid Code", color="#D97706"];
+    att2 -> success [label="Valid 6 Digits", color="#059669"];
+    att2 -> att3 [label="Invalid Code", color="#E11D48"];
+    att3 -> locked [label="Permanent Lock", color="#E11D48", penwidth=2.5];
+}

@@ -1,0 +1,78 @@
+digraph CauseEffectMap {
+    
+    bgcolor="#FFFFFF";
+    fontname="Helvetica,Arial,sans-serif";
+    fontsize=14;
+    pad="0.25,0.25";
+    nodesep=0.4;
+    ranksep=0.45;
+    splines=ortho;
+
+    node [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        shape=box,
+        style="rounded,filled",
+        fillcolor="#F8FAFC",
+        color="#CBD5E1",
+        penwidth=1.5,
+        margin="0.15,0.12"
+    ];
+
+    edge [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        color="#64748B",
+        fontcolor="#334155",
+        penwidth=1.5
+    ];
+
+    rankdir=LR;
+
+    subgraph cluster_cause {
+        label="Informal Channel Practice";
+        fontname="Helvetica,Arial,sans-serif";
+        fontsize=14;
+        fontcolor="#E11D48";
+        color="#FDA4AF";
+        style="rounded,dashed";
+        fillcolor="#FFF1F2";
+
+        c1 [label="Informal Approvals\nWhatsApp / Email / Calls", color="#E11D48", fontcolor="#9F1239", fillcolor="#FFE4E6"];
+        c2 [label="No Pre-Trade Tax Visibility\nBlindsided by Capital Gains", color="#D97706", fontcolor="#92400E", fillcolor="#FEF3C7"];
+        c3 [label="Fragmented Communications\nSpreadsheets & Lost Screenshots", color="#64748B", fontcolor="#334155", fillcolor="#F1F5F9"];
+    }
+
+    subgraph cluster_impact {
+        label="Direct Operational & Regulatory Impact";
+        fontname="Helvetica,Arial,sans-serif";
+        fontsize=14;
+        fontcolor="#0A192F";
+        color="#CBD5E1";
+        style="rounded,dashed";
+        fillcolor="#F8FAFC";
+
+        i1 [label="SEBI Reg 19 Non-Compliance\nContemporaneous Rationale Missing", color="#E11D48", fontcolor="#9F1239"];
+        i2 [label="Advance Tax Penalties\nSec 208, 234B & 234C Interest", color="#D97706", fontcolor="#92400E"];
+        i3 [label="Inadmissible Evidence\nFails Section 63 BSA Standard", color="#4F46E5", fontcolor="#312E81"];
+    }
+
+    subgraph cluster_consequence {
+        label="Statutory & Business Liability";
+        fontname="Helvetica,Arial,sans-serif";
+        fontsize=14;
+        fontcolor="#E11D48";
+        color="#E11D48";
+        style="rounded,filled";
+        fillcolor="#FFF1F2";
+
+        end1 [label="Discretionary Trading Accusations\nClient Disputes & Audit Sanctions", color="#E11D48", fontcolor="#FFFFFF", fillcolor="#E11D48"];
+    }
+
+    c1 -> i1 [label="Audit Review"];
+    c2 -> i2 [label="Quarterly Due"];
+    c3 -> i3 [label="Legal Challenge"];
+    i1 -> end1 [color="#E11D48", penwidth=2.0];
+    i2 -> end1 [color="#E11D48", penwidth=2.0];
+    i3 -> end1 [color="#E11D48", penwidth=2.0];
+}

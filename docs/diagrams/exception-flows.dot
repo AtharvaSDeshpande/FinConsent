@@ -1,0 +1,51 @@
+digraph ExceptionFlows {
+    
+    bgcolor="#FFFFFF";
+    fontname="Helvetica,Arial,sans-serif";
+    fontsize=14;
+    pad="0.25,0.25";
+    nodesep=0.4;
+    ranksep=0.45;
+    splines=ortho;
+
+    node [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        shape=box,
+        style="rounded,filled",
+        fillcolor="#F8FAFC",
+        color="#CBD5E1",
+        penwidth=1.5,
+        margin="0.15,0.12"
+    ];
+
+    edge [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        color="#64748B",
+        fontcolor="#334155",
+        penwidth=1.5
+    ];
+
+    rankdir=LR;
+
+    s_active [label="ACTIVE MANDATE\n(Sent or In Review State)", color="#4F46E5", fillcolor="#EEF2FF"];
+
+    subgraph cluster_exceptions {
+        label="Terminal Exception Boundaries";
+        fontname="Helvetica,Arial,sans-serif";
+        fontsize=13;
+        fontcolor="#E11D48";
+        color="#FDA4AF";
+        style="rounded,dashed";
+        fillcolor="#FFF1F2";
+
+        e_exp  [label="EXPIRED\n48-Hour Cutoff Window Elapsed\nLink Inaccessible (HTTP 410)", color="#64748B", fillcolor="#E2E8F0"];
+        e_rev  [label="REVOKED\nAdvisor Issues Emergency Cancel\nMarket Drift / Retracted Advice", color="#E11D48", fillcolor="#FEE2E2", fontcolor="#9F1239"];
+        e_lock [label="LOCKED OUT\n3 Failed OTP Attempts Exceeded\nToken Burned Immediately (HTTP 429)", color="#E11D48", fillcolor="#FEE2E2", fontcolor="#9F1239"];
+    }
+
+    s_active -> e_exp  [label="Cutoff >= 48h", color="#64748B"];
+    s_active -> e_rev  [label="RIA Revokes", color="#E11D48"];
+    s_active -> e_lock [label="3 OTP Failures", color="#E11D48"];
+}

@@ -1,0 +1,39 @@
+digraph UnlockSequence {
+    
+    bgcolor="#FFFFFF";
+    fontname="Helvetica,Arial,sans-serif";
+    fontsize=14;
+    pad="0.25,0.25";
+    nodesep=0.4;
+    ranksep=0.45;
+    splines=ortho;
+
+    node [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        shape=box,
+        style="rounded,filled",
+        fillcolor="#F8FAFC",
+        color="#CBD5E1",
+        penwidth=1.5,
+        margin="0.15,0.12"
+    ];
+
+    edge [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        color="#64748B",
+        fontcolor="#334155",
+        penwidth=1.5
+    ];
+
+    rankdir=LR;
+
+    step1 [label="1. Magic Link Opened\n256-bit Scoped URL\n(/m/:token)", color="#4F46E5", fillcolor="#EEF2FF", fontcolor="#312E81"];
+    step2 [label="2. Client Password Gate\nLast-4 PAN + DOB\n(123414081978)", color="#0A192F"];
+    step3 [label="3. PBKDF2 Key Derivation\n100,000 Rounds SHA-256\nDerives 256-bit Client KEK", color="#D97706", fillcolor="#FEF3C7", fontcolor="#92400E"];
+    step4 [label="4. DEK Unwrapped\nAES-256-GCM Unwraps\nClient Data Encryption Key", color="#4F46E5", fillcolor="#EEF2FF", fontcolor="#312E81"];
+    step5 [label="5. Plaintext Revealed\nPortfolio Drift, Tax Est.,\n& Trade Baskets Displayed", color="#059669", fillcolor="#D1FAE5", fontcolor="#065F46", penwidth=2.0];
+
+    step1 -> step2 -> step3 -> step4 -> step5;
+}

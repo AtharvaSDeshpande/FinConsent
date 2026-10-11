@@ -1,0 +1,38 @@
+digraph PilotTimeline {
+    
+    bgcolor="#FFFFFF";
+    fontname="Helvetica,Arial,sans-serif";
+    fontsize=14;
+    pad="0.25,0.25";
+    nodesep=0.4;
+    ranksep=0.45;
+    splines=ortho;
+
+    node [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        shape=box,
+        style="rounded,filled",
+        fillcolor="#F8FAFC",
+        color="#CBD5E1",
+        penwidth=1.5,
+        margin="0.15,0.12"
+    ];
+
+    edge [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        color="#64748B",
+        fontcolor="#334155",
+        penwidth=1.5
+    ];
+
+    rankdir=LR;
+
+    w1 [label="WEEK 1: GOVERNANCE & SETUP\n• Configure SEBI INA Number\n• Set Compliance Officer Profile\n• Configure Staff TOTP MFA", color="#4F46E5", fillcolor="#EEF2FF", fontcolor="#312E81"];
+    w2 [label="WEEK 2: CLIENT ROSTER INGESTION\n• Import Client PAN & DOB\n• Configure Masked Formatting\n• Set Rebalance Rationale Templates", color="#4F46E5", fillcolor="#EEF2FF", fontcolor="#312E81"];
+    w3 [label="WEEK 3: CONTROLLED PILOT RUN\n• Execute 10–25 Client Mandates\n• Verify Mobile OTP Turnaround\n• Pre-Trade Tax Transparency Validated", color="#D97706", fillcolor="#FEF3C7", fontcolor="#92400E", penwidth=2.0];
+    w4 [label="WEEK 4: COMPLIANCE AUDIT & SCALE\n• Audit BSA §63 Evidence Receipts\n• Compliance Officer Adjudication\n• Practice-Wide Production Rollout", color="#059669", fillcolor="#D1FAE5", fontcolor="#065F46", penwidth=2.5];
+
+    w1 -> w2 -> w3 -> w4 [color="#059669", penwidth=2.0];
+}
