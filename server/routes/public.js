@@ -35,8 +35,7 @@ function sanitizeHtml(str) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replace(/"/g, '&quot;');
 }
 
 // Public Token Inspection Endpoint
@@ -410,10 +409,13 @@ router.post('/mandates/:token/assistant', async (req, res) => {
   }
 
   // Rate limiting (10 questions per 10 minutes per token)
-  if (!checkRateLimit(req.params.token)) {
+  const rateLimitStatus = checkRateLimit(req.params.token);
+  if (rateLimitStatus === false || (typeof rateLimitStatus === 'object' && !rateLimitStatus.allowed)) {
+    const waitTimeSec = (typeof rateLimitStatus === 'object' && rateLimitStatus.waitTimeSec) || 60;
     return res.status(429).json({
       success: false,
-      error: 'Rate limit exceeded: maximum 10 assistant queries per 10 minutes.',
+      error: `Rate limit reached. Please wait ${waitTimeSec} seconds before asking another question.`,
+      retryAfter: waitTimeSec,
     });
   }
 
@@ -445,6 +447,14 @@ router.post('/mandates/:token/assistant', async (req, res) => {
     mandate: unlocked,
     question: sanitized,
   });
+
+  if (result.isQuotaError || result.isServiceUnavailable) {
+    return res.status(503).json({
+      success: false,
+      error: 'The assistant is temporarily at capacity. Please wait a moment and try again.',
+      isCapacityError: true,
+    });
+  }
 
   if (!result.handoff && result.answerable) {
     const assistantMsg = dbStore.addMandateChatMessage(mandate.id, {

@@ -245,7 +245,7 @@ describe('Cryptographic Regressions, Normalization & Versioning Suite', () => {
       const clientUnlocked = unlockMandateWithPassword(rawMandate, expectedPassword);
 
       expect(clientUnlocked.sellBasket).toBeDefined();
-      expect(clientUnlocked.taxPayable).toBe(26650);
+      expect(clientUnlocked.taxPayable).toBe(12480);
     });
   });
 
@@ -278,7 +278,7 @@ describe('Cryptographic Regressions, Normalization & Versioning Suite', () => {
       expect(data.unlocked).toBe(true);
       expect(data.unlockToken).toBeDefined();
       expect(data.data.mandate.sellBasket).toBeDefined();
-      expect(data.data.mandate.taxPayable).toBe(26650);
+      expect(data.data.mandate.taxPayable).toBe(12480);
     });
 
     it('5.3 POST /api/public/mandates/:token/unlock rejects incorrect password with 401', async () => {

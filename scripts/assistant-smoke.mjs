@@ -19,7 +19,7 @@ process.env.ALLOW_IN_MEMORY_FALLBACK = 'true';
 import { app, initServer } from '../server/index.js';
 import { runSeed } from '../server/db/seed.js';
 import { dbStore } from '../server/db/store.js';
-import { askConsentClarityAssistant } from '../server/services/assistantService.js';
+import { askConsentClarityAssistant, resetRateLimit } from '../server/services/assistantService.js';
 
 let server;
 let baseUrl;
@@ -121,7 +121,7 @@ async function runSmokeTests() {
     if (res.status !== 200) return { pass: false, reason: `HTTP status ${res.status}` };
     const ans = res.body?.data?.message || '';
     const hasEstimate = /estimate/i.test(ans);
-    const mentionsTax = /tax|26,650|25,625|1,025|3,30,000|ltcg/i.test(ans);
+    const mentionsTax = /tax|12,480|12,000|480|60,000|1,20,000|26,650|ltcg|stcg/i.test(ans);
     const hasNonApproval = /does not approve|not approve/i.test(ans);
     if (!hasEstimate) return { pass: false, reason: `Missing estimate wording: "${ans}"` };
     if (!mentionsTax) return { pass: false, reason: `Missing tax figures: "${ans}"` };
@@ -147,6 +147,8 @@ async function runSmokeTests() {
     // Must hand off and refuse to recommend
     const gaveAdvice = /(?:(?:you should|i recommend|strongly advise)\s+(?:accept|reject|buy|sell|approve))/i.test(ans) && !/cannot|never|do not/i.test(ans);
     if (gaveAdvice) return { pass: false, reason: `Assistant gave advice: "${ans}"` };
+    const hasTradeDisclaimer = /FinConsent only records consent and does not place trades/i.test(ans);
+    if (!hasTradeDisclaimer) return { pass: false, reason: `Refusal missing trade disclaimer: "${ans}"` };
     return { pass: isHandoff, note: `Handoff: ${isHandoff}. Answer: "${ans.slice(0, 80)}..."` };
   });
 
@@ -436,6 +438,73 @@ async function runSmokeTests() {
       return { pass: false, reason: `Missing expired flag in response: ${JSON.stringify(body)}` };
     }
     return { pass: true, note: `Rejected with HTTP 410 on expired link: "${body.error}"` };
+  });
+
+  // --- Test 17: Fixed plain definition for STCG & LTCG (no numerical leakage) ---
+  await testCase(17, 'Fixed plain statutory definition for STCG (no portfolio numbers leaked)', async () => {
+    const res = await callAssistant(token, 'What is STCG?');
+    if (res.status !== 200) return { pass: false, reason: `HTTP status ${res.status}` };
+    const ans = res.body?.data?.message || '';
+    if (!/Short-Term Capital Gains.*20%/i.test(ans)) {
+      return { pass: false, reason: `Missing statutory definition: "${ans}"` };
+    }
+    if (ans.includes('60,000') || ans.includes('12,480')) {
+      return { pass: false, reason: `Leaked specific portfolio numbers: "${ans}"` };
+    }
+    return { pass: true, note: ans.slice(0, 85) + '...' };
+  });
+
+  // --- Test 18: Rate limit hit returns 429 with wait time ---
+  await testCase(18, 'Rate limit hit (HTTP 429 with wait time and retryAfter)', async () => {
+    const res = await callAssistant(token, 'Another question to trigger rate limit');
+    if (res.status !== 429) {
+      return { pass: false, reason: `Expected HTTP 429, got ${res.status}` };
+    }
+    if (!res.body?.error || !res.body.error.includes('Rate limit reached')) {
+      return { pass: false, reason: `Missing rate limit clear error: ${JSON.stringify(res.body)}` };
+    }
+    if (typeof res.body.retryAfter !== 'number' || res.body.retryAfter <= 0) {
+      return { pass: false, reason: `Missing or invalid retryAfter: ${JSON.stringify(res.body)}` };
+    }
+    return { pass: true, note: `Got HTTP 429: "${res.body.error}" with retryAfter=${res.body.retryAfter}s` };
+  });
+
+  // --- Test 19: Expired link & other client proposal inquiries ---
+  await testCase(19, 'Expired link inquiry answered from current proposal only', async () => {
+    resetRateLimit(token);
+    const res = await callAssistant(token, 'The link has expired');
+    if (res.status !== 200) return { pass: false, reason: `HTTP status ${res.status}` };
+    const ans = res.body?.data?.message || '';
+    if (ans !== 'I can only answer from the proposal in front of you.') {
+      return { pass: false, reason: `Unexpected answer: "${ans}"` };
+    }
+    return { pass: true, note: ans };
+  });
+
+  // --- Test 20: Server check for figures mismatch ---
+  await testCase(20, 'Server check: figures mismatch triggers handoff with notice', async () => {
+    const mismatched = {
+      title: 'Mismatched Proposal',
+      stcgAmount: 60000,
+      ltcgAmount: 120000,
+      stcgTax: 12000,
+      ltcgTax: 0,
+      cessAmount: 480,
+      taxPayable: 99999, // Mismatched!
+      sellBasket: [],
+      buyBasket: [],
+    };
+    const res = await askConsentClarityAssistant({
+      mandate: mismatched,
+      question: 'Will I have a tax liability?',
+    });
+    if (!res.handoff || res.reason !== 'figures_mismatch') {
+      return { pass: false, reason: `Failed to trigger figures_mismatch handoff: ${JSON.stringify(res)}` };
+    }
+    if (!/figures.*do not match/i.test(res.answer)) {
+      return { pass: false, reason: `Missing figures mismatch notice: "${res.answer}"` };
+    }
+    return { pass: true, note: res.answer };
   });
 
   console.log('\n======================================================');

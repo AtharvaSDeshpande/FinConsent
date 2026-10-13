@@ -207,22 +207,22 @@ export async function runSeed(options = {}) {
     currentAllocation: { equity: 59.5, debt: 24.3, liquid: 16.2, gold: 0 },
     proposedAllocation: { equity: 46.0, debt: 29.7, liquid: 24.3, gold: 0 },
     sellBasket: [
-      { securityName: 'HDFC Bank Ltd', isin: 'INE040A01034', units: 800, saleValue: 1320000, purchaseValue: 1150000, gainType: 'LTCG' },
-      { securityName: 'Tata Consultancy Services', isin: 'INE467B01029', units: 285, saleValue: 1180000, purchaseValue: 1020000, gainType: 'LTCG' },
+      { securityName: 'Tata Motors Ltd', isin: 'INE155A01022', units: 300, saleValue: 360000, purchaseValue: 300000, gainType: 'STCG', realizedGain: 60000 },
+      { securityName: 'HDFC Bank Ltd', isin: 'INE040A01034', units: 800, saleValue: 1320000, purchaseValue: 1200000, gainType: 'LTCG', realizedGain: 120000 },
     ],
     buyBasket: [
-      { securityName: 'Kotak Equity Arbitrage Fund - Direct Growth', approxValue: 1500000 },
-      { securityName: 'HDFC Short Duration Debt Fund - Direct Growth', approxValue: 1000000 },
+      { securityName: 'Kotak Equity Arbitrage Fund - Direct Growth', approxValue: 1000000 },
+      { securityName: 'HDFC Short Duration Debt Fund - Direct Growth', approxValue: 680000 },
     ],
-    stcgAmount: 0,
-    ltcgAmount: 330000,
-    stcgTax: 0,
-    ltcgTax: 25625, // (330000 - 125000) * 12.5% = 25,625
-    cessAmount: 1025, // 4% of 25625
-    taxPayable: 26650,
+    stcgAmount: 60000,
+    ltcgAmount: 120000,
+    stcgTax: 12000, // 20% of 60,000 = 12,000
+    ltcgTax: 0, // 120,000 is within 1,25,000 yearly exemption = 0
+    cessAmount: 480, // 4% of 12,000 = 480
+    taxPayable: 12480, // 12,000 + 480 = 12,480
     advanceTaxQuarter: 'Q4 - Due 15th March',
-    advanceTaxAlert: 'Estimated net tax liability of ₹26,650 requires Advance Tax adjustment by 15th March.',
-    advisorRationale: 'Client equity portfolio was over-indexed to large banking and IT (59.5% vs mandate target of 45%). Selling ₹25L concentrated holdings and redeploying ₹15L into tax-efficient arbitrage and ₹10L into short-duration debt preserves capital while harvesting post-budget LTCG within the low tax bracket.',
+    advanceTaxAlert: 'Estimated net tax liability of ₹12,480 requires Advance Tax adjustment by 15th March.',
+    advisorRationale: 'Client equity portfolio was over-indexed to large banking and auto (59.5% vs mandate target of 46%). Selling appreciated holdings and redeploying into arbitrage and short-duration debt preserves capital while harvesting capital gains with ₹1,20,000 LTCG within the statutory exemption limit.',
     cutoffTimestamp: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
     createdAt: pastDate(1, 2),
     updatedAt: pastDate(1, 1),
@@ -252,7 +252,7 @@ export async function runSeed(options = {}) {
         id: 'msg_4',
         sender: 'ria',
         senderName: 'Suresh Narayanan',
-        message: 'The estimated capital gains impact is approximately ₹26,650. Please review the tax-impact section above for details.',
+        message: 'The estimated capital gains impact is approximately ₹12,480. Please review the tax-impact section above for details.',
         timestamp: pastDate(1, 0.2),
       },
     ],

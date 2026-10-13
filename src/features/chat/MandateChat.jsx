@@ -16,6 +16,16 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import { useI18n } from '../../i18n/I18nContext';
 
+const decodeHtmlEntities = (text) => {
+  if (typeof text !== 'string') return text;
+  return text
+    .replace(/&#039;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+};
+
 export const MandateChat = ({
   mode = 'client', // 'client' or 'advisor'
   token, // client public token
@@ -196,7 +206,20 @@ export const MandateChat = ({
 
         const result = await res.json();
         if (res.status === 429) {
-          setError(t('chat.assistant_rate_limit') || result.error || 'Rate limit exceeded: maximum 10 assistant queries per 10 minutes.');
+          setInputText(text); // Retain user typed question
+          const waitTimeMsg = result.retryAfter
+            ? `Rate limit reached. Please wait ${result.retryAfter} seconds before asking another question.`
+            : (result.error || t('chat.assistant_rate_limit') || 'Rate limit reached. Please wait before asking another question.');
+          setError(waitTimeMsg);
+          return;
+        }
+
+        if (res.status === 503 || result.isCapacityError || (result.error && /capacity|quota|503|resource_exhausted/i.test(result.error))) {
+          setInputText(text); // Retain user typed question
+          setError(
+            result.error ||
+              'The assistant is temporarily at capacity. Please wait a moment and try again.'
+          );
           return;
         }
 
@@ -224,6 +247,11 @@ export const MandateChat = ({
         }
       } catch (err) {
         console.warn('[Assistant request error, trying standard chat]', err.message);
+        if (/capacity|quota|503/i.test(err.message)) {
+          setInputText(text);
+          setError('The assistant is temporarily at capacity. Please wait a moment and try again.');
+          return;
+        }
         try {
           const fallbackRes = await fetch(`/api/public/mandates/${token}/chat`, {
             method: 'POST',
@@ -468,7 +496,7 @@ export const MandateChat = ({
                       )}
                     </Box>
                     <Typography variant="body2" sx={{ color: '#0F172A', fontSize: '0.86rem', lineHeight: 1.55, wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
-                      {m.message}
+                      {decodeHtmlEntities(m.message)}
                     </Typography>
 
                     {/* Escalate button under assistant reply */}
@@ -619,7 +647,7 @@ export const MandateChat = ({
                   }}
                 >
                   <Typography variant="body2" sx={{ color: isMe ? '#FFFFFF' : '#0F172A', fontSize: '0.86rem', lineHeight: 1.5, wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
-                    {m.message}
+                    {decodeHtmlEntities(m.message)}
                   </Typography>
                   {m.relatedReply && (
                     <Box
@@ -640,7 +668,7 @@ export const MandateChat = ({
                           color: isMe ? 'rgba(255,255,255,0.92)' : '#64748B',
                         }}
                       >
-                        {t('chat.escalated_tag') || 'Escalated from assistant'}: "{m.relatedReply.length > 100 ? m.relatedReply.slice(0, 100) + '...' : m.relatedReply}"
+                        {t('chat.escalated_tag') || 'Escalated from assistant'}: "{decodeHtmlEntities(m.relatedReply.length > 100 ? m.relatedReply.slice(0, 100) + '...' : m.relatedReply)}"
                       </Typography>
                     </Box>
                   )}

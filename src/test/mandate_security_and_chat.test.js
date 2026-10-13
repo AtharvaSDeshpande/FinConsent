@@ -137,7 +137,7 @@ describe('Mandate Security, Envelope Encryption, Cross-Tenant Isolation & Chat S
       const decrypted = body.data;
       expect(decrypted.mandate.sellBasket).toBeDefined();
       expect(decrypted.mandate.sellBasket.length).toBeGreaterThan(0);
-      expect(decrypted.mandate.taxPayable).toBe(26650);
+      expect(decrypted.mandate.taxPayable).toBe(12480);
       expect(decrypted.mandate.advisorRationale).toContain('Client equity portfolio');
     });
 
@@ -199,7 +199,7 @@ describe('Mandate Security, Envelope Encryption, Cross-Tenant Isolation & Chat S
       const body = await res.json();
       expect(body.success).toBe(true);
       expect(body.data.id).toBe(seededRohanMandateId);
-      expect(body.data.taxPayable).toBe(26650);
+      expect(body.data.taxPayable).toBe(12480);
       expect(body.data.sellBasket).toBeDefined();
     });
 
