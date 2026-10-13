@@ -7,6 +7,7 @@ end_users.csv
 ~$*.pptx
 
 # Video files and raw recording clips
+*.mp4
 *.webm
 *.mov
 *.mkv
