@@ -99,14 +99,15 @@ Each screen's page component is exported from its feature module (`src/features/
    - Tax Rate: 12.5% on realized long-term gains exceeding ₹1,25,000.
 3. **Health & Education Cess**:
    - 4% applied on total gross tax liability: `Total Tax = (STCG Tax + LTCG Tax) * 1.04`.
-4. **Advance Tax Compliance (Section 234B / 234C)**:
+4. **Advance Tax Compliance (Section 208, 234B & 234C)**:
+   - Obligation applies when net annual tax liability is ₹10,000 or greater.
    - Installments:
      * 1st Installment (15%): Due 15th June
      * 2nd Installment (45%): Due 15th September
      * 3rd Installment (75%): Due 15th December
      * 4th Installment (100%): Due 15th March
-   - Penal interest under 234B/234C is 1% per month for default/deferment.
-   - The engine automatically calculates the next upcoming cutoff date relative to mandate creation.
+   - Statutory Proviso: Under the First Proviso to Section 234C(1), penal interest is not levied for shortfall in advance tax if the shortfall is due to capital gains and the full tax is paid in subsequent installments or before March 31.
+   - The engine automatically calculates the next upcoming cutoff date relative to mandate creation and flags the alert.
 
 ---
 

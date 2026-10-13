@@ -1,0 +1,66 @@
+digraph TenantIsolation {
+    
+    bgcolor="#FFFFFF";
+    fontname="Helvetica,Arial,sans-serif";
+    fontsize=14;
+    pad="0.25,0.25";
+    nodesep=0.4;
+    ranksep=0.45;
+    splines=ortho;
+
+    node [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        shape=box,
+        style="rounded,filled",
+        fillcolor="#F8FAFC",
+        color="#CBD5E1",
+        penwidth=1.5,
+        margin="0.15,0.12"
+    ];
+
+    edge [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        color="#64748B",
+        fontcolor="#334155",
+        penwidth=1.5
+    ];
+
+    rankdir=TB;
+
+    subgraph cluster_firmA {
+        label="Tenant A: Prudent Wealth Advisory (Suresh)";
+        fontname="Helvetica,Arial,sans-serif";
+        fontsize=13;
+        fontcolor="#0A192F";
+        color="#818CF8";
+        style="rounded,filled";
+        fillcolor="#F8FAFC";
+
+        userA [label="Advisor Suresh (RIA A)\nToken: firmName='Prudent Wealth'", color="#4F46E5", fillcolor="#EEF2FF", fontcolor="#312E81"];
+        dataA [label="Mandate: man_rohan_1\nOwner: Prudent Wealth Advisory", color="#059669", fillcolor="#D1FAE5", fontcolor="#065F46"];
+    }
+
+    subgraph cluster_firmB {
+        label="Tenant B: Artha Capital Advisors (Vikram)";
+        fontname="Helvetica,Arial,sans-serif";
+        fontsize=13;
+        fontcolor="#0A192F";
+        color="#CBD5E1";
+        style="rounded,filled";
+        fillcolor="#F8FAFC";
+
+        userB [label="Advisor Vikram (RIA B)\nToken: firmName='Artha Capital'", color="#64748B", fillcolor="#F1F5F9"];
+        dataB [label="Mandate: man_artha_42\nOwner: Artha Capital Advisors", color="#64748B", fillcolor="#F1F5F9"];
+    }
+
+    guard [label="EXPRESS TENANCY SCOPING MIDDLEWARE\nVerify: req.user.firmName === resource.firmName",
+           shape=box, style="rounded,filled", fillcolor="#0A192F", color="#0A192F", fontcolor="#FFFFFF", fontsize=13];
+
+    userA -> guard [label="Authorized Query", color="#059669"];
+    guard -> dataA [label="Access Granted (200 OK)", color="#059669", penwidth=2.0];
+
+    userA -> guard [label="Tampered ID Access to man_artha_42", color="#E11D48", style="dashed"];
+    guard -> dataB [label="BLOCKED: 403 FORBIDDEN\nZero Data Disclosure", color="#E11D48", style="dashed", penwidth=2.5, fontcolor="#E11D48"];
+}

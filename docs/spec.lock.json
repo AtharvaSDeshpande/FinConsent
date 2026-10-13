@@ -16,16 +16,16 @@
     "name": "FinConsent",
     "slug": "fin-consent",
     "type": "portal",
-    "tagline": "Statutory Trade Authorization & Tax-Impact Consent for SEBI RIAs",
-    "summary": "A mobile-first statutory trade authorization and tax-impact consent platform for SEBI-Registered Investment Advisers (RIAs) in India. Dispatches interactive rebalancing proposals with pre-computed STCG/LTCG capital gains and Advance Tax alerts, capturing legally binding, tamper-evident consent via zero-login mobile magic links authenticated by Mobile OTP."
+    "tagline": "Advisory Proposal Consent & Tax-Impact Infrastructure for SEBI RIAs",
+    "summary": "A mobile-first advisory proposal consent and tax-impact infrastructure platform for SEBI-Registered Investment Advisers (RIAs) in India. Dispatches interactive rebalancing proposals with pre-computed STCG/LTCG capital gains and Advance Tax alerts, capturing tamper-evident proposal acknowledgements via zero-login mobile magic links authenticated by OTP."
   },
   "business": {
-    "problem": "Under SEBI Regulation 19, Indian RIAs operate under non-discretionary mandates requiring prior informed client consent and 5-year audit trails. Today, consent is fragmented across WhatsApp/email/phone, clients suffer unanticipated capital gains tax shocks and Section 234B/234C penal interest, and unwieldy 20-page PDFs cause review delays and execution slippage.",
+    "problem": "Under SEBI Regulation 19, Indian RIAs operate under non-discretionary mandates requiring prior informed client consent and 5-year audit trails. Today, communication across WhatsApp/email/phone fragments rationale and leaves records vulnerable to loss. Furthermore, unanticipated capital gains tax shocks damage client trust, and unwieldy 20-page PDFs contribute to review delays (hypothesized at 48–72 hours).",
     "why_now": "SEBI digital compliance inspections have tightened, the restructured Indian capital gains regime (STCG 20%, LTCG 12.5%) increases tax consequences, and inactive compliance leads to license suspension, fines, and client disputes.",
     "goals": [
-      "Reduce median client consent turnaround from proposal submission to verified authorization from 72 hours down to under 4 hours",
+      "Reduce median client consent turnaround from proposal submission to verified acknowledgement from hypothesized 72-hour baseline to under 4 hours (to be validated in pilot)",
       "Achieve an >88% first-touch completion rate via mobile magic links without dropout",
-      "Generate 100% SEBI Regulation 19-compliant PDF dossiers with Section 65B Indian Evidence Act electronic audit metadata within 2 seconds of authorization"
+      "Generate SEBI Regulation 19-aligned PDF dossiers with Section 63 Bharatiya Sakshya Adhiniyam (formerly Section 65B IEA) electronic audit metadata within 2 seconds of acknowledgement"
     ],
     "success_metrics": [
       {
@@ -69,14 +69,14 @@
       },
       {
         "name": "smallcase Gateway",
-        "note": "Execution-oriented broker integration rather than statutory advisory consent"
+        "note": "Execution-oriented broker integration for model portfolios rather than advisory rebalancing governance and pre-trade capital gains tax transparency"
       }
     ],
     "differentiators": [
       "Purpose-built for Indian SEBI RIA compliance and Regulation 19 audit requirements",
-      "Automated pre-computed Indian capital gains engine (STCG 20%, LTCG 12.5%) and Advance Tax 234B/234C alerts",
+      "Automated pre-computed Indian capital gains engine (STCG 20%, LTCG 12.5%, ₹1.25L exemption) and Advance Tax 208/234C alerts with statutory proviso disclosure",
       "Zero-login mobile magic link review with 1-tap OTP verification in under 60 seconds",
-      "Instant Section 65B IT Act evidentiary compliance dossiers with SHA-256 tamper-evident logs"
+      "Instant Section 63 BSA compliance dossiers with SHA-256 tamper-evident logs"
     ],
     "launch": {
       "target_date": "3 weeks",
@@ -162,7 +162,14 @@
   "languages": {
     "default": "en",
     "supported": [
-      "en"
+      "en",
+      "hi",
+      "ta",
+      "bn",
+      "gu",
+      "de",
+      "ja",
+      "ko"
     ],
     "formats": {
       "currency": "INR",
@@ -305,7 +312,7 @@
       "id": "compliance-dossier",
       "name": "SEBI Regulation 19 Compliance Certificate & Dossier",
       "priority": "must",
-      "description": "Instantly generate and export certified SEBI Regulation 19 dossiers with Section 65B IT Act electronic evidence metadata.",
+      "description": "Instantly generate and export certified SEBI Regulation 19 dossiers with Section 63 BSA electronic evidence metadata.",
       "screens": [
         "mandate-detail",
         "client-receipt"

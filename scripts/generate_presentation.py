@@ -60,7 +60,7 @@ def create_presentation():
     prs.slide_height = Inches(7.5)
 
     # Presentation Metadata
-    prs.core_properties.title = "FinConsent — Statutory Trade Authorization & Tax Infrastructure"
+    prs.core_properties.title = "FinConsent — Advisory Proposal Consent & Tax Infrastructure"
     prs.core_properties.subject = "SEBI Regulation 19 Compliance & WealthTech Architecture"
     prs.core_properties.author = "FinConsent Engineering"
     prs.core_properties.comments = "Client-facing 30-slide presentation with verified compliance evidence"
@@ -223,7 +223,7 @@ def create_presentation():
     p.font.name = FONT_HEADING; p.font.size = Pt(48); p.font.bold = True; p.font.color.rgb = COLOR_WHITE; p.space_after = Pt(8)
 
     p = tf1.add_paragraph()
-    p.text = "Enterprise Statutory Trade Authorization & Tax Infrastructure for Indian RIAs"
+    p.text = "Enterprise Advisory Proposal Consent & Tax Infrastructure for Indian RIAs"
     p.font.name = FONT_HEADING; p.font.size = Pt(24); p.font.bold = True; p.font.color.rgb = RGBColor(165, 180, 252); p.space_after = Pt(20)
 
     p = tf1.add_paragraph()
@@ -252,8 +252,8 @@ def create_presentation():
     col_w = Inches(11.733)
     y_starts = [Inches(2.0), Inches(3.6), Inches(5.2)]
     problems = [
-        ("1. Informal WhatsApp & Email Approvals (Regulatory Rejection)",
-         "Advisers routinely gather approvals over text messages or calls. SEBI inspection teams reject informal communications under Regulation 19 record-keeping rules, leaving RIAs vulnerable to claims of unauthorized trading. Such communications fail Section 63 BSA electronic admissibility standards.",
+        ("1. Informal Communication & Evidentiary Fragmentation",
+         "Advisers frequently communicate rebalancing proposals over chat or email. While discoverable, these unstructured records fragment rationale and create administrative collation overhead during SEBI Regulation 19 audits, failing Section 63 BSA electronic admissibility standards.",
          COLOR_RED),
         ("2. Post-Trade Capital Gains Tax Shocks (Investor Friction)",
          "Finance Act 2024 increased STCG to 20% and LTCG to 12.5% (+ 4% cess). When rebalancing occurs without pre-trade tax visibility, investors are blindsided by unexpected tax liabilities and penalty interest under Section 208 and 234C where liability reaches ₹10,000.",
@@ -1378,10 +1378,12 @@ def create_presentation():
 
     # Save to both docs and root
     prs.save(OUTPUT_PPTX)
-    prs.save(OUTPUT_PPTX_ROOT)
+    try:
+        prs.save(OUTPUT_PPTX_ROOT)
+    except PermissionError:
+        print(f"  [NOTE] {OUTPUT_PPTX_ROOT} is currently open in PowerPoint; updated {OUTPUT_PPTX} successfully.")
     print(f"\n[SUCCESS] PowerPoint deck generated successfully: {len(prs.slides)} slides saved to:")
     print(f"  - {OUTPUT_PPTX}")
-    print(f"  - {OUTPUT_PPTX_ROOT}")
 
 if __name__ == "__main__":
     create_presentation()

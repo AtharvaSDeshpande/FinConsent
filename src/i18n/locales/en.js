@@ -1,7 +1,7 @@
 // English locale dictionary (Default)
 export const en = {
   nav: {
-    tagline: 'Statutory Trade Authorization & Tax-Impact Consent for SEBI RIAs',
+    tagline: 'Advisory Proposal Consent & Tax-Impact Infrastructure for SEBI RIAs',
     dashboard: 'Dashboard',
     clients: 'Clients',
     mandates: 'Mandates',
@@ -71,7 +71,7 @@ export const en = {
     sebi_reg_number: 'SEBI Registration Number (INAXXXXXXXXX)',
     sebi_helper: 'Format: INA followed by 9 digits (e.g., INA000088921)',
     pan_label: 'Permanent Account Number (PAN)',
-    pan_helper: 'Required for Section 65B Indian Evidence Act identification',
+    pan_helper: 'Required for Section 63 BSA / Section 65B identification',
     mobile_label: 'Registered Mobile Number',
     mobile_helper: 'Designated destination for statutory OTP authentication challenges',
     email_label_ria: 'Statutory Compliance / Official Email',
@@ -94,7 +94,7 @@ export const en = {
   dashboard: {
     greeting: 'Welcome Back',
     overview: 'SEBI Regulation 19 Compliance & Trade Mandates',
-    ria_title: 'Adviser Execution Workspace',
+    ria_title: 'Adviser Proposal Workspace',
     ria_registered_title: '{name} • Registered Investment Adviser Workspace',
     ria_subtitle: 'Prepare non-discretionary portfolio rebalances, preview capital gains tax impacts under Finance Act 2024, and monitor statutory 48-hour client authorization windows.',
     client_dir_btn: 'Client Directory',
@@ -178,7 +178,7 @@ export const en = {
     comp_stat_surveillance_sub: 'Mandates within 48h market cutoff window',
     comp_stat_tax: 'Tax Compliance Disclosures',
     comp_stat_tax_sub: 'Section 111A/112A pre-computed disclosures on record',
-    comp_hash_title: 'Section 65B Electronic Evidence Trail • SHA-256 Hash Chained',
+    comp_hash_title: 'Section 63 BSA Electronic Evidence Trail • SHA-256 Hash Chained',
     comp_hash_desc: 'Data Residency: AWS Mumbai (ap-south-1) • Append-Only Storage • 5-Year Statutory Retention Window Active',
     comp_hash_badge: 'HASH INTEGRITY VERIFIED (100%)',
     comp_register_title: 'Statutory Mandate Audit Register ({count})',
@@ -263,7 +263,7 @@ export const en = {
     new_btn_dispatch: 'Dispatch to Client Immediately',
   },
   client_review: {
-    page_title: 'Statutory Trade Authorization & Tax-Impact Consent',
+    page_title: 'Advisory Proposal Consent & Tax-Impact Review',
     page_subtitle: 'Dispatched under SEBI (Investment Advisers) Regulations, 2013 (Non-Discretionary Mandate)',
     statutory_proposal_badge: 'STATUTORY TRADE REBALANCING PROPOSAL',
     ria_label: 'SEBI Registered Investment Adviser',
@@ -328,7 +328,7 @@ export const en = {
     chat_title: 'Mandate Clarification & Discussion',
     chat_placeholder: 'Ask your advisor a question regarding this rebalancing...',
     send_button: 'Send Message',
-    statutory_lock_notice: 'Mandate Authorized & Locked under Section 65B Indian Evidence Act',
+    statutory_lock_notice: 'Mandate Acknowledged & Locked under Section 63 BSA (Sec 65B Antecedent)',
   },
   otp: {
     modal_title: 'Statutory Trade Consent & OTP Authorization',
@@ -340,7 +340,7 @@ export const en = {
     agree_consent: 'I explicitly provide prior informed consent under Regulation 19 of SEBI (Investment Advisers) Regulations, 2013 to authorize this rebalance execution.',
     sms_disabled_alert: 'SMS Channel Disabled: Pursuant to compliance policy, cellular SMS delivery is decommissioned. Your 6-digit trade authorization OTP is securely dispatched via registered email and displayed instantly below.',
     click_generate_desc: 'Click below to generate and dispatch your statutory authorization OTP.',
-    generate_otp_button: 'Generate Trade Authorization OTP',
+    generate_otp_button: 'Generate Proposal Verification OTP',
     otp_sent_to: 'OTP generated for registered mobile ending in',
     enter_otp_label: 'Enter 6-Digit OTP',
     otp_helper_text: 'Dispatched via Email / In-App Portal',
@@ -349,7 +349,7 @@ export const en = {
     otp_validity_note: 'Valid for 5 minutes • SMS Disabled',
     confirm_button: 'Confirm Statutory Authorization',
     authorizing: 'Verifying & Sealing Evidence...',
-    receipt_title: 'Official Compliance Receipt & Section 65B Audit Record',
+    receipt_title: 'Official Compliance Receipt & Section 63 BSA Audit Record',
     receipt_desc: 'This rebalancing mandate has been cryptographically sealed and permanently timestamped in compliance with SEBI Regulation 19 and Section 65B of the Indian Evidence Act.',
   },
   receipt: {
@@ -368,7 +368,7 @@ export const en = {
     next_step_1: 'Adviser Execution: Your adviser ({firm}) has received your authorization notice and is cleared to submit orders to your broker/custodian.',
     next_step_2: 'Trade Settlement: Execution contract notes will be issued directly by your registered stockbroker upon trade completion.',
     next_step_3: 'Statutory Record: This evidence receipt is preserved in tamper-evident cloud storage for a statutory minimum of 5 years.',
-    tech_evidence_heading: 'Technical Evidence Reference (Section 65B Indian Evidence Act)',
+    tech_evidence_heading: 'Technical Evidence Reference (Section 63 BSA / Sec 65B IEA)',
     digest_label: 'Cryptographic Reference Digest:',
     residency_label: 'Data Residency: AWS Mumbai (ap-south-1) • Append-Only Storage',
     retention_label: 'Statutory Retention Window: 5 Years per SEBI Regulation 19',
@@ -437,10 +437,10 @@ export const en = {
     banner_viewed_title: 'Status: Client is Currently Reviewing Proposal',
     banner_viewed_desc: 'Client has opened the mobile proposal overview and is inspecting allocation changes and tax liabilities. Awaiting 6-digit Mobile OTP sign-off.',
     btn_remind_client: 'Resend / Remind Client',
-    banner_approved_title: 'Status: Statutory Consent Verified & Clear for Trade Execution',
+    banner_approved_title: 'Status: Proposal Acknowledgement Recorded & Auditable',
     banner_approved_desc: 'Client has authorized the rebalancing mandate via Mobile OTP. Informed consent is committed to the append-only audit trail per SEBI Regulation 19.',
     btn_download_dossier: 'Download Regulation 19 Dossier',
-    banner_expired_title: 'Cutoff Window Expired — Execution Stalled',
+    banner_expired_title: 'Cutoff Window Expired — Proposal Lapsed',
     banner_expired_desc: 'The 48-hour statutory cutoff elapsed before client authorization was submitted. Market conditions have shifted. Prepare an updated rebalance mandate.',
   },
   footer: {
@@ -455,7 +455,7 @@ export const en = {
   },
   auth: {
     sign_in_title: 'Sign In to FinConsent',
-    sign_in_subtitle: 'Secure statutory trade authorization & compliance portal',
+    sign_in_subtitle: 'Secure advisory proposal consent & compliance portal',
     email_label: 'Official Email Address',
     password_label: 'Password',
     sign_in_button: 'Sign In to Workspace',

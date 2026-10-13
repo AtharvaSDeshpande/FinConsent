@@ -1,0 +1,38 @@
+digraph AdvanceTaxTimeline {
+    
+    bgcolor="#FFFFFF";
+    fontname="Helvetica,Arial,sans-serif";
+    fontsize=14;
+    pad="0.25,0.25";
+    nodesep=0.4;
+    ranksep=0.45;
+    splines=ortho;
+
+    node [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        shape=box,
+        style="rounded,filled",
+        fillcolor="#F8FAFC",
+        color="#CBD5E1",
+        penwidth=1.5,
+        margin="0.15,0.12"
+    ];
+
+    edge [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        color="#64748B",
+        fontcolor="#334155",
+        penwidth=1.5
+    ];
+
+    rankdir=LR;
+
+    inst1 [label="1st Installment (15%)\nOn or before 15th June\nInitial Planning Baseline", color="#4F46E5", fillcolor="#EEF2FF", fontcolor="#312E81"];
+    inst2 [label="2nd Installment (45%)\nOn or before 15th September\nMid-Year Rebalancing", color="#059669", fillcolor="#ECFDF5", fontcolor="#065F46"];
+    inst3 [label="3rd Installment (75%)\nOn or before 15th December\nPrimary Capital Gains Due", color="#D97706", fillcolor="#FEF3C7", fontcolor="#92400E", penwidth=2.0];
+    inst4 [label="4th Installment (100%)\nOn or before 15th March\nYear-End Reconciliation", color="#0A192F", fillcolor="#F1F5F9", fontcolor="#0A192F"];
+
+    inst1 -> inst2 -> inst3 -> inst4 [color="#64748B", penwidth=2.0];
+}

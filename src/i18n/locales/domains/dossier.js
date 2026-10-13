@@ -20,7 +20,7 @@ export const dossier = {
     sec_audit_chronology: 'IMMUTABLE AUDIT CHRONOLOGY',
     ip_label: 'IP',
     digest_label: 'Digest:',
-    statutory_footer_note: '* Certificate Generated under Section 65B of the Indian Evidence Act, 1872. Preserved for statutory 5-year retention under Regulation 19 of the SEBI (Investment Advisers) Regulations, 2013.',
+    statutory_footer_note: '* Certificate Generated under Section 63 of Bharatiya Sakshya Adhiniyam, 2023 / Section 65B IEA. Preserved for statutory 5-year retention under Regulation 19 of the SEBI (Investment Advisers) Regulations, 2013.',
     btn_close: 'Close',
     btn_print: 'Print Dossier (PDF)',
   },

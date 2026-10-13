@@ -1,0 +1,65 @@
+digraph BeforeAfterFlow {
+    
+    bgcolor="#FFFFFF";
+    fontname="Helvetica,Arial,sans-serif";
+    fontsize=14;
+    pad="0.25,0.25";
+    nodesep=0.4;
+    ranksep=0.45;
+    splines=ortho;
+
+    node [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        shape=box,
+        style="rounded,filled",
+        fillcolor="#F8FAFC",
+        color="#CBD5E1",
+        penwidth=1.5,
+        margin="0.15,0.12"
+    ];
+
+    edge [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        color="#64748B",
+        fontcolor="#334155",
+        penwidth=1.5
+    ];
+
+    rankdir=LR;
+
+    subgraph cluster_before {
+        label="Legacy Approval Practice (Vulnerable)";
+        fontname="Helvetica,Arial,sans-serif";
+        fontsize=13;
+        fontcolor="#E11D48";
+        color="#FDA4AF";
+        style="rounded,dashed";
+        fillcolor="#FFF1F2";
+
+        b1 [label="WhatsApp / Email Text\n'Please buy Tata Motors'", color="#E11D48", fontcolor="#9F1239"];
+        b2 [label="Informal 'Yes' Reply\nNo Documented Rationale", color="#E11D48", fontcolor="#9F1239"];
+        b3 [label="Year-End Tax Shock\nPenalty under Sec 234C", color="#E11D48", fontcolor="#9F1239"];
+        b4 [label="Audit Vulnerability\nInadmissible in Disputes", color="#E11D48", fillcolor="#E11D48", fontcolor="#FFFFFF"];
+
+        b1 -> b2 -> b3 -> b4 [color="#E11D48"];
+    }
+
+    subgraph cluster_after {
+        label="FinConsent Statutory Digital Rail (Protected)";
+        fontname="Helvetica,Arial,sans-serif";
+        fontsize=13;
+        fontcolor="#059669";
+        color="#A7F3D0";
+        style="rounded,dashed";
+        fillcolor="#ECFDF5";
+
+        a1 [label="Encrypted Magic Link\nPre-Trade Tax Visible", color="#059669", fontcolor="#065F46"];
+        a2 [label="Password-Protected Gate\nPAN Last 4 + DOB", color="#059669", fontcolor="#065F46"];
+        a3 [label="Explicit Declarations\n+ 6-Digit OTP Verification", color="#059669", fontcolor="#065F46"];
+        a4 [label="Section 63 BSA Dossier\nClient Executes via Broker", color="#059669", fillcolor="#059669", fontcolor="#FFFFFF"];
+
+        a1 -> a2 -> a3 -> a4 [color="#059669", penwidth=2.0];
+    }
+}

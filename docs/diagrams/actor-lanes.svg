@@ -48,7 +48,7 @@
 <g id="node3" class="node">
 <title>a3</title>
 <path fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5" d="M606.07,-239.04C606.07,-239.04 479.48,-239.04 479.48,-239.04 473.48,-239.04 467.48,-233.04 467.48,-227.04 467.48,-227.04 467.48,-204.96 467.48,-204.96 467.48,-198.96 473.48,-192.96 479.48,-192.96 479.48,-192.96 606.07,-192.96 606.07,-192.96 612.07,-192.96 618.07,-198.96 618.07,-204.96 618.07,-204.96 618.07,-227.04 618.07,-227.04 618.07,-233.04 612.07,-239.04 606.07,-239.04"/>
-<text xml:space="preserve" text-anchor="middle" x="542.78" y="-219.6" font-family="Helvetica,Arial,sans-serif" font-size="12.00" fill="#312e81">3. Dispatches Mandate</text>
+<text xml:space="preserve" text-anchor="middle" x="542.78" y="-219.6" font-family="Helvetica,Arial,sans-serif" font-size="12.00" fill="#312e81">3. Dispatches Proposal</text>
 <text xml:space="preserve" text-anchor="middle" x="542.78" y="-205.2" font-family="Helvetica,Arial,sans-serif" font-size="12.00" fill="#312e81">Issues 48h Cutoff Window</text>
 </g>
 <!-- a2&#45;&gt;a3 -->
@@ -81,7 +81,7 @@
 <g id="node10" class="node">
 <title>c2</title>
 <path fill="#f8fafc" stroke="#059669" stroke-width="1.5" d="M414.31,-137.04C414.31,-137.04 299.74,-137.04 299.74,-137.04 293.74,-137.04 287.74,-131.04 287.74,-125.04 287.74,-125.04 287.74,-102.96 287.74,-102.96 287.74,-96.96 293.74,-90.96 299.74,-90.96 299.74,-90.96 414.31,-90.96 414.31,-90.96 420.31,-90.96 426.31,-96.96 426.31,-102.96 426.31,-102.96 426.31,-125.04 426.31,-125.04 426.31,-131.04 420.31,-137.04 414.31,-137.04"/>
-<text xml:space="preserve" text-anchor="middle" x="357.03" y="-117.6" font-family="Helvetica,Arial,sans-serif" font-size="12.00">5. Reviews Mandate</text>
+<text xml:space="preserve" text-anchor="middle" x="357.03" y="-117.6" font-family="Helvetica,Arial,sans-serif" font-size="12.00">5. Reviews Proposal</text>
 <text xml:space="preserve" text-anchor="middle" x="357.03" y="-103.2" font-family="Helvetica,Arial,sans-serif" font-size="12.00">Reads Rationale &amp; Drift</text>
 </g>
 <!-- a4&#45;&gt;c2 -->

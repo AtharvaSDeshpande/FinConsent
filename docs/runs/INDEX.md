@@ -23,5 +23,6 @@
 20261011-095200-remediate-presentation-visual-critique | Visual critique remediation across all 29 slides, SVG diagrams, phone/browser frames, native stats, and PPTX/HTML regeneration | shipped
 20261011-103500-remediate-remaining-presentation-issues | Remediate remaining presentation visual critique issues, native bullets, Graphviz visual restoration, appendix divider, and deck polish | shipped
 20261011-114500-prepend-agent-performance-report-readme | Append uploaded FinConsent agent performance report to beginning of README.md | shipped
-
+20261013-095500-content-alignment-and-literature-review | Repository-wide content alignment, authoritative literature review, and source-of-truth matrix | shipped
+20261013-105500-replace-outdated-visual-audit-diagrams | Delete outdated visual-audit files and generate fresh high-resolution architecture and workflow diagrams | shipped
 

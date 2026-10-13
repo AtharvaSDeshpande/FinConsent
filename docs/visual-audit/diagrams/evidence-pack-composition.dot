@@ -1,0 +1,60 @@
+digraph EvidencePackComposition {
+    
+    bgcolor="#FFFFFF";
+    fontname="Helvetica,Arial,sans-serif";
+    fontsize=14;
+    pad="0.25,0.25";
+    nodesep=0.4;
+    ranksep=0.45;
+    splines=ortho;
+
+    node [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        shape=box,
+        style="rounded,filled",
+        fillcolor="#F8FAFC",
+        color="#CBD5E1",
+        penwidth=1.5,
+        margin="0.15,0.12"
+    ];
+
+    edge [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        color="#64748B",
+        fontcolor="#334155",
+        penwidth=1.5
+    ];
+
+    rankdir=LR;
+
+    subgraph cluster_inputs {
+        label="Mandatory Evidentiary Attributions (BSA 2023 §63)";
+        fontname="Helvetica,Arial,sans-serif";
+        fontsize=13;
+        fontcolor="#0A192F";
+        color="#94A3B8";
+        style="rounded,dashed";
+        fillcolor="#F8FAFC";
+
+        e1 [label="Client Origin IP Address\nRFC 5737 Sanitized (203.0.113.12)", color="#4F46E5", fillcolor="#EEF2FF", fontcolor="#312E81"];
+        e2 [label="Device User-Agent & Environment\nBrowser, Operating System & Viewport", color="#4F46E5", fillcolor="#EEF2FF", fontcolor="#312E81"];
+        e3 [label="Synchronized NTP IST Timestamp\nExact Indian Standard Time of OTP Verification", color="#D97706", fillcolor="#FEF3C7", fontcolor="#92400E"];
+        e4 [label="Masked Client Identity\nValid PAN Syntax (XXXXX1234F) & DOB", color="#059669", fillcolor="#ECFDF5", fontcolor="#065F46"];
+        e5 [label="Immutable Transaction Payload\nISINs, Quantities, Prices & Capital Gains Tax", color="#0A192F", fillcolor="#F1F5F9", fontcolor="#0A192F"];
+    }
+
+    engine [label="CRYPTOGRAPHIC INTEGRITY ENGINE\nComputes SHA-256 payloadHash\nChains into Forward Ledger",
+            shape=box, style="rounded,filled", fillcolor="#0A192F", color="#0A192F", fontcolor="#FFFFFF", fontsize=13];
+
+    dossier [label="CERTIFIED SECTION 63 BSA COMPLIANCE DOSSIER\nAdmissible in Regulatory Inspections & Civil Proceedings\nPreserved for Mandatory 5-Year SEBI Retention",
+             shape=box, style="rounded,filled", fillcolor="#059669", color="#059669", fontcolor="#FFFFFF", fontsize=14, penwidth=2.5];
+
+    e1 -> engine;
+    e2 -> engine;
+    e3 -> engine;
+    e4 -> engine;
+    e5 -> engine;
+    engine -> dossier [color="#059669", penwidth=2.5];
+}

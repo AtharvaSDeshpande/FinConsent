@@ -1,6 +1,6 @@
 # FinConsent — The Complete Statutory Advisory Journey
 
-**A Narrative Case Study in SEBI Regulation 19 Compliance, Capital Gains Tax Transparency, and Cryptographic Trade Authorization**
+**A Narrative Case Study in SEBI Regulation 19 Compliance, Capital Gains Tax Transparency, and Advisory Proposal Acknowledgement Evidence**
 
 *Featuring Suresh Narayanan (Principal Adviser, Prudent Wealth Advisory) and Rohan Mehta (HNI Advisory Client)*
 
@@ -17,7 +17,7 @@
 │ **Suresh Narayanan**     │ Principal Officer & RIA  │ Manages ₹180 Crores AUM for 75   │
 │                          │ Prudent Wealth Advisory  │ HNI families under fee-only,     │
 │                          │ SEBI Reg: `INA000018421` │ non-discretionary mandates. Must │
-│                          │ Email: `ria@example.in`  │ secure prior informed consent.   │
+│                          │ Email: `ria@example.in`  │ maintain advice & consent records│
 ├──────────────────────────┼──────────────────────────┼──────────────────────────────────┤
 │ **Rohan Mehta**          │ HNI Advisory Client      │ Managing Director of an auto-tech│
 │                          │ Client ID: `cli_1`       │ manufacturing firm in Pune.      │
@@ -37,10 +37,10 @@
 
 ## Statutory Process Flow & Consent Lifecycle Architecture
 
-The end-to-end statutory consent lifecycle—spanning proposal formulation, tax engine calculations, dual-envelope delivery via WhatsApp, client authentication, interactive clarification, OTP verification, and Section 65B tamper-evident hash chaining—is illustrated in the formal Graphviz process flow diagram below:
+The end-to-end advisory consent lifecycle—spanning proposal formulation, tax engine calculations, dual-envelope delivery via secure link, client authentication, interactive clarification, OTP verification, and Section 63 BSA tamper-evident hash chaining—is illustrated in the formal Graphviz process flow diagram below:
 
 ![FinConsent Statutory Advisory Process Flow](docs/diagrams/process-flow.png)
-*Figure 1.0: FinConsent End-to-End Statutory Advisory Process Flow (SEBI Reg 19, HMAC & Section 65B Audit Trail)*
+*Figure 1.0: FinConsent End-to-End Advisory Consent Process Flow (SEBI Reg 19, SHA-256 Ledger & Section 63 BSA Audit Trail)*
 
 ---
 
@@ -55,12 +55,12 @@ Rohan's target asset allocation, formulated under a moderate-aggressive risk man
 Over the last 18 months, equity valuations have surged, expanding Rohan's equity exposure to 65% (₹2.73 Crores) while compressing his fixed-income and sovereign gold allocations. To restore portfolio equilibrium, Suresh must recommend selling **₹11.10 Lakhs** of equities and reallocating the proceeds into AAA-rated corporate debt ETFs and Sovereign Gold Bonds.
 
 ### The Problem Facing Suresh
-Under **Regulation 19 of the SEBI (Investment Advisers) Regulations, 2013**, Suresh operates under a **non-discretionary advisory mandate**. He is legally prohibited from executing trades on Rohan's broker account without **prior, informed, explicit client consent**.
+Under **Regulations 19 and 22 of the SEBI (Investment Advisers) Regulations, 2013**, Suresh operates under a **non-discretionary advisory mandate**. He tenders investment advice, asset allocation recommendations, and investment rationale, but he does not execute trades on exchange order books; actual execution is conducted by Rohan on his personal broker account (or via non-discretionary implementation services without advice-fee blending under Regulation 22B). Under Regulation 19, Suresh is required to maintain contemporaneous records of advice tendered, investment rationale, and client acknowledgements for at least 5 years.
 
-In previous years, advisers relied on informal channels: sending a PDF via WhatsApp or email, receiving a brief reply like *"Yes Suresh, please go ahead"*, and executing the orders. But in today's regulatory environment, this legacy approach creates catastrophic risks:
-1. **SEBI Regulation 19 Liability:** SEBI inspection teams routinely reject informal WhatsApp messages as valid statutory consent. Advisers face show-cause notices, suspensions, and personal regulatory penalties.
-2. **Post-Budget 2024 Tax Shock:** Following the Finance Act 2024, Short-Term Capital Gains (STCG) are taxed at **20.0%** (Section 111A) and Long-Term Capital Gains (LTCG) at **12.5%** (Section 112A). Liquidating ₹11.10 Lakhs of equities without upfront tax transparency risks exposing Rohan to an unexpected ₹11,440+ tax liability and quarterly penal interest under Sections 234B & 234C.
-3. **Indian Evidence Act Section 65B Inadmissibility:** If a dispute arises over execution timing or market drawdown, an informal email or text message cannot be admitted into arbitration or court proceedings without a certified electronic evidence trail.
+Historically, advisers communicated rebalancing proposals across informal channels: sending PDFs via WhatsApp or email threads, receiving casual replies like *"Yes Suresh, please go ahead"*, and trusting that these records would suffice. But in today's regulatory environment, this legacy practice creates significant operational friction (hypothesized for pilot validation):
+1. **Evidentiary Fragmentation & Audit Overhead:** WhatsApp messages and email threads are legally discoverable, but they fragment investment rationale, lack structured metadata, and create severe administrative collation overhead during SEBI/BASL compliance audits.
+2. **Post-Budget 2024 Tax Friction:** Under the Finance Act 2024, Short-Term Capital Gains (STCG) are taxed at **20.0%** (Section 111A) and Long-Term Capital Gains (LTCG) at **12.5%** (Section 112A). Liquidating ₹11.10 Lakhs of equities without upfront tax transparency risks exposing Rohan to unanticipated tax liabilities. While the First Proviso to Section 234C(1) protects against penal interest if capital gains tax is deposited in subsequent advance tax installments, unexpected tax bills damage client trust.
+3. **Electronic Admissibility Standards:** Under Section 63 of the Bharatiya Sakshya Adhiniyam, 2023 (BSA, which superseded Section 65B of the Indian Evidence Act), electronic records require structured integrity certificates detailing device identifiers, timestamps, and hash integrity to withstand formal audit scrutiny.
 
 Suresh logs into **FinConsent** to execute this rebalancing recommendation with institutional statutory rigor.
 
@@ -281,7 +281,7 @@ Back at Prudent Wealth Advisory, Suresh's dashboard updates in real time:
 ![RIA Dashboard Consented](docs/visual-audit/workflow/11-ria-dashboard-updated-consented.png)
 *Figure 8.3: Suresh's RIA Dashboard updated with green "Consented" statutory badge and immutable timestamp.*
 
-Suresh opens the mandate detail view to inspect the finalized audit trail:
+With the rebalancing proposal acknowledged and cryptographically locked, Rohan proceeds to place the rebalance orders directly on his personal broker account (e.g., Zerodha Kite) or via client-directed execution facilities, while Suresh opens the mandate detail view to inspect the finalized audit trail:
 
 ![RIA Mandate Consented Audit Trail](docs/visual-audit/workflow/10-ria-mandate-consented-audit-trail.png)
 *Figure 8.4: Detailed Audit Timeline showing the complete lifecycle: Mandate Created -> Dispatched -> Viewed -> Password Unlocked -> Chat -> OTP Verified -> Consented.*

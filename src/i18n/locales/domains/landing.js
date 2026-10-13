@@ -26,7 +26,7 @@ export const landing = {
     step3_desc: 'Mandates auto-expire after 48 hours to prevent execution on stale market valuations and unapproved prices.',
     step4_title: 'Investor Mobile OTP Authorization',
     step4_desc: 'Client reviews on mobile, inspects portfolio impact, and approves via single-use 6-digit SMS OTP verification.',
-    step5_title: 'Cryptographic Audit Chain & Section 65B Certificate',
+    step5_title: 'Cryptographic Audit Chain & Section 63 BSA / Section 65B Certificate',
     step5_desc: 'Generates immutable SHA-256 evidence log admissible under Section 65B of the Indian Evidence Act.',
     pricing_title: 'Transparent B2B Pricing for Regulated Advisory Firms',
     pricing_sub: 'All plans include full statutory compliance, cryptographic hashing, and automated capital gains calculation.',

@@ -146,7 +146,7 @@ const dotContent = `digraph FinConsentProcessFlow {
                 <TR><TD ALIGN="LEFT"><FONT COLOR="#475569" POINT-SIZE="8">• Client queries Tata Motors weight</FONT></TD></TR>
                 <TR><TD ALIGN="LEFT"><FONT COLOR="#475569" POINT-SIZE="8">• Suresh clarifies risk ceiling</FONT></TD></TR>
                 <TR><TD ALIGN="LEFT"><FONT COLOR="#DC2626" POINT-SIZE="8"><B>• STATUTORY BOUNDARY:</B></FONT></TD></TR>
-                <TR><TD ALIGN="LEFT"><FONT COLOR="#DC2626" POINT-SIZE="8"><B>  Chat ≠ Trade Consent</B></FONT></TD></TR>
+                <TR><TD ALIGN="LEFT"><FONT COLOR="#DC2626" POINT-SIZE="8"><B>  Chat ≠ Rebalance Consent (Client Broker Executes)</B></FONT></TD></TR>
             </TABLE>
         >];
 
@@ -155,7 +155,7 @@ const dotContent = `digraph FinConsentProcessFlow {
                 <TR><TD BGCOLOR="#B45309" ALIGN="CENTER"><FONT COLOR="#FFFFFF" POINT-SIZE="10.5"><B>6. STATUTORY CONSENT &amp; OTP</B></FONT></TD></TR>
                 <TR><TD ALIGN="LEFT"><FONT COLOR="#D97706" POINT-SIZE="9"><B>Cryptographic Authorization</B></FONT></TD></TR>
                 <TR><TD ALIGN="LEFT"><FONT COLOR="#475569" POINT-SIZE="8">• 3 Mandatory Legal Checkboxes:</FONT></TD></TR>
-                <TR><TD ALIGN="LEFT"><FONT COLOR="#475569" POINT-SIZE="7.5">•   Reg 19, Tax Estimate, Sec 63 BSA / 65B</FONT></TD></TR>
+                <TR><TD ALIGN="LEFT"><FONT COLOR="#475569" POINT-SIZE="7.5">•   Reg 17/19, Tax Preview, Sec 63 BSA</FONT></TD></TR>
                 <TR><TD ALIGN="LEFT"><FONT COLOR="#475569" POINT-SIZE="8">• 6-Digit OTP (CSPRNG, 5m TTL)</FONT></TD></TR>
                 <TR><TD ALIGN="LEFT"><FONT COLOR="#D97706" POINT-SIZE="8"><B>• Max 3 Attempts Before Lock</B></FONT></TD></TR>
             </TABLE>
@@ -168,7 +168,7 @@ const dotContent = `digraph FinConsentProcessFlow {
                 <TR><TD ALIGN="LEFT"><FONT COLOR="#047857" POINT-SIZE="8">• Token Burned (Single-Use 410)</FONT></TD></TR>
                 <TR><TD ALIGN="LEFT"><FONT COLOR="#047857" POINT-SIZE="8">• Mandate Status: CONSENTED</FONT></TD></TR>
                 <TR><TD ALIGN="LEFT"><FONT COLOR="#047857" POINT-SIZE="8">• Chained SHA-256 Audit Logged</FONT></TD></TR>
-                <TR><TD ALIGN="LEFT"><FONT COLOR="#065F46" POINT-SIZE="8"><B>• Sec 63 BSA / 65B Dossier Certified</B></FONT></TD></TR>
+                <TR><TD ALIGN="LEFT"><FONT COLOR="#065F46" POINT-SIZE="8"><B>• Sec 63 BSA Dossier Certified</B></FONT></TD></TR>
             </TABLE>
         >];
 
@@ -308,13 +308,19 @@ async function main() {
 
     console.log(`  [OK] Rendered High-Res PNG: ${PNG_FILE} (${fs.statSync(PNG_FILE).size} bytes)`);
 
-    // Mirror to root diagrams directory if exists or create for accessibility
+    // Mirror to root diagrams directory and visual-audit/diagrams
     const ROOT_DIAGRAMS = path.join(BASE_DIR, "diagrams");
     if (!fs.existsSync(ROOT_DIAGRAMS)) fs.mkdirSync(ROOT_DIAGRAMS, { recursive: true });
     fs.copyFileSync(DOT_FILE, path.join(ROOT_DIAGRAMS, "process-flow.dot"));
     fs.copyFileSync(SVG_FILE, path.join(ROOT_DIAGRAMS, "process-flow.svg"));
     fs.copyFileSync(PNG_FILE, path.join(ROOT_DIAGRAMS, "process-flow.png"));
-    console.log(`  [OK] Mirrored assets to ${ROOT_DIAGRAMS}`);
+
+    const AUDIT_DIAGRAMS = path.join(DOCS_DIR, "visual-audit", "diagrams");
+    if (!fs.existsSync(AUDIT_DIAGRAMS)) fs.mkdirSync(AUDIT_DIAGRAMS, { recursive: true });
+    fs.copyFileSync(DOT_FILE, path.join(AUDIT_DIAGRAMS, "process-flow.dot"));
+    fs.copyFileSync(SVG_FILE, path.join(AUDIT_DIAGRAMS, "process-flow.svg"));
+    fs.copyFileSync(PNG_FILE, path.join(AUDIT_DIAGRAMS, "process-flow.png"));
+    console.log(`  [OK] Mirrored assets to ${ROOT_DIAGRAMS} and ${AUDIT_DIAGRAMS}`);
 
   } finally {
     await browser.close();

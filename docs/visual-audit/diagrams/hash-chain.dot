@@ -1,0 +1,38 @@
+digraph HashChain {
+    
+    bgcolor="#FFFFFF";
+    fontname="Helvetica,Arial,sans-serif";
+    fontsize=14;
+    pad="0.25,0.25";
+    nodesep=0.4;
+    ranksep=0.45;
+    splines=ortho;
+
+    node [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        shape=box,
+        style="rounded,filled",
+        fillcolor="#F8FAFC",
+        color="#CBD5E1",
+        penwidth=1.5,
+        margin="0.15,0.12"
+    ];
+
+    edge [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        color="#64748B",
+        fontcolor="#334155",
+        penwidth=1.5
+    ];
+
+    rankdir=LR;
+
+    b1 [label="LOG RECORD N-1\nEvent: MANDATE_VIEWED\nTimestamp: 10:14:22 IST\nHash: a3b8...9f12", color="#64748B", fillcolor="#F1F5F9"];
+    b2 [label="LOG RECORD N\nEvent: MANDATE_CONSENTED\nTimestamp: 10:15:08 IST\nPayload: Rohan Mehta OTP\nHash: 7c4e...d103", color="#059669", fillcolor="#D1FAE5", fontcolor="#065F46", penwidth=2.0];
+    b3 [label="LOG RECORD N+1\nEvent: DOSSIER_EXPORTED\nTimestamp: 10:15:10 IST\nHash: e82f...39aa", color="#4F46E5", fillcolor="#EEF2FF", fontcolor="#312E81"];
+
+    b1 -> b2 [label="SHA256(b1.Hash + Record N)", color="#059669", penwidth=2.0];
+    b2 -> b3 [label="SHA256(b2.Hash + Record N+1)", color="#4F46E5", penwidth=2.0];
+}

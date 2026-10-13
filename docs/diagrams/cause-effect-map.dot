@@ -1,14 +1,13 @@
 digraph CauseEffectMap {
+    
+    bgcolor="#FFFFFF";
+    fontname="Helvetica,Arial,sans-serif";
+    fontsize=14;
+    pad="0.25,0.25";
+    nodesep=0.4;
+    ranksep=0.45;
+    splines=ortho;
 
-    graph [
-        bgcolor="#FFFFFF",
-        fontname="Helvetica,Arial,sans-serif",
-        fontsize=14,
-        pad="0.25,0.25",
-        nodesep=0.4,
-        ranksep=0.45,
-        splines=ortho
-    ];
     node [
         fontname="Helvetica,Arial,sans-serif",
         fontsize=12,
@@ -19,6 +18,7 @@ digraph CauseEffectMap {
         penwidth=1.5,
         margin="0.15,0.12"
     ];
+
     edge [
         fontname="Helvetica,Arial,sans-serif",
         fontsize=12,
@@ -38,7 +38,7 @@ digraph CauseEffectMap {
         style="rounded,dashed";
         fillcolor="#FFF1F2";
 
-        c1 [label="Informal Approvals\nWhatsApp / Email / Calls", color="#E11D48", fontcolor="#9F1239", fillcolor="#FFE4E6"];
+        c1 [label="Informal Acknowledgements\nWhatsApp / Email / Calls", color="#E11D48", fontcolor="#9F1239", fillcolor="#FFE4E6"];
         c2 [label="No Pre-Trade Tax Visibility\nBlindsided by Capital Gains", color="#D97706", fontcolor="#92400E", fillcolor="#FEF3C7"];
         c3 [label="Fragmented Communications\nSpreadsheets & Lost Screenshots", color="#64748B", fontcolor="#334155", fillcolor="#F1F5F9"];
     }
@@ -53,7 +53,7 @@ digraph CauseEffectMap {
         fillcolor="#F8FAFC";
 
         i1 [label="SEBI Reg 19 Non-Compliance\nContemporaneous Rationale Missing", color="#E11D48", fontcolor="#9F1239"];
-        i2 [label="Advance Tax Penalties\nSec 208, 234B & 234C Interest", color="#D97706", fontcolor="#92400E"];
+        i2 [label="Advance Tax Shortfalls\nSec 208 & 234C (Relief via Proviso)", color="#D97706", fontcolor="#92400E"];
         i3 [label="Inadmissible Evidence\nFails Section 63 BSA Standard", color="#4F46E5", fontcolor="#312E81"];
     }
 
@@ -66,7 +66,7 @@ digraph CauseEffectMap {
         style="rounded,filled";
         fillcolor="#FFF1F2";
 
-        end1 [label="Discretionary Trading Accusations\nClient Disputes & Audit Sanctions", color="#E11D48", fontcolor="#FFFFFF", fillcolor="#E11D48"];
+        end1 [label="Discretionary Execution Disputes\nClient Misunderstandings & Penalties", color="#E11D48", fontcolor="#FFFFFF", fillcolor="#E11D48"];
     }
 
     c1 -> i1 [label="Audit Review"];

@@ -1,0 +1,67 @@
+digraph ChatVsConsent {
+    
+    bgcolor="#FFFFFF";
+    fontname="Helvetica,Arial,sans-serif";
+    fontsize=14;
+    pad="0.25,0.25";
+    nodesep=0.4;
+    ranksep=0.45;
+    splines=ortho;
+
+    node [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        shape=box,
+        style="rounded,filled",
+        fillcolor="#F8FAFC",
+        color="#CBD5E1",
+        penwidth=1.5,
+        margin="0.15,0.12"
+    ];
+
+    edge [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        color="#64748B",
+        fontcolor="#334155",
+        penwidth=1.5
+    ];
+
+    rankdir=LR;
+
+    start [label="Client In Review\nMandate Unlocked on Mobile", color="#0A192F", fillcolor="#F1F5F9"];
+
+    subgraph cluster_chat_lane {
+        label="Clarification Chat Rail (Discussion != Consent)";
+        fontname="Helvetica,Arial,sans-serif";
+        fontsize=13;
+        fontcolor="#D97706";
+        color="#FDE68A";
+        style="rounded,dashed";
+        fillcolor="#FEF3C7";
+
+        c_msg [label="Rohan: 'Why sell Tata Motors now?'\nCommitted to Audit Log", color="#D97706", fontcolor="#92400E"];
+        c_ans [label="Suresh: 'Rebalancing 15% equity excess'\nCommitted to Audit Log", color="#D97706", fontcolor="#92400E"];
+        c_stop [label="STAYS 'IN REVIEW'\nChat CANNOT authorize rebalance\n(Broker Execution Required)", color="#E11D48", fontcolor="#9F1239", fillcolor="#FEE2E2"];
+    }
+
+    subgraph cluster_consent_lane {
+        label="Statutory Consent Rail (SEBI Reg 19 / BSA Sec 63)";
+        fontname="Helvetica,Arial,sans-serif";
+        fontsize=13;
+        fontcolor="#059669";
+        color="#A7F3D0";
+        style="rounded,dashed";
+        fillcolor="#ECFDF5";
+
+        auth_check [label="Active Check of 3 Declarations\n• Reg 17/19 Informed Consent\n• Capital Gains Tax Acceptance\n• Sec 63 BSA Electronic Record", color="#059669", fontcolor="#065F46"];
+        auth_otp   [label="Enter 6-Digit Mobile OTP\nCSPRNG Verified & Burned", color="#059669", fontcolor="#065F46"];
+        auth_done  [label="CONSENTED STATE\nImmutable Cryptographic Seal", color="#059669", fillcolor="#059669", fontcolor="#FFFFFF", penwidth=2.5];
+    }
+
+    start -> c_msg [color="#D97706"];
+    c_msg -> c_ans -> c_stop;
+
+    start -> auth_check [color="#059669", penwidth=2.0];
+    auth_check -> auth_otp -> auth_done [color="#059669", penwidth=2.0];
+}

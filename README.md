@@ -268,9 +268,9 @@ The recommended next step is to preserve the current multi-agent approach while 
 
 # FinConsent
 
-**Institutional Statutory Advisory Consent, Capital Gains Tax Transparency & Tamper-Evident Record-Keeping Infrastructure for SEBI-Registered Investment Advisers (RIAs)**
+**Institutional Advisory Proposal Consent, Capital Gains Tax Transparency & Tamper-Evident Record-Keeping Infrastructure for SEBI-Registered Investment Advisers (RIAs)**
 
-[![Tests](https://img.shields.io/badge/Vitest-200%2F200%20Passing%20(15%20Suites)-brightgreen)](#testing--security-validation-evidence)
+[![Tests](https://img.shields.io/badge/Vitest-230%2F230%20Passing%20(17%20Suites)-brightgreen)](#testing--security-validation-evidence)
 [![ESLint](https://img.shields.io/badge/ESLint-0%20errors%20%7C%200%20warnings-brightgreen)](#testing--security-validation-evidence)
 [![SEBI](https://img.shields.io/badge/SEBI-Regulation%2019%20Record--Keeping-blue)](#sebi-regulatory-and-legal-compliance)
 [![Electronic Records](https://img.shields.io/badge/BSA%202023-Section%2063%20Certified-indigo)](#sebi-regulatory-and-legal-compliance)
@@ -281,11 +281,11 @@ The recommended next step is to preserve the current multi-agent approach while 
 
 ## Executive Overview
 
-**FinConsent** is an institutional B2B WealthTech platform engineered specifically for Indian SEBI-Registered Investment Advisers (RIAs), compliance officers, and advisory clients. Built to support **Regulation 19 of the SEBI (Investment Advisers) Regulations, 2013**, FinConsent provides an auditable, verifiable digital rail for non-discretionary investment advisory workflows.
+**FinConsent** is an institutional B2B WealthTech platform engineered specifically for Indian SEBI-Registered Investment Advisers (RIAs), compliance officers, and advisory clients. Built to support **Regulations 19 and 22 of the SEBI (Investment Advisers) Regulations, 2013**, FinConsent provides an auditable, verifiable digital rail for non-discretionary investment advisory workflows.
 
-In India's fee-only advisory framework, non-discretionary investment advisers cannot execute securities transactions on behalf of clients without **prior, documented client consent** and a contemporaneous record of the advice and rationale. Traditionally, advisers and clients coordinate rebalancing recommendations across informal, fragmented channels such as WhatsApp chats, email threads, SMS messages, or unrecorded phone conversations. This legacy approach exposes advisory practices to compliance risk, client disputes, and evidentiary challenges during statutory audits. Furthermore, following statutory capital gains tax adjustments (Finance Act 2024), rebalancing recommendations without pre-trade tax impact visibility can result in unexpected Short-Term Capital Gains (STCG) and Long-Term Capital Gains (LTCG) liabilities for clients.
+In India's fee-only advisory framework, non-discretionary investment advisers provide advice, asset allocation models, and investment rationale, but do not execute securities transactions on exchange order books (Regulations 22 & 22B). Order placement is conducted independently by the client or via non-discretionary implementation services without advice-fee blending. Under Regulation 19, advisers must maintain a contemporaneous record of advice tendered, investment rationale, and client acknowledgements for at least **5 years (1,825 days)**. Traditionally, advisers and clients coordinate rebalancing recommendations across informal channels (WhatsApp chats, email threads, SMS, or phone calls). While legally discoverable, these unstructured records fragment rationale, lack pre-trade tax calculations, and create severe administrative collation overhead during SEBI/BASL compliance audits. Furthermore, following statutory capital gains tax adjustments (Finance Act 2024: STCG 20%, LTCG 12.5% beyond ₹1.25L exemption), rebalancing recommendations without pre-trade tax impact visibility can result in unexpected tax liabilities for clients.
 
-FinConsent addresses these operational friction points by pairing an automated **Capital Gains Decision-Support Tax Engine** with an **authenticated AES-256-GCM dual-envelope encrypted mandate lifecycle**, a scoped in-app mandate clarification chat rail, convenience password protection, verification OTP confirmation, and an append-only **SHA-256 forward-hash chained audit ledger** designed to support electronic record requirements under **Section 63 of the Bharatiya Sakshya Adhiniyam, 2023 (BSA)** and **Section 65B of the Indian Evidence Act, 1872**.
+FinConsent addresses these operational friction points by pairing an automated **Capital Gains Decision-Support Tax Engine** with an **authenticated AES-256-GCM dual-envelope encrypted mandate lifecycle**, a scoped in-app mandate clarification chat rail, convenience password protection, verification OTP confirmation (an evidentiary safeguard under Section 63 BSA), and an append-only **SHA-256 forward-hash chained audit ledger** designed to support electronic record requirements under **Section 63 of the Bharatiya Sakshya Adhiniyam, 2023 (BSA)** and **Section 65B of the Indian Evidence Act, 1872**.
 
 ---
 
@@ -295,24 +295,24 @@ FinConsent addresses these operational friction points by pairing an automated *
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
 ─────────────────── ADVISORY PRACTICE RISK & MITIGATION MAPPING ─────────────────────────
 ├─────────────────────────────────────────┬──────────────────────────────────────────────┤
-│ Legacy Informal Practice                │ FinConsent Governance Solution               │
+│ Legacy Informal Practice (Hypotheses)   │ FinConsent Governance Solution               │
 ├─────────────────────────────────────────┼──────────────────────────────────────────────┤
-│ • Informal approvals over WhatsApp      │ • Standardized mandate workflow aligned with │
-│   or unauthenticated email threads.     │   SEBI Regulation 19 record-keeping rules.   │
+│ • Informal communication over WhatsApp   │ • Standardized mandate workflow aligned with │
+│   or email fragments rationale.         │   SEBI Regulation 19 record-keeping rules.   │
 │ • No pre-trade tax visibility; clients  │ • Pre-computed statutory capital gains       │
 │   surprised by advance tax liabilities. │   transparency (STCG 20%, LTCG 12.5%).       │
 │ • Dispersed documentation across PDFs,  │ • Centralized, tamper-evident audit ledger   │
-│   spreadsheets, and phone recordings.   │   inspectable for 5 statutory years.         │
+│   spreadsheets, and email threads.      │   inspectable for 5 statutory years.         │
 │ • Ambiguity regarding client approval   │ • Scoped mandate clarification chat clearly  │
 │   prior to order placement.             │   distinguished from explicit consent.       │
 └─────────────────────────────────────────┴──────────────────────────────────────────────┘
 ```
 
 ### Statutory Regulatory Pillars:
-1. **SEBI (Investment Advisers) Regulations, 2013 — Regulation 19:** Mandates that every non-discretionary RIA maintain comprehensive, time-stamped client records, advice rationale, agreements, and client consent records for a statutory minimum period of **5 years (1,825 days)**.
+1. **SEBI (Investment Advisers) Regulations, 2013 — Regulations 19, 22 & 22B:** Mandates that every non-discretionary RIA maintain comprehensive, time-stamped client records, advice rationale, master client agreements (Regulation 13), and proposal acknowledgement records for a statutory minimum period of **5 years (1,825 days)**. Trade execution remains strictly non-discretionary.
 2. **Bharatiya Sakshya Adhiniyam, 2023 (BSA) — Section 63 / Indian Evidence Act — Section 65B:** Governs the admissibility of electronic records in judicial and regulatory proceedings. FinConsent records capture client device IP, User-Agent, synchronized IST timestamps, and cryptographic hash verification to support electronic record integrity.
 3. **Current Capital Gains Tax Regime (Finance Act 2024):** Computes estimated tax impact under statutory rates: Short-Term Capital Gains (STCG) at **20.0%** (Section 111A) and Long-Term Capital Gains (LTCG) at **12.5%** above the annual statutory aggregate ₹1,25,000 exemption (Section 112A), plus 4% Health & Education Cess. High-income surcharges (up to 15% on equity capital gains) and carried-forward losses are disclaimed as individual tax variables.
-4. **Income-tax Act, 1961 — Advance Tax Planning:** When net annual tax liability is ₹10,000 or more, advance tax provisions apply. Under the proviso to Section 234C, capital gains tax can be deposited in remaining installments without penal interest if realized post-deadline.
+4. **Income-tax Act, 1961 — Advance Tax Planning:** When net annual tax liability is ₹10,000 or more, advance tax provisions apply (Section 208). Under the First Proviso to Section 234C(1), interest for shortfall in advance tax is not charged if the shortfall is due to capital gains, provided remaining tax is deposited in subsequent installments or before March 31.
 5. **Digital Personal Data Protection Act, 2023 (DPDP Act):** Protects investor personal data with purpose limitation and strict access controls. Section 8(7) accommodates mandatory statutory retention periods, ensuring compliance audit trails are lawfully maintained throughout the SEBI 5-year window.
 
 ---
@@ -646,7 +646,7 @@ FinConsent provides native localization across **8 supported languages**:
 
 All platform invariants and security controls have been validated in automated test suites:
 
-- **Vitest Automated Test Suites:** **16 / 16 test suites passing (214 / 214 tests passing, 100%)**:
+- **Vitest Automated Test Suites:** **17 / 17 test suites passing (230 / 230 tests passing, 100%)**:
   1. `taxCalculator.test.js` (8 tests) — STCG 20%, LTCG 12.5%, Cess, Advance Tax.
   2. `api.test.js` (2 tests) — Health checks & JWT auth guards.
   3. `roles_guest_workflow.test.js` (6 tests) — Guest navigation & role switcher.
@@ -663,6 +663,7 @@ All platform invariants and security controls have been validated in automated t
   14. `i18n_automated_checks.test.js` (45 tests) — Translation key parity across all domains.
   15. `mandate_security_and_chat.test.js` (20 tests) — Scoped chat and envelope encryption.
   16. `production_deployment_and_readiness.test.js` (14 tests) — Container port/host binding (0.0.0.0), URI parsing & alias resolution (`MONGODB_URI`, `MONGO_URI`, `DATABASE_URL`), secret sanitization in logs, readiness probe (`/api/ready`, `/api/health`) 503 gating under database disconnection, write protection middleware, and strict production in-memory fallback prevention.
+  17. `api_regressions_and_contract_audit.test.js` (15 tests) — Zero-error API contracts, error boundaries, quick action hooks, and token preservation.
 
 ---
 
@@ -714,11 +715,39 @@ All platform invariants and security controls have been validated in automated t
 ### 5. Automated Verification & Test Suite
 FinConsent maintains a rigorous automated testing suite covering cryptographic operations, role-based access control, tenant isolation, emergency revocation, production readiness, and UI action stability:
 - **Test Framework:** Vitest v3.2.7 with jsdom environment
-- **Coverage:** 17 test suites, 223 automated tests (100% passing, 0 regressions)
+- **Coverage:** 17 test suites, 230 automated tests (100% passing, 0 regressions)
 - **UI Action & Modal Hook Safety:** Dedicated verification for quick actions ("Reshare most urgent links", "Remind Client", "Share Link"), ensuring unconditional React hook execution order, safe optional chaining, resilient clipboard copy fallbacks, and global `<ErrorBoundary>` protection preventing blank screens.
 - **Run Tests:** `npm test`
 - **Lint Code:** `npm run lint`
 - **Production Build:** `npm run build`
+
+---
+
+## Competitor Landscape & Adjacent Product Positioning
+
+FinConsent operates within the Indian wealth technology ecosystem, serving fee-only non-discretionary investment advisers. It is structurally differentiated from adjacent execution and e-signature tools:
+
+| Dimension | smallcase Publisher / Gateway | Broker Basket Orders (e.g. Zerodha) | DocuSign / Adobe Sign | FinConsent Architecture |
+|---|---|---|---|---|
+| **Target User** | Research Analysts & Model Portfolio Managers | Self-directed retail investors & active traders | General corporate enterprises | Fee-only Registered Investment Advisers (RIAs) |
+| **Primary Goal** | Distribute standardized baskets and execute trades via broker APIs. | Fast multi-leg exchange order execution. | Generic contract e-signature. | Rebalancing proposal review, rupee tax estimates, and audit-ready acknowledgements. |
+| **Exchange Order Execution** | **Yes:** Routes orders to connected broker accounts via Gateway API. | **Yes:** Direct order placement on exchange order book. | **No:** Document signing only. | **No:** Platform halts at proposal acknowledgement. Zero broker order routing. |
+| **Pre-Trade Tax Preview** | **No:** Asset weights and CAGR returns; no rupee capital gains calculation. | **No:** Order execution only; tax calculations handled post-trade in tax P&L. | **No:** Zero financial calculations. | **Yes:** Pre-computes estimated STCG, LTCG, cess, and advance tax alert before client sign-off. |
+| **Statutory Evidentiary Trail** | Order logs and transaction records from broker accounts. | Exchange trade books, contract notes, and order IDs. | Audit certificate (IP, email, signature log). | Cryptographically chained SHA-256 audit ledger structured for BSA §63 admissibility. |
+| **Clarification vs Consent** | General comments / external channels. | None. | None. | In-app discussion rail legally separated from the OTP acknowledgement rail. |
+
+---
+
+## Customer Pain Hypotheses & 4-Week Pilot Validation Plan
+
+The operational pain points and workflow turnaround metrics addressed by FinConsent are recognized practice challenges, categorized below as **working hypotheses** to be benchmarked and validated during our 4-week pilot cohort (15 RIAs, 150 client families):
+
+| Hypothesis ID | Statement | Pilot Validation Method & Metric |
+|---|---|---|
+| **HYP-01 (Turnaround Latency)** | Non-discretionary RIAs experience 48–72 hour delays securing client consent for rebalancing proposals via unstructured messaging and static PDFs. | Measure timestamp delta from proposal creation (`MANDATE_DISPATCHED`) to client acknowledgement (`CONSENT_GRANTED`) across 150 pilot mandates. Target: reduce median turnaround to under 4 hours. |
+| **HYP-02 (Tax Transparency)** | Surprise capital gains tax liabilities damage adviser-client trust, and pre-trade rupee tax estimates reduce client hesitation. | Post-review survey of pilot clients evaluating comprehension and satisfaction with the Pre-Trade Tax Breakdown Card. |
+| **HYP-03 (Audit Collation Overhead)** | Advisory practices spend 4–8 hours per audit sample manually collating advice rationale, emails, and client confirmations for SEBI/BASL inspections. | Time-motion study comparing manual folder retrieval vs one-click Section 63 BSA Compliance Dossier generation. |
+| **HYP-04 (Willingness to Pay)** | Practicing RIAs will subscribe at ₹2,499/month (+ GST) for dedicated proposal governance and tax decision-support infrastructure. | Track conversion rate and paid renewal intent at the conclusion of the 30-day pilot trial. |
 
 ---
 

@@ -1,0 +1,66 @@
+digraph ThreatDefenceMapping {
+    
+    bgcolor="#FFFFFF";
+    fontname="Helvetica,Arial,sans-serif";
+    fontsize=14;
+    pad="0.25,0.25";
+    nodesep=0.4;
+    ranksep=0.45;
+    splines=ortho;
+
+    node [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        shape=box,
+        style="rounded,filled",
+        fillcolor="#F8FAFC",
+        color="#CBD5E1",
+        penwidth=1.5,
+        margin="0.15,0.12"
+    ];
+
+    edge [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        color="#64748B",
+        fontcolor="#334155",
+        penwidth=1.5
+    ];
+
+    rankdir=LR;
+
+    subgraph cluster_threats {
+        label="Threat Vectors";
+        fontname="Helvetica,Arial,sans-serif";
+        fontsize=13;
+        fontcolor="#E11D48";
+        color="#FDA4AF";
+        style="rounded,dashed";
+        fillcolor="#FFF1F2";
+
+        t1 [label="Credential Stuffing & OTP Brute-Force", color="#E11D48", fontcolor="#9F1239"];
+        t2 [label="Cross-Tenant IDOR & Privilege Escalation", color="#E11D48", fontcolor="#9F1239"];
+        t3 [label="Replay Attacks & Expired Link Re-use", color="#E11D48", fontcolor="#9F1239"];
+        t4 [label="Database Breaches & Token Leakage", color="#E11D48", fontcolor="#9F1239"];
+    }
+
+    subgraph cluster_defences {
+        label="FinConsent Hardened Defences";
+        fontname="Helvetica,Arial,sans-serif";
+        fontsize=13;
+        fontcolor="#059669";
+        color="#A7F3D0";
+        style="rounded,dashed";
+        fillcolor="#ECFDF5";
+
+        d1 [label="Sliding Window Rate Limit + 3 OTP Lockout (HTTP 429)", color="#059669", fontcolor="#065F46"];
+        d2 [label="Strict Firm Tenancy Middleware & RBAC (HTTP 403)", color="#059669", fontcolor="#065F46"];
+        d3 [label="48h Cutoff Timer + Atomic Token Revocation (HTTP 410)", color="#059669", fontcolor="#065F46"];
+        d4 [label="Dual-Envelope AES-256-GCM + SHA-256 Hashed Tokens", color="#059669", fontcolor="#065F46"];
+    }
+
+    t1 -> d1 [color="#059669", penwidth=2.0];
+    t2 -> d2 [color="#059669", penwidth=2.0];
+    t3 -> d3 [color="#059669", penwidth=2.0];
+    t4 -> d4 [color="#059669", penwidth=2.0];
+}

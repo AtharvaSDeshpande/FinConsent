@@ -1,0 +1,51 @@
+digraph FourPillarHub {
+    
+    bgcolor="#FFFFFF";
+    fontname="Helvetica,Arial,sans-serif";
+    fontsize=14;
+    pad="0.25,0.25";
+    nodesep=0.4;
+    ranksep=0.45;
+    splines=ortho;
+
+    node [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        shape=box,
+        style="rounded,filled",
+        fillcolor="#F8FAFC",
+        color="#CBD5E1",
+        penwidth=1.5,
+        margin="0.15,0.12"
+    ];
+
+    edge [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        color="#64748B",
+        fontcolor="#334155",
+        penwidth=1.5
+    ];
+
+    rankdir=TB;
+
+    hub [label="FINCONSENT CORE PLATFORM\nStatutory WealthTech Infrastructure\nSEBI Reg 19  |  BSA 2023 Sec 63  |  Finance Act 2024",
+         shape=box, style="rounded,filled", fillcolor="#0A192F", color="#0A192F", fontcolor="#FFFFFF", fontsize=15, penwidth=2.5, margin="0.3,0.2"];
+
+    p1 [label="1. Pre-Trade Tax Transparency\nFinance Act 2024 Tax Engine\n• STCG 20.0%  |  LTCG 12.5%\n• Sec 208 / 234C Advance Tax Alerts",
+        color="#D97706", fillcolor="#FEF3C7", fontcolor="#92400E", fontsize=13];
+
+    p2 [label="2. Dual-Envelope Encryption\nCryptographic Protection at Rest\n• AES-256-GCM Unique DEK\n• Server Key + Client PBKDF2 Wrap",
+        color="#4F46E5", fillcolor="#EEF2FF", fontcolor="#312E81", fontsize=13];
+
+    p3 [label="3. Mobile Consent Rail\nPassword-Protected Delivery\n• Last-4 PAN + DOB Convenience Gate\n• 6-Digit Single-Use OTP (5m TTL)",
+        color="#059669", fillcolor="#ECFDF5", fontcolor="#065F46", fontsize=13];
+
+    p4 [label="4. Section 63 BSA Audit Ledger\nTamper-Evident Evidence Trail\n• Append-Only SHA-256 Hash Chain\n• IP, IST Time & Signed Certificate",
+        color="#0A192F", fillcolor="#F1F5F9", fontcolor="#0A192F", fontsize=13];
+
+    hub -> p1 [color="#D97706", penwidth=2.0];
+    hub -> p2 [color="#4F46E5", penwidth=2.0];
+    hub -> p3 [color="#059669", penwidth=2.0];
+    hub -> p4 [color="#0A192F", penwidth=2.0];
+}

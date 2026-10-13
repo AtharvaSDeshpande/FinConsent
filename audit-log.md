@@ -1,8 +1,8 @@
 # FinConsent Audit Trail Specification, Event Model & Regulatory Evidence Architecture
 
-**Statutory Compliance, Tamper-Evident SHA-256 Ledger, and Section 65B Electronic Evidence Standard**  
+**Statutory Compliance, Tamper-Evident SHA-256 Ledger, and Section 63 BSA / Section 65B Electronic Evidence Standard**  
 **Document Classification:** Technical & Regulatory Specification  
-**Governing Regulations:** SEBI (Investment Advisers) Regulations, 2013 (Regulation 19) | Section 65B, Indian Evidence Act, 1872 / IT Act, 2000 | DPDP Act, 2023  
+**Governing Regulations:** SEBI (Investment Advisers) Regulations, 2013 (Regulation 19 & 22) | Bharatiya Sakshya Adhiniyam, 2023 (Section 63) / Indian Evidence Act, 1872 (Section 65B antecedent) | DPDP Act, 2023  
 **Data Residency:** AWS Asia Pacific (Mumbai) `ap-south-1` (AWS Mumbai)  
 **Cryptographic Primitives:** AES-256-GCM Dual Envelope Encryption | PBKDF2 Key Derivation | SHA-256 Hash Chaining
 
@@ -10,9 +10,9 @@
 
 ## 1. Executive Summary & Purpose
 
-In Indian wealth management, non-discretionary Registered Investment Advisers (RIAs) are subject to stringent regulatory accountability under **Regulation 19 of the SEBI (Investment Advisers) Regulations, 2013**. Under this statute, advisers must maintain a verifiable, sequential, and tamper-resistant record of all client interactions, investment advice tendered, and explicit client trade authorizations for a mandatory minimum period of **5 years (1,825 days)**.
+In Indian wealth management, non-discretionary Registered Investment Advisers (RIAs) are subject to stringent regulatory accountability under **Regulation 19 of the SEBI (Investment Advisers) Regulations, 2013**. Under this statute, advisers must maintain a verifiable, sequential, and tamper-resistant record of all client interactions, investment advice tendered, investment rationale, and client acknowledgements for a mandatory minimum period of **5 years (1,825 days)**.
 
-Furthermore, under **Section 65B of the Indian Evidence Act, 1872** (and corresponding provisions of the Information Technology Act, 2000), digital records and electronic consent are inadmissible as legal evidence unless produced under strict evidentiary conditions demonstrating device identity, network origin, synchronized timestamping, and end-to-end cryptographic integrity.
+Under SEBI regulations, non-discretionary RIAs do not execute market orders on exchange order books; order placement is conducted independently by the client or via non-discretionary implementation services without advice-fee blending (Regulation 22B). Furthermore, under **Section 63 of the Bharatiya Sakshya Adhiniyam, 2023 (BSA)** (which superseded Section 65B of the Indian Evidence Act, 1872), digital records are inadmissible as legal evidence unless produced under strict evidentiary conditions demonstrating device identity, network origin, synchronized timestamping, and end-to-end cryptographic integrity. FinConsent adopts OTP verification as an evidentiary safeguard to substantiate client consent under Section 63 BSA.
 
 This document defines the **FinConsent Audit Trail Architecture**: its actor taxonomy, immutable event catalog, data models, state transition controls, cryptographic chaining mechanisms, and evidentiary dossier outputs. It also establishes an explicit boundary between **implemented production capabilities** and **forward-looking recommendations**.
 

@@ -1,0 +1,84 @@
+digraph ActorLanes {
+    
+    bgcolor="#FFFFFF";
+    fontname="Helvetica,Arial,sans-serif";
+    fontsize=14;
+    pad="0.25,0.25";
+    nodesep=0.4;
+    ranksep=0.45;
+    splines=ortho;
+
+    node [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        shape=box,
+        style="rounded,filled",
+        fillcolor="#F8FAFC",
+        color="#CBD5E1",
+        penwidth=1.5,
+        margin="0.15,0.12"
+    ];
+
+    edge [
+        fontname="Helvetica,Arial,sans-serif",
+        fontsize=12,
+        color="#64748B",
+        fontcolor="#334155",
+        penwidth=1.5
+    ];
+
+    rankdir=LR;
+
+    subgraph cluster_ria {
+        label="Advisor Lane (RIA: Suresh Narayanan)";
+        fontname="Helvetica,Arial,sans-serif";
+        fontsize=13;
+        fontcolor="#0A192F";
+        color="#94A3B8";
+        style="rounded,dashed";
+        fillcolor="#F8FAFC";
+
+        a1 [label="1. Detects Drift\nIdentifies 15% Equity Excess", color="#0A192F"];
+        a2 [label="2. Formulates Baskets\nSelects Sell & Buy Assets", color="#0A192F"];
+        a3 [label="3. Dispatches Proposal\nIssues 48h Cutoff Window", color="#4F46E5", fontcolor="#312E81", fillcolor="#EEF2FF"];
+        a4 [label="6. Answers Inquiries\nExplains Tax in Chat Rail", color="#0A192F"];
+    }
+
+    subgraph cluster_platform {
+        label="FinConsent Engine Lane (Platform)";
+        fontname="Helvetica,Arial,sans-serif";
+        fontsize=13;
+        fontcolor="#4F46E5";
+        color="#818CF8";
+        style="rounded,dashed";
+        fillcolor="#EEF2FF";
+
+        p1 [label="Computes Tax Liability\n₹11,440 Capital Gains Est.", color="#D97706", fillcolor="#FEF3C7", fontcolor="#92400E"];
+        p2 [label="Derives Cryptographic Keys\nWraps DEK (Server & Client)", color="#4F46E5", fontcolor="#312E81"];
+        p3 [label="Issues 6-Digit OTP\nEnforces 5m Timer & 3 Attempts", color="#059669", fontcolor="#065F46", fillcolor="#ECFDF5"];
+        p4 [label="Burns Token & Chains Hash\nGenerates BSA Sec 63 Dossier", color="#0A192F", fillcolor="#E2E8F0", fontcolor="#0A192F"];
+    }
+
+    subgraph cluster_client {
+        label="Client Lane (HNI: Rohan Mehta)";
+        fontname="Helvetica,Arial,sans-serif";
+        fontsize=13;
+        fontcolor="#059669";
+        color="#6EE7B7";
+        style="rounded,dashed";
+        fillcolor="#ECFDF5";
+
+        c1 [label="4. Unlocks via Password\nInputs PAN Last 4 + DOB", color="#059669"];
+        c2 [label="5. Reviews Proposal\nReads Rationale & Drift", color="#059669"];
+        c3 [label="7. Checks Declarations\nEnters Verified 6-Digit OTP", color="#059669", fontcolor="#065F46", fillcolor="#A7F3D0"];
+        c4 [label="8. Receives Receipt\nProceeds to Broker Execution", color="#059669"];
+    }
+
+    a1 -> a2 -> a3;
+    a3 -> p1 -> p2 -> c1;
+    c1 -> c2;
+    c2 -> a4 [label="Asks Question"];
+    a4 -> c2 [label="Clarification"];
+    c2 -> c3;
+    c3 -> p3 -> p4 -> c4;
+}

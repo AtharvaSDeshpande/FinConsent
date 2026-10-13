@@ -1,14 +1,13 @@
 digraph BeforeAfterFlow {
+    
+    bgcolor="#FFFFFF";
+    fontname="Helvetica,Arial,sans-serif";
+    fontsize=14;
+    pad="0.25,0.25";
+    nodesep=0.4;
+    ranksep=0.45;
+    splines=ortho;
 
-    graph [
-        bgcolor="#FFFFFF",
-        fontname="Helvetica,Arial,sans-serif",
-        fontsize=14,
-        pad="0.25,0.25",
-        nodesep=0.4,
-        ranksep=0.45,
-        splines=ortho
-    ];
     node [
         fontname="Helvetica,Arial,sans-serif",
         fontsize=12,
@@ -19,6 +18,7 @@ digraph BeforeAfterFlow {
         penwidth=1.5,
         margin="0.15,0.12"
     ];
+
     edge [
         fontname="Helvetica,Arial,sans-serif",
         fontsize=12,
@@ -58,7 +58,7 @@ digraph BeforeAfterFlow {
         a1 [label="Encrypted Magic Link\nPre-Trade Tax Visible", color="#059669", fontcolor="#065F46"];
         a2 [label="Password-Protected Gate\nPAN Last 4 + DOB", color="#059669", fontcolor="#065F46"];
         a3 [label="Explicit Declarations\n+ 6-Digit OTP Verification", color="#059669", fontcolor="#065F46"];
-        a4 [label="Section 63 BSA Dossier\nChained SHA-256 Ledger", color="#059669", fillcolor="#059669", fontcolor="#FFFFFF"];
+        a4 [label="Section 63 BSA Dossier\nClient Executes via Broker", color="#059669", fillcolor="#059669", fontcolor="#FFFFFF"];
 
         a1 -> a2 -> a3 -> a4 [color="#059669", penwidth=2.0];
     }

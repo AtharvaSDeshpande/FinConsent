@@ -1,14 +1,13 @@
 digraph ActorLanes {
+    
+    bgcolor="#FFFFFF";
+    fontname="Helvetica,Arial,sans-serif";
+    fontsize=14;
+    pad="0.25,0.25";
+    nodesep=0.4;
+    ranksep=0.45;
+    splines=ortho;
 
-    graph [
-        bgcolor="#FFFFFF",
-        fontname="Helvetica,Arial,sans-serif",
-        fontsize=14,
-        pad="0.25,0.25",
-        nodesep=0.4,
-        ranksep=0.45,
-        splines=ortho
-    ];
     node [
         fontname="Helvetica,Arial,sans-serif",
         fontsize=12,
@@ -19,6 +18,7 @@ digraph ActorLanes {
         penwidth=1.5,
         margin="0.15,0.12"
     ];
+
     edge [
         fontname="Helvetica,Arial,sans-serif",
         fontsize=12,
@@ -40,7 +40,7 @@ digraph ActorLanes {
 
         a1 [label="1. Detects Drift\nIdentifies 15% Equity Excess", color="#0A192F"];
         a2 [label="2. Formulates Baskets\nSelects Sell & Buy Assets", color="#0A192F"];
-        a3 [label="3. Dispatches Mandate\nIssues 48h Cutoff Window", color="#4F46E5", fontcolor="#312E81", fillcolor="#EEF2FF"];
+        a3 [label="3. Dispatches Proposal\nIssues 48h Cutoff Window", color="#4F46E5", fontcolor="#312E81", fillcolor="#EEF2FF"];
         a4 [label="6. Answers Inquiries\nExplains Tax in Chat Rail", color="#0A192F"];
     }
 
@@ -69,7 +69,7 @@ digraph ActorLanes {
         fillcolor="#ECFDF5";
 
         c1 [label="4. Unlocks via Password\nInputs PAN Last 4 + DOB", color="#059669"];
-        c2 [label="5. Reviews Mandate\nReads Rationale & Drift", color="#059669"];
+        c2 [label="5. Reviews Proposal\nReads Rationale & Drift", color="#059669"];
         c3 [label="7. Checks Declarations\nEnters Verified 6-Digit OTP", color="#059669", fontcolor="#065F46", fillcolor="#A7F3D0"];
         c4 [label="8. Receives Receipt\nProceeds to Broker Execution", color="#059669"];
     }
