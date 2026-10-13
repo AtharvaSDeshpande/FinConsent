@@ -11,7 +11,9 @@ import CircularProgress from '@mui/material/CircularProgress';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import Chip from '@mui/material/Chip';
+import Stack from '@mui/material/Stack';
+import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { Logo } from '../../components/brand/Logo.jsx';
 import { useAuth } from '../../security/AuthContext.jsx';
 import { useI18n } from '../../i18n/I18nContext.jsx';
@@ -25,6 +27,20 @@ export const LoginPage = () => {
 
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  React.useEffect(() => {
+    if (location.state?.email) {
+      setEmail(location.state.email);
+      setPassword('Password@123');
+    }
+  }, [location.state]);
+
+  const handleSelectDemoPersona = (demoEmail) => {
+    setEmail(demoEmail);
+    setPassword('Password@123');
+    setError('');
+  };
 
   const [mfaRequired, setMfaRequired] = useState(false);
   const [tempToken, setTempToken] = useState('');
@@ -180,6 +196,67 @@ export const LoginPage = () => {
               {error}
             </Alert>
           )}
+
+          {/* Quick Demo Role Selector */}
+          <Box sx={{ mb: 3, p: 2, bgcolor: 'rgba(255, 255, 255, 0.05)', borderRadius: 2.5, border: '1px solid rgba(255, 255, 255, 0.12)' }}>
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.75)', fontWeight: 700, display: 'block', mb: 1.2 }}>
+              Quick Demo Personas (Password: <code>Password@123</code>):
+            </Typography>
+            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+              <Chip
+                label="RIA: ria@example.in"
+                size="small"
+                onClick={() => handleSelectDemoPersona('ria@example.in')}
+                sx={{
+                  bgcolor: email === 'ria@example.in' ? '#4F46E5' : 'rgba(255, 255, 255, 0.12)',
+                  color: '#FFFFFF',
+                  cursor: 'pointer',
+                  fontSize: '0.74rem',
+                  fontWeight: 650,
+                  '&:hover': { bgcolor: '#4338CA' },
+                }}
+              />
+              <Chip
+                label="Client: client@example.in"
+                size="small"
+                onClick={() => handleSelectDemoPersona('client@example.in')}
+                sx={{
+                  bgcolor: email === 'client@example.in' ? '#059669' : 'rgba(255, 255, 255, 0.12)',
+                  color: '#FFFFFF',
+                  cursor: 'pointer',
+                  fontSize: '0.74rem',
+                  fontWeight: 650,
+                  '&:hover': { bgcolor: '#047857' },
+                }}
+              />
+              <Chip
+                label="Compliance: compliance@example.in"
+                size="small"
+                onClick={() => handleSelectDemoPersona('compliance@example.in')}
+                sx={{
+                  bgcolor: email === 'compliance@example.in' ? '#0284C7' : 'rgba(255, 255, 255, 0.12)',
+                  color: '#FFFFFF',
+                  cursor: 'pointer',
+                  fontSize: '0.74rem',
+                  fontWeight: 650,
+                  '&:hover': { bgcolor: '#0369A1' },
+                }}
+              />
+              <Chip
+                label="Admin: admin@example.in"
+                size="small"
+                onClick={() => handleSelectDemoPersona('admin@example.in')}
+                sx={{
+                  bgcolor: email === 'admin@example.in' ? '#DB2777' : 'rgba(255, 255, 255, 0.12)',
+                  color: '#FFFFFF',
+                  cursor: 'pointer',
+                  fontSize: '0.74rem',
+                  fontWeight: 650,
+                  '&:hover': { bgcolor: '#BE185D' },
+                }}
+              />
+            </Stack>
+          </Box>
 
           {/* Login Form or MFA Verification Form */}
           {mfaRequired ? (

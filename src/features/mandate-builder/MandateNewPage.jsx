@@ -208,7 +208,7 @@ export const MandateNewPage = () => {
           </Typography>
           <Chip
             icon={<AutoAwesomeIcon sx={{ fontSize: '14px !important' }} />}
-            label="Automated Client Assignment Enabled"
+            label="Demo Helper: Test Client Pre-Selected"
             color="primary"
             variant="outlined"
             size="small"
@@ -228,7 +228,7 @@ export const MandateNewPage = () => {
           <Grid item xs={12} md={7} size={{ xs: 12, md: 7 }}>
             <Card sx={{ borderRadius: 3, border: '1px solid #E2E8F0', boxShadow: '0 1px 3px 0 rgba(15, 23, 42, 0.04)' }}>
               <CardContent sx={{ p: { xs: 2.5, sm: 3.5 } }}>
-                {/* 1. Automated Client Selection Section */}
+                {/* 1. Client Selection Section */}
                 <Box sx={{ mb: 3 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
                     <Typography variant="h6" fontWeight={750} color="#0F172A">
@@ -243,7 +243,7 @@ export const MandateNewPage = () => {
                         disabled={loadingClients || clients.length <= 1}
                         sx={{ textTransform: 'none', borderRadius: 2, fontWeight: 600, borderColor: '#CBD5E1', color: '#0F172A' }}
                       >
-                        Auto-Assign Another Client
+                        Re-roll Test Client (Demo)
                       </Button>
                       <Button
                         size="small"
@@ -284,7 +284,7 @@ export const MandateNewPage = () => {
                             {selectedClient.name}
                           </Typography>
                           <Chip
-                            label="Auto-Assigned"
+                            label="Demo Pre-selected"
                             size="small"
                             sx={{
                               height: 20,

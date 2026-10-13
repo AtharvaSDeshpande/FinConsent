@@ -67,12 +67,12 @@ export const OtpModal = ({ open, onClose, token, mandate, maskedMobile, unlockTo
     setError('');
 
     if (!agreeGains || !agreeConsent) {
-      setError('You must check both statutory declarations before submitting authorization.');
+      setError('You must check both declarations before submitting authorization.');
       return;
     }
 
     if (!otp || otp.trim().length !== 6) {
-      setError('Please enter the 6-digit OTP received on your mobile.');
+      setError('Please enter the 6-digit demo verification OTP displayed below.');
       return;
     }
 

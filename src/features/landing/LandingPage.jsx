@@ -10,6 +10,7 @@ import Grid from '@mui/material/Grid';
 import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Paper from '@mui/material/Paper';
+import Alert from '@mui/material/Alert';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
@@ -19,17 +20,22 @@ import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
 import GavelOutlinedIcon from '@mui/icons-material/GavelOutlined';
 import SpeedOutlinedIcon from '@mui/icons-material/SpeedOutlined';
-import CloudDoneOutlinedIcon from '@mui/icons-material/CloudDoneOutlined';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import BusinessCenterOutlinedIcon from '@mui/icons-material/BusinessCenterOutlined';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
+import SwapVertIcon from '@mui/icons-material/SwapVert';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
+import NotInterestedOutlinedIcon from '@mui/icons-material/NotInterestedOutlined';
+import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
+import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Logo } from '../../components/brand/Logo.jsx';
 import { useAuth } from '../../security/AuthContext.jsx';
 import { useI18n } from '../../i18n/I18nContext';
 
 export const LandingPage = () => {
-  const { isAuthenticated, isGuest } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { t } = useI18n();
   const navigate = useNavigate();
 
@@ -46,7 +52,7 @@ export const LandingPage = () => {
 
   return (
     <Box sx={{ width: '100%', overflowX: 'hidden' }}>
-      {/* HERO SECTION */}
+      {/* 1. HERO SECTION */}
       <Box
         sx={{
           pt: { xs: 6, md: 10 },
@@ -60,7 +66,7 @@ export const LandingPage = () => {
         }}
       >
         <Container maxWidth="lg">
-          {/* Statutory Verification Pill */}
+          {/* Advisory Workflow Pill */}
           <Chip
             icon={<ShieldOutlinedIcon sx={{ fontSize: '16px !important', color: '#0369A1' }} />}
             label={t('landing.statutory_pill')}
@@ -88,8 +94,8 @@ export const LandingPage = () => {
             component="h1"
             sx={{
               fontWeight: 850,
-              fontSize: { xs: '1.75rem', sm: '2.75rem', md: '3.5rem' },
-              lineHeight: 1.18,
+              fontSize: { xs: '1.75rem', sm: '2.75rem', md: '3.3rem' },
+              lineHeight: 1.2,
               letterSpacing: '-0.03em',
               color: '#0F172A',
               maxWidth: 960,
@@ -100,17 +106,17 @@ export const LandingPage = () => {
             {t('landing.hero_headline')}
           </Typography>
 
-          {/* Subtitle */}
+          {/* Subtitle: One-Sentence Positioning Statement */}
           <Typography
             variant="h6"
             sx={{
-              fontSize: { xs: '1rem', sm: '1.2rem' },
-              fontWeight: 400,
-              color: '#475569',
-              maxWidth: 780,
+              fontSize: { xs: '1.02rem', sm: '1.2rem' },
+              fontWeight: 450,
+              color: '#334155',
+              maxWidth: 860,
               mx: 'auto',
               mb: 4.5,
-              lineHeight: 1.6,
+              lineHeight: 1.65,
             }}
           >
             {t('landing.hero_sub')}
@@ -189,7 +195,7 @@ export const LandingPage = () => {
                 <Button
                   variant="text"
                   size="large"
-                  onClick={() => scrollToSection('pricing')}
+                  onClick={() => scrollToSection('workflow-challenges')}
                   sx={{
                     py: 1.6,
                     px: 2.5,
@@ -205,29 +211,33 @@ export const LandingPage = () => {
             )}
           </Stack>
 
-          {/* Social Proof & Metrics Strip */}
-          <Grid container spacing={2} sx={{ maxWidth: 900, mx: 'auto', mt: 2 }}>
+          {/* Truthful Capabilities Strip (No Fabricated Metrics) */}
+          <Grid container spacing={2} sx={{ maxWidth: 960, mx: 'auto', mt: 2 }}>
             {[
               { stat: t('landing.stat_assets'), label: t('landing.stat_assets_label') },
               { stat: t('landing.stat_sebi'), label: t('landing.stat_sebi_label') },
               { stat: t('landing.stat_speed'), label: t('landing.stat_speed_label') },
               { stat: t('landing.stat_archival'), label: t('landing.stat_archival_label') },
             ].map((item, idx) => (
-              <Grid key={idx} item xs={6} sm={3} size={{ xs: 6, sm: 3 }}>
+              <Grid key={idx} item xs={12} sm={6} md={3} size={{ xs: 12, sm: 6, md: 3 }}>
                 <Paper
                   elevation={0}
                   sx={{
-                    p: 2,
+                    p: 2.2,
                     borderRadius: 2.5,
-                    bgcolor: 'rgba(255, 255, 255, 0.8)',
+                    bgcolor: 'rgba(255, 255, 255, 0.85)',
                     border: '1px solid',
                     borderColor: 'divider',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
                   }}
                 >
-                  <Typography variant="h6" fontWeight={800} color="#0F172A">
+                  <Typography variant="subtitle1" fontWeight={800} color="#0F172A" gutterBottom>
                     {item.stat}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary" fontWeight={500}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={500} sx={{ lineHeight: 1.4 }}>
                     {item.label}
                   </Typography>
                 </Paper>
@@ -237,41 +247,41 @@ export const LandingPage = () => {
         </Container>
       </Box>
 
-      {/* THE REGULATORY PROBLEM SECTION */}
-      <Box sx={{ py: { xs: 8, md: 10 }, px: { xs: 2, sm: 4 }, bgcolor: '#FFFFFF' }}>
+      {/* 2. THE PRACTICAL WORKFLOW CHALLENGE SECTION */}
+      <Box id="workflow-challenges" sx={{ py: { xs: 8, md: 10 }, px: { xs: 2, sm: 4 }, bgcolor: '#FFFFFF' }}>
         <Container maxWidth="lg">
-          <Box sx={{ textAlign: 'center', mb: 6, maxWidth: 760, mx: 'auto' }}>
+          <Box sx={{ textAlign: 'center', mb: 6, maxWidth: 840, mx: 'auto' }}>
             <Typography variant="overline" fontWeight={800} color="primary" sx={{ letterSpacing: '0.08em' }}>
-              THE REGULATORY CONTEXT
+              THE WORKFLOW CHALLENGE
             </Typography>
-            <Typography variant="h3" fontWeight={800} sx={{ mt: 1, color: '#0F172A', fontSize: { xs: '1.8rem', md: '2.5rem' } }}>
-              Why Informal Approvals Put Your RIA License in Jeopardy
+            <Typography variant="h3" fontWeight={800} sx={{ mt: 1, color: '#0F172A', fontSize: { xs: '1.8rem', md: '2.4rem' } }}>
+              The Operational Reality of Non-Discretionary Rebalancing
             </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mt: 1.5 }}>
-              Under SEBI (Investment Advisers) Regulations, 2013, non-discretionary execution is strictly enforced.
-              Casual messaging channels fail statutory evidentiary thresholds.
+            <Typography variant="body1" color="text.secondary" sx={{ mt: 1.5, lineHeight: 1.7 }}>
+              Explaining proposed asset allocation shifts, showing estimated capital gains tax impacts, and maintaining unified records
+              across disparate communication channels presents practical workflow friction for advisory practices.
             </Typography>
           </Box>
 
           <Grid container spacing={3}>
             {[
               {
-                icon: <GavelOutlinedIcon sx={{ fontSize: 36, color: '#DC2626' }} />,
-                title: 'Strict Liability under Reg. 19',
-                desc: 'Executing trades without explicit, prior informed client consent constitutes unauthorised discretion. SEBI enforcement actions routinely impose license suspension and statutory penalties.',
-                stat: 'Penalty Risk: License Suspension',
-              },
-              {
-                icon: <LockOutlinedIcon sx={{ fontSize: 36, color: '#D97706' }} />,
-                title: 'Section 65B Inadmissibility',
-                desc: 'WhatsApp screenshots, SMS records, and phone audio logs fail Indian Evidence Act Section 65B requirements without cryptographic timestamps, SHA-256 digests, and certified device metadata.',
-                stat: 'Evidentiary Status: Inadmissible in Disputes',
-              },
-              {
                 icon: <CalculateOutlinedIcon sx={{ fontSize: 36, color: '#2563EB' }} />,
-                title: 'Surprise Tax Liabilities & Penalties',
-                desc: 'Executing rebalancing without prior capital gains disclosure triggers STCG (20%) and LTCG (12.5%) shocks, leading to investor disputes and Section 234B/234C advance tax interest penalties.',
-                stat: 'Tax Shock: 20% STCG + Interest 234B/C',
+                title: 'Pre-Trade Tax Transparency',
+                desc: 'Hypothesis: Investors frequently hesitate or push back on rebalancing proposals when capital gains implications are unclear. Pre-computing STCG (20%) and LTCG (12.5% above ₹1.25L exemption) gives clients upfront visibility before they decide.',
+                chip: 'Workflow Hypothesis: Tax Friction',
+              },
+              {
+                icon: <SwapVertIcon sx={{ fontSize: 36, color: '#D97706' }} />,
+                title: 'Multi-Channel Fragmentation',
+                desc: 'Hypothesis: Advisory practices often coordinate rebalances across email threads, WhatsApp messages, PDF attachments, and phone calls. Dispersed records make it difficult to assemble a unified timeline of what was recommended and acknowledged.',
+                chip: 'Workflow Hypothesis: Dispersed Records',
+              },
+              {
+                icon: <GavelOutlinedIcon sx={{ fontSize: 36, color: '#7C3AED' }} />,
+                title: 'Documenting Client Acknowledgement',
+                desc: 'Hypothesis: While SEBI regulations require advisers to act on client instructions, demonstrating exactly what recommendation was shared and how the client responded requires consistent, tamper-evident recordkeeping across existing tools.',
+                chip: 'Workflow Hypothesis: Evidentiary Record',
               },
             ].map((risk, i) => (
               <Grid key={i} item xs={12} md={4} size={{ xs: 12, md: 4 }}>
@@ -284,36 +294,65 @@ export const LandingPage = () => {
                     border: '1px solid',
                     borderColor: 'divider',
                     bgcolor: '#F8FAFC',
+                    display: 'flex',
+                    flexDirection: 'column',
                     transition: 'all 0.2s',
                     '&:hover': {
-                      transform: 'translateY(-4px)',
+                      transform: 'translateY(-3px)',
                       boxShadow: '0 12px 24px rgba(0,0,0,0.06)',
                       borderColor: 'primary.light',
                     },
                   }}
                 >
-                  <CardContent sx={{ p: 0 }}>
+                  <CardContent sx={{ p: 0, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                     <Box sx={{ mb: 2 }}>{risk.icon}</Box>
                     <Typography variant="h6" fontWeight={750} color="#0F172A" gutterBottom>
                       {risk.title}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5, lineHeight: 1.6 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5, lineHeight: 1.65, flexGrow: 1 }}>
                       {risk.desc}
                     </Typography>
                     <Chip
-                      label={risk.stat}
+                      label={risk.chip}
                       size="small"
-                      sx={{ fontWeight: 700, fontSize: '0.72rem', bgcolor: 'rgba(0,0,0,0.05)' }}
+                      sx={{ fontWeight: 700, fontSize: '0.72rem', bgcolor: 'rgba(0,0,0,0.05)', alignSelf: 'flex-start' }}
                     />
                   </CardContent>
                 </Card>
               </Grid>
             ))}
           </Grid>
+
+          {/* Acknowledging Existing Alternatives Banner */}
+          <Paper
+            elevation={0}
+            sx={{
+              mt: 5,
+              p: 3,
+              borderRadius: 3,
+              bgcolor: 'rgba(248, 250, 252, 0.9)',
+              border: '1px solid #E2E8F0',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+              <InfoOutlinedIcon sx={{ color: '#4F46E5', fontSize: 24, mt: 0.2 }} />
+              <Box>
+                <Typography variant="subtitle2" fontWeight={750} color="#0F172A" gutterBottom>
+                  Acknowledging Existing Alternatives & Market Practices
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.65 }}>
+                  Advisory practices currently utilize email, WhatsApp, bespoke PDFs, e-signature tools, smallcase, and broker basket-order tools.
+                  FinConsent is designed to complement existing tools by keeping the proposal, estimated tax disclosure, and client response in one
+                  unified, auditable timeline. <strong>Note:</strong> SEBI does not universally mandate SMS OTP per rebalance; OTP in FinConsent is an in-app
+                  simulated workflow pattern for demonstrating explicit confirmation.
+                </Typography>
+              </Box>
+            </Box>
+          </Paper>
         </Container>
       </Box>
 
-      {/* CORE VALUE PROPOSITION SECTION */}
+      {/* 3. CORE VALUE PROPOSITION SECTION */}
       <Box id="value-proposition" sx={{ py: { xs: 8, md: 12 }, px: { xs: 2, sm: 4 }, bgcolor: '#F8FAFC', borderTop: 1, borderBottom: 1, borderColor: 'divider' }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: 7, maxWidth: 800, mx: 'auto' }}>
@@ -324,7 +363,7 @@ export const LandingPage = () => {
               The Three Pillars of FinConsent Infrastructure
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mt: 1.5 }}>
-              Engineered specifically for SEBI Registered Investment Advisers, Family Offices, and Wealth Advisory practices.
+              Designed to help SEBI-Registered Investment Advisers communicate clearly, disclose estimated taxes, and keep audit-ready records.
             </Typography>
           </Box>
 
@@ -336,17 +375,17 @@ export const LandingPage = () => {
                   <SpeedOutlinedIcon sx={{ color: '#4F46E5', fontSize: 28 }} />
                 </Box>
                 <Typography variant="h5" fontWeight={750} color="#0F172A" gutterBottom>
-                  1. Zero-Friction Client Consent
+                  1. Structured Client Proposal Review
                 </Typography>
                 <Typography variant="body2" color="text.secondary" paragraph sx={{ lineHeight: 1.65 }}>
-                  Investors receive a secure, tokenized proposal link via WhatsApp or email. <strong>No app install or login required</strong>.
-                  Clients review the proposed asset allocation shift side-by-side with trade baskets and authorize in seconds using 6-digit Mobile OTP.
+                  Clients access the proposal via a secure tokenized link on mobile with zero app installation.
+                  Investors review proposed allocation shifts side-by-side with trade details before deciding.
                 </Typography>
                 <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
                   {[
-                    'Automated client allocation in draft creation',
-                    'Mobile-first responsive investor approval interface',
-                    '48-hour automated cutoff & revocation protection',
+                    'Mobile-first responsive proposal review interface',
+                    'Side-by-side current vs target portfolio allocation',
+                    'Configurable cutoff window to prevent stale valuations',
                   ].map((text, i) => (
                     <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <CheckCircleRoundedIcon color="success" sx={{ fontSize: 18 }} />
@@ -364,17 +403,17 @@ export const LandingPage = () => {
                   <CalculateOutlinedIcon sx={{ color: '#059669', fontSize: 28 }} />
                 </Box>
                 <Typography variant="h5" fontWeight={750} color="#0F172A" gutterBottom>
-                  2. Real-Time Pre-Computed Tax Engine
+                  2. Pre-Computed Tax Engine
                 </Typography>
                 <Typography variant="body2" color="text.secondary" paragraph sx={{ lineHeight: 1.65 }}>
-                  Calculates Short-Term Capital Gains (STCG @ 20%) and Long-Term Capital Gains (LTCG @ 12.5% above ₹1.25L exemption) based on Budget 2024.
-                  Automatically alerts clients of quarterly Section 234B/234C advance tax liability prior to authorization.
+                  Pre-computes Short-Term Capital Gains (STCG @ 20%) and Long-Term Capital Gains (LTCG @ 12.5% above ₹1.25L exemption)
+                  under Budget 2024 rates, highlighting advance tax considerations prior to authorization.
                 </Typography>
                 <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
                   {[
                     'Budget 2024 revised capital gains tax formulas',
-                    'Dynamic Section 234B/234C advance tax warning banner',
-                    'Zero year-end tax surprises for wealth advisory clients',
+                    'Illustrative Section 234B/234C advance tax reminders',
+                    'Clear disclosure: pre-computed estimates, not tax advice',
                   ].map((text, i) => (
                     <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <CheckCircleRoundedIcon color="success" sx={{ fontSize: 18 }} />
@@ -392,17 +431,17 @@ export const LandingPage = () => {
                   <ReceiptLongOutlinedIcon sx={{ color: '#0284C7', fontSize: 28 }} />
                 </Box>
                 <Typography variant="h5" fontWeight={750} color="#0F172A" gutterBottom>
-                  3. Tamper-Evident Regulation 19 Dossiers
+                  3. Tamper-Evident Recordkeeping
                 </Typography>
                 <Typography variant="body2" color="text.secondary" paragraph sx={{ lineHeight: 1.65 }}>
-                  Every mandate transition is locked into an append-only cryptographic audit trail. IP addresses, user agents, timestamps, and OTP challenges
-                  are hashed into SHA-256 digests. Generates complete Regulation 19 compliance dossiers ready for immediate SEBI inspection.
+                  Records every state transition with a cryptographic SHA-256 digest, logging IP address, user agent, timestamp,
+                  and in-app verification event into an exportable compliance dossier.
                 </Typography>
                 <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
                   {[
-                    'SHA-256 cryptographic hash-chained audit timeline',
-                    'Admissible Section 65B Evidence Act statutory receipts',
-                    'Automated 5-year data retention in AWS Mumbai',
+                    'SHA-256 cryptographic state transition logging',
+                    'Exportable Regulation 19 compliance summary dossier',
+                    'Demonstrates tamper-evident recording capabilities',
                   ].map((text, i) => (
                     <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <CheckCircleRoundedIcon color="success" sx={{ fontSize: 18 }} />
@@ -416,7 +455,7 @@ export const LandingPage = () => {
         </Container>
       </Box>
 
-      {/* HOW IT WORKS 4-STEP WORKFLOW */}
+      {/* 4. HOW IT WORKS 4-STEP WORKFLOW */}
       <Box id="how-it-works" sx={{ py: { xs: 8, md: 10 }, px: { xs: 2, sm: 4 }, bgcolor: '#FFFFFF' }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: 7, maxWidth: 760, mx: 'auto' }}>
@@ -424,7 +463,7 @@ export const LandingPage = () => {
               HOW IT WORKS
             </Typography>
             <Typography variant="h3" fontWeight={800} sx={{ mt: 1, color: '#0F172A', fontSize: { xs: '1.8rem', md: '2.5rem' } }}>
-              From Portfolio Draft to Locked SEBI Evidence in 4 Steps
+              From Portfolio Draft to Logged Evidence in 4 Steps
             </Typography>
           </Box>
 
@@ -432,23 +471,23 @@ export const LandingPage = () => {
             {[
               {
                 step: '01',
-                title: 'Draft Mandate with Automated Allocation',
-                desc: 'Adviser selects target portfolio allocation (e.g. 70/20 to 60/25). Client is automatically and randomly allocated from active database with 1-click re-roll.',
+                title: 'Draft Mandate & Review Target Weights',
+                desc: 'Adviser defines proposed allocation shift and rationale. For rapid demonstration, the prototype pre-selects a synthetic client profile with 1-click re-roll convenience.',
               },
               {
                 step: '02',
-                title: 'Instant Tax & Capital Gains Preview',
-                desc: 'Engine calculates STCG @ 20%, LTCG @ 12.5%, and evaluates advance tax liability for the active quarter (Q1-Q4).',
+                title: 'Inspect Pre-Computed Tax Estimates',
+                desc: 'Engine calculates estimated STCG @ 20%, LTCG @ 12.5% above ₹1.25L exemption, and flags advance tax timing considerations.',
               },
               {
                 step: '03',
-                title: 'Client Authorizes via Mobile OTP',
-                desc: 'Client opens the proposal URL, reviews pre-computed tax obligations and trade basket, and verifies consent with instant 6-digit OTP.',
+                title: 'Client Reviews on Mobile & Enters In-App OTP',
+                desc: 'Client opens the proposal URL, reviews allocation changes and estimated taxes, and enters the simulated 6-digit in-app OTP (no live SMS required).',
               },
               {
                 step: '04',
-                title: 'Regulation 19 Dossier Locked',
-                desc: 'Immutable certificate is generated with SHA-256 digest, preserved for 5 years in AWS Mumbai, and ready for SEBI inspection audit.',
+                title: 'Tamper-Evident Transition Log Recorded',
+                desc: 'A timestamped SHA-256 record is committed to the local prototype store, ready for PDF export or internal compliance inspection.',
               },
             ].map((step, idx) => (
               <Grid key={idx} item xs={12} sm={6} md={3} size={{ xs: 12, sm: 6, md: 3 }}>
@@ -485,188 +524,173 @@ export const LandingPage = () => {
         </Container>
       </Box>
 
-      {/* PRICING SECTION */}
-      <Box id="pricing" sx={{ py: { xs: 8, md: 12 }, px: { xs: 2, sm: 4 }, bgcolor: '#F8FAFC', borderTop: 1, borderColor: 'divider' }}>
+      {/* 5. CONSENT CLARITY ASSISTANT — BEHAVIOUR SPECIFICATION (PROPOSED FEATURE) */}
+      <Box sx={{ py: { xs: 8, md: 10 }, px: { xs: 2, sm: 4 }, bgcolor: '#F8FAFC', borderTop: 1, borderBottom: 1, borderColor: 'divider' }}>
         <Container maxWidth="lg">
-          <Box sx={{ textAlign: 'center', mb: 7, maxWidth: 780, mx: 'auto' }}>
-            <Typography variant="overline" fontWeight={800} color="primary" sx={{ letterSpacing: '0.08em' }}>
-              TRANSPARENT PRICING
+          <Box sx={{ textAlign: 'center', mb: 6, maxWidth: 820, mx: 'auto' }}>
+            <Chip
+              icon={<SmartToyOutlinedIcon sx={{ fontSize: '16px !important' }} />}
+              label="PROPOSED FEATURE • NOT IMPLEMENTED IN PROTOTYPE V0"
+              size="small"
+              sx={{ bgcolor: 'rgba(79, 70, 229, 0.1)', color: '#4F46E5', fontWeight: 800, mb: 2 }}
+            />
+            <Typography variant="h3" fontWeight={800} sx={{ color: '#0F172A', fontSize: { xs: '1.8rem', md: '2.4rem' } }}>
+              Consent Clarity Assistant — Behaviour Specification
             </Typography>
-            <Typography variant="h3" fontWeight={800} sx={{ mt: 1, color: '#0F172A', fontSize: { xs: '1.8rem', md: '2.5rem' } }}>
-              {t('landing.pricing_title')}
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mt: 1.5 }}>
-              {t('landing.pricing_sub')}
+            <Typography variant="body1" color="text.secondary" sx={{ mt: 1.5, lineHeight: 1.65 }}>
+              The Consent Clarity Assistant is a proposed feature designed to answer investor questions strictly grounded in their specific
+              rebalancing proposal. The specification below defines its intended behaviour boundaries for future implementation.
             </Typography>
           </Box>
 
-          <Grid container spacing={4} alignItems="stretch">
-            {/* Tier 1: Free Sandbox */}
-            <Grid item xs={12} md={4} size={{ xs: 12, md: 4 }}>
-              <Card elevation={0} sx={{ p: 4, borderRadius: 3.5, height: '100%', border: 1, borderColor: 'divider', bgcolor: '#FFFFFF', display: 'flex', flexDirection: 'column' }}>
-                <Typography variant="subtitle2" fontWeight={700} color="text.secondary">
-                  STARTER SANDBOX
-                </Typography>
-                <Typography variant="h4" fontWeight={800} sx={{ my: 1.5, color: '#0F172A' }}>
-                  ₹0
-                  <Typography component="span" variant="body2" color="text.secondary"> / forever</Typography>
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                  Ideal for testing FinConsent workflows and statutory tax engine algorithms.
-                </Typography>
-                <Divider sx={{ mb: 3 }} />
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, flexGrow: 1, mb: 4 }}>
-                  {[
-                    '3 active rebalancing mandates',
-                    'Full Budget 2024 Capital Gains Tax Engine',
-                    'Standard client proposal links',
-                    'Pre-loaded benchmark compliance records',
-                    'Community compliance documentation',
-                  ].map((item, i) => (
-                    <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <CheckCircleRoundedIcon color="success" sx={{ fontSize: 18 }} />
-                      <Typography variant="body2" color="#334155">{item}</Typography>
-                    </Box>
-                  ))}
-                </Box>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  component={RouterLink}
-                  to="/login"
-                  sx={{ py: 1.4, borderRadius: 2.5, fontWeight: 700 }}
-                >
-                  Start Free Sandbox
-                </Button>
-              </Card>
-            </Grid>
-
-            {/* Tier 2: Pro RIA (Recommended) */}
-            <Grid item xs={12} md={4} size={{ xs: 12, md: 4 }}>
-              <Card
-                elevation={4}
-                sx={{
-                  p: 4,
-                  borderRadius: 3.5,
-                  height: '100%',
-                  border: 2,
-                  borderColor: 'primary.main',
-                  bgcolor: '#FFFFFF',
-                  position: 'relative',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  boxShadow: '0 20px 40px rgba(79, 70, 229, 0.12)',
-                }}
-              >
-                <Chip
-                  label="MOST POPULAR FOR RIAs"
-                  color="primary"
-                  size="small"
-                  sx={{ position: 'absolute', top: -12, right: 24, fontWeight: 800, fontSize: '0.7rem' }}
-                />
-                <Typography variant="subtitle2" fontWeight={700} color="primary.main">
-                  PRO RIA PRACTITIONER
-                </Typography>
-                <Typography variant="h4" fontWeight={800} sx={{ my: 1.5, color: '#0F172A' }}>
-                  ₹2,499
-                  <Typography component="span" variant="body2" color="text.secondary"> / month (+ GST)</Typography>
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                  Everything an active SEBI Registered Investment Adviser needs for non-discretionary operations.
-                </Typography>
-                <Divider sx={{ mb: 3 }} />
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, flexGrow: 1, mb: 4 }}>
-                  {[
-                    'Unlimited active trade rebalance mandates',
-                    'Up to 150 active HNI advisory clients',
-                    'White-labeled portal with firm logo & INA number',
-                    'TRAI DLT-compliant Mobile OTP verification',
-                    '5-year statutory append-only AWS Mumbai archival',
-                    '1-Click Regulation 19 audit dossier export',
-                    'Direct Razorpay subscription upgrade',
-                  ].map((item, i) => (
-                    <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <CheckCircleRoundedIcon color="primary" sx={{ fontSize: 18 }} />
-                      <Typography variant="body2" fontWeight={600} color="#0F172A">{item}</Typography>
-                    </Box>
-                  ))}
-                </Box>
-                <Button
-                  variant="contained"
-                  fullWidth
-                  component={RouterLink}
-                  to="/settings/billing"
+          <Grid container spacing={3}>
+            {[
+              {
+                icon: <AutoAwesomeOutlinedIcon sx={{ color: '#4F46E5', fontSize: 32 }} />,
+                title: 'Proposal-Grounded Explanations',
+                desc: 'Strictly limited to the RIA\'s written rationale, asset target weights, and pre-computed figures contained in the proposal. Refuses to answer general financial or speculative queries outside the proposal payload.',
+              },
+              {
+                icon: <InfoOutlinedIcon sx={{ color: '#0284C7', fontSize: 32 }} />,
+                title: 'Estimate Disclaimers on Tax Queries',
+                desc: 'Reiterates on every tax-related explanation that capital gains calculations are pre-computed estimates under Budget 2024 rules and do not constitute certified tax advice or official tax filings.',
+              },
+              {
+                icon: <NotInterestedOutlinedIcon sx={{ color: '#DC2626', fontSize: 32 }} />,
+                title: 'Strict Refusal to Advise or Consent',
+                desc: 'Programmatically refuses to make investment recommendations, endorse trades, or give consent on behalf of the client. Only the investor can authorize a rebalancing proposal.',
+              },
+              {
+                icon: <SecurityOutlinedIcon sx={{ color: '#059669', fontSize: 32 }} />,
+                title: 'Privacy Boundaries & Adviser Hand-Off',
+                desc: 'Maintains strict session confidentiality with zero training on client confidential data. Automatically routes complex inquiries or low-confidence questions to the human RIA.',
+              },
+            ].map((pillar, idx) => (
+              <Grid key={idx} item xs={12} sm={6} md={3} size={{ xs: 12, sm: 6, md: 3 }}>
+                <Card
+                  elevation={0}
                   sx={{
-                    py: 1.4,
-                    borderRadius: 2.5,
-                    fontWeight: 700,
-                    bgcolor: '#4F46E5',
-                    '&:hover': { bgcolor: '#4338CA' },
+                    p: 3,
+                    borderRadius: 3,
+                    bgcolor: '#FFFFFF',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
                   }}
                 >
-                  Upgrade to Pro RIA Tier
-                </Button>
-              </Card>
-            </Grid>
+                  <Box sx={{ mb: 2 }}>{pillar.icon}</Box>
+                  <Typography variant="subtitle1" fontWeight={750} color="#0F172A" gutterBottom>
+                    {pillar.title}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6, flexGrow: 1 }}>
+                    {pillar.desc}
+                  </Typography>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </Box>
 
-            {/* Tier 3: Enterprise */}
-            <Grid item xs={12} md={4} size={{ xs: 12, md: 4 }}>
-              <Card elevation={0} sx={{ p: 4, borderRadius: 3.5, height: '100%', border: 1, borderColor: 'divider', bgcolor: '#FFFFFF', display: 'flex', flexDirection: 'column' }}>
-                <Typography variant="subtitle2" fontWeight={700} color="text.secondary">
-                  ENTERPRISE & PMS DESK
+      {/* 6. PROTOTYPE SCOPE: WHAT FINCONSENT DOES AND DOES NOT DO */}
+      <Box sx={{ py: { xs: 8, md: 10 }, px: { xs: 2, sm: 4 }, bgcolor: '#FFFFFF' }}>
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center', mb: 6, maxWidth: 800, mx: 'auto' }}>
+            <Typography variant="overline" fontWeight={800} color="primary" sx={{ letterSpacing: '0.08em' }}>
+              PROTOTYPE DISCLOSURES
+            </Typography>
+            <Typography variant="h3" fontWeight={800} sx={{ mt: 1, color: '#0F172A', fontSize: { xs: '1.8rem', md: '2.4rem' } }}>
+              Prototype Scope: What FinConsent Does and Does Not Do
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mt: 1.5 }}>
+              Transparent boundaries regarding the capabilities and limitations of this demonstration build.
+            </Typography>
+          </Box>
+
+          <Grid container spacing={3}>
+            {/* What it DOES */}
+            <Grid item xs={12} md={6} size={{ xs: 12, md: 6 }}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3.5,
+                  borderRadius: 3.5,
+                  border: '1.5px solid #BBF7D0',
+                  bgcolor: '#F0FDF4',
+                  height: '100%',
+                }}
+              >
+                <Typography variant="h6" fontWeight={800} color="#166534" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CheckCircleRoundedIcon color="success" /> What Prototype v0 Demonstrates
                 </Typography>
-                <Typography variant="h4" fontWeight={800} sx={{ my: 1.5, color: '#0F172A' }}>
-                  ₹8,999
-                  <Typography component="span" variant="body2" color="text.secondary"> / month (+ GST)</Typography>
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                  For multi-partner advisory firms, wealth management desks, and corporate entities.
-                </Typography>
-                <Divider sx={{ mb: 3 }} />
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, flexGrow: 1, mb: 4 }}>
+                <Box sx={{ mt: 2.5, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                   {[
-                    'Unlimited advisory clients & partner sub-accounts',
-                    'Dedicated Compliance Officer supervisory portal',
-                    'Advisory Request composition & scrutiny queues',
-                    'Custom broker / custodian execution webhooks',
-                    'Multi-partner Role-Based Access Control',
-                    'Priority SLA & annual statutory audit assistance',
+                    'Synthetic test data for 4 established roles (RIA, Client, Compliance, Admin)',
+                    'Automated pre-computation of Budget 2024 capital gains estimates (STCG 20%, LTCG 12.5%)',
+                    'Mobile-friendly proposal review interface with password-protected token links',
+                    'Simulated in-app 6-digit OTP verification workflow for evaluation',
+                    'Tamper-evident SHA-256 state transition logging and compliance dossier export',
                   ].map((item, i) => (
-                    <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <CheckCircleRoundedIcon color="success" sx={{ fontSize: 18 }} />
-                      <Typography variant="body2" color="#334155">{item}</Typography>
+                    <Box key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                      <CheckCircleRoundedIcon color="success" sx={{ fontSize: 18, mt: 0.3 }} />
+                      <Typography variant="body2" color="#1E293B" sx={{ lineHeight: 1.6 }}>{item}</Typography>
                     </Box>
                   ))}
                 </Box>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  component={RouterLink}
-                  to="/requests/new"
-                  sx={{ py: 1.4, borderRadius: 2.5, fontWeight: 700 }}
-                >
-                  Contact Compliance Sales
-                </Button>
-              </Card>
+              </Paper>
+            </Grid>
+
+            {/* What it DOES NOT */}
+            <Grid item xs={12} md={6} size={{ xs: 12, md: 6 }}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3.5,
+                  borderRadius: 3.5,
+                  border: '1.5px solid #FECACA',
+                  bgcolor: '#FEF2F2',
+                  height: '100%',
+                }}
+              >
+                <Typography variant="h6" fontWeight={800} color="#991B1B" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <NotInterestedOutlinedIcon color="error" /> What Prototype v0 Does NOT Do
+                </Typography>
+                <Box sx={{ mt: 2.5, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  {[
+                    'Does NOT execute trades (orders must be placed independently via broker/custodian)',
+                    'Does NOT replace the formal client-adviser advisory agreement',
+                    'Does NOT guarantee statutory compliance or legal admissibility in court',
+                    'Has NO live SMS or WhatsApp delivery (uses mocked in-app OTP and simulated links)',
+                    'Does NOT provide certified tax advice or file official tax returns',
+                  ].map((item, i) => (
+                    <Box key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                      <NotInterestedOutlinedIcon color="error" sx={{ fontSize: 18, mt: 0.3 }} />
+                      <Typography variant="body2" color="#1E293B" sx={{ lineHeight: 1.6 }}>{item}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Paper>
             </Grid>
           </Grid>
         </Container>
       </Box>
 
-      {/* 1-CLICK INTERACTIVE TEST-DRIVE LAUNCHER */}
+      {/* 7. INTERACTIVE TEST-DRIVE LAUNCHER */}
       <Box sx={{ py: { xs: 8, md: 10 }, px: { xs: 2, sm: 4 }, bgcolor: '#0B132B', color: '#F8FAFC' }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: 6 }}>
             <Chip
-              label="INSTANT TEST DRIVE"
+              label="INSTANT TEST DRIVE (SYNTHETIC PROFILES)"
               size="small"
               sx={{ bgcolor: 'rgba(99, 102, 241, 0.2)', color: '#818CF8', fontWeight: 800, mb: 2 }}
             />
             <Typography variant="h3" fontWeight={800} sx={{ color: '#FFFFFF', fontSize: { xs: '1.8rem', md: '2.5rem' } }}>
               Experience FinConsent Across All 4 Established Roles
             </Typography>
-            <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.7)', mt: 1, maxWidth: 640, mx: 'auto' }}>
-              Click any role to test-drive FinConsent immediately with our realistic 1,000-user database:
+            <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.75)', mt: 1, maxWidth: 720, mx: 'auto' }}>
+              Click any role to test-drive FinConsent immediately with pre-seeded synthetic test profiles (password: <code>Password@123</code>):
             </Typography>
           </Box>
 
@@ -676,28 +700,28 @@ export const LandingPage = () => {
                 role: 'Registered Investment Adviser (RIA)',
                 email: 'ria@example.in',
                 icon: <BusinessCenterOutlinedIcon sx={{ color: '#818CF8', fontSize: 32 }} />,
-                desc: 'Draft rebalancing proposals, utilize automated client allocation, trigger OTP dispatch, and manage billing.',
+                desc: 'Draft rebalancing proposals, utilize test client picker, trigger OTP dispatch, and review audit history.',
                 badge: 'Drafting Lead',
               },
               {
                 role: 'Advisory Client (Investor)',
                 email: 'client@example.in',
                 icon: <PersonOutlineIcon sx={{ color: '#34D399', fontSize: 32 }} />,
-                desc: 'Review proposed equity/debt shifts, inspect pre-computed STCG/LTCG tax, and authorize with Mobile OTP.',
+                desc: 'Review proposed equity/debt shifts, inspect pre-computed STCG/LTCG tax, and authorize with in-app OTP.',
                 badge: 'Investor View',
               },
               {
                 role: 'Compliance & Audit Officer',
                 email: 'compliance@example.in',
                 icon: <VerifiedUserOutlinedIcon sx={{ color: '#38BDF8', fontSize: 32 }} />,
-                desc: 'Audit tamper-evident SHA-256 logs, review advisory requests scrutiny queue, and download dossiers.',
+                desc: 'Audit tamper-evident SHA-256 state transition logs, review requests queue, and export compliance dossiers.',
                 badge: 'Auditor View',
               },
               {
                 role: 'Platform Administrator',
                 email: 'admin@example.in',
                 icon: <ShieldOutlinedIcon sx={{ color: '#F472B6', fontSize: 32 }} />,
-                desc: 'System governance, user role assignments, database health monitoring, and billing oversight.',
+                desc: 'System governance, synthetic user directory, database monitoring, and billing simulation oversight.',
                 badge: 'Superuser',
               },
             ].map((p, idx) => (

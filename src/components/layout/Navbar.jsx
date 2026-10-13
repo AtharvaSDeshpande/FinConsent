@@ -241,21 +241,6 @@ export const Navbar = () => {
                 >
                   How It Works
                 </Button>
-                <Button
-                  onClick={() => {
-                    if (window.location.pathname !== '/') navigate('/#pricing');
-                    else document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  sx={{
-                    px: 1.4,
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
-                    color: '#475569',
-                    '&:hover': { color: '#0F172A' },
-                  }}
-                >
-                  Pricing
-                </Button>
               </Box>
             )}
           </Box>

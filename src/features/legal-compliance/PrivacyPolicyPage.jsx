@@ -71,19 +71,19 @@ export const PrivacyPolicyPage = () => {
 
           <Box>
             <Typography variant="h6" fontWeight={700} gutterBottom>
-              3. Indian Data Residency & SEBI Cybersecurity Framework
+              3. Prototype Data Architecture & Hosting
             </Typography>
             <Typography variant="body2" color="text.secondary" paragraph>
-              In alignment with SEBI&apos;s Cybersecurity and Cyber Resilience Framework (CSCRF) and SEBI Cloud Security Guidelines for Regulated Entities, all database records, cryptographic hashes, and audit dossiers are stored and processed within Indian territorial borders on AWS Mumbai (Region: <code>ap-south-1</code>).
+              The FinConsent evaluation prototype operates with local or cloud development databases. All demonstration records, cryptographic hashes, and prototype dossiers are processed within secure evaluation environments designed for compliance demonstration.
             </Typography>
           </Box>
 
           <Box>
             <Typography variant="h6" fontWeight={700} gutterBottom>
-              4. 5-Year Regulatory Data Retention
+              4. Record Retention Principles
             </Typography>
             <Typography variant="body2" color="text.secondary" paragraph>
-              Under Regulation 19 of the SEBI (Investment Advisers) Regulations, 2013, records of client advice, rationale, and client agreement/consent records must be maintained for a statutory period of 5 years. In accordance with Section 8(7) of the DPDP Act, 2023, data retention is permitted and mandated where required for compliance with statutory laws, overriding general erasure requests during the mandatory retention window.
+              Under Regulation 19 of the SEBI (Investment Advisers) Regulations, 2013, registered advisers are required to maintain records of client advice, rationale, and instructions. The FinConsent prototype demonstrates tamper-evident transition recording using SHA-256 event digests. These records are intended to assist recordkeeping and do not guarantee regulatory compliance or legal admissibility in court.
             </Typography>
           </Box>
 
