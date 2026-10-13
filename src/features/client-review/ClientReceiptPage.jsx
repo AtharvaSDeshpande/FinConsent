@@ -142,7 +142,7 @@ export const ClientReceiptPage = () => {
             <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
               <Typography variant="body2" color="text.secondary">{t('receipt.advisor_label')}</Typography>
               <Typography variant="body2" fontWeight={750} color="#0F172A">
-                {ria?.firmName} (SEBI Reg: <code>{ria?.sebiRegNumber}</code>)
+                {ria?.name ? `${ria.name} (${ria.firmName})` : ria?.firmName} (SEBI Reg: <code>{ria?.sebiRegNumber}</code>)
               </Typography>
             </Box>
 

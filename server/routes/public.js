@@ -5,6 +5,7 @@ import { dbStore } from '../db/store.js';
 import { sharedState } from '../db/sharedState.js';
 import { otpRequestLimiter, otpVerifyLimiter } from '../middleware/rateLimiter.js';
 import { unlockMandateWithServerKey } from '../security/mandateCrypto.js';
+import { askConsentClarityAssistant, checkRateLimit } from '../services/assistantService.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'finconsent_super_secret_jwt_key_2026';
@@ -14,6 +15,7 @@ function isClientUnlocked(req, mandateId) {
   const token =
     req.headers['x-unlock-token'] ||
     req.headers['x-mandate-unlock-token'] ||
+    req.headers['x-client-unlock-token'] ||
     req.headers.authorization?.replace(/^Bearer\s+/i, '') ||
     req.body?.unlockToken ||
     req.query?.unlockToken;
@@ -290,7 +292,12 @@ router.get('/mandates/:token/chat', (req, res) => {
     return res.status(404).json({ success: false, error: 'Mandate not found' });
   }
 
-  const hasToken = req.headers['x-unlock-token'] || req.headers['x-mandate-unlock-token'] || req.headers.authorization || req.query?.unlockToken;
+  const hasToken =
+    req.headers['x-unlock-token'] ||
+    req.headers['x-mandate-unlock-token'] ||
+    req.headers['x-client-unlock-token'] ||
+    req.headers.authorization ||
+    req.query?.unlockToken;
   if (!hasToken) {
     return res.status(401).json({ success: false, error: 'Mandate password unlock required to view discussion' });
   }
@@ -310,7 +317,12 @@ router.post('/mandates/:token/chat', (req, res) => {
     return res.status(404).json({ success: false, error: 'Mandate not found' });
   }
 
-  const hasToken = req.headers['x-unlock-token'] || req.headers['x-mandate-unlock-token'] || req.headers.authorization || req.body?.unlockToken;
+  const hasToken =
+    req.headers['x-unlock-token'] ||
+    req.headers['x-mandate-unlock-token'] ||
+    req.headers['x-client-unlock-token'] ||
+    req.headers.authorization ||
+    req.body?.unlockToken;
   if (!hasToken) {
     return res.status(401).json({ success: false, error: 'Mandate password unlock required to send message' });
   }
@@ -339,6 +351,320 @@ router.post('/mandates/:token/chat', (req, res) => {
   });
 
   res.status(201).json({ success: true, data: newMsg });
+});
+
+// Consent Clarity Assistant: Answer client question grounded strictly in proposal
+router.post('/mandates/:token/assistant', async (req, res) => {
+  const mandate = dbStore.findMandateByToken(req.params.token);
+  if (!mandate) {
+    return res.status(404).json({ success: false, error: 'Mandate not found' });
+  }
+
+  if (mandate.isRevoked) {
+    return res.status(410).json({
+      success: false,
+      revoked: true,
+      error: 'This trade mandate link has been revoked by the adviser.',
+    });
+  }
+
+  // Check if cutoff has expired
+  const now = new Date();
+  const isCutoffExpired = mandate.cutoffTimestamp && new Date(mandate.cutoffTimestamp) < now;
+  const isTokenExpired = mandate.tokenExpiresAt && new Date(mandate.tokenExpiresAt) < now;
+  if (isCutoffExpired || isTokenExpired || mandate.status === 'expired') {
+    return res.status(410).json({
+      success: false,
+      expired: true,
+      error: 'This trade mandate link has expired. The market cutoff window has lapsed.',
+    });
+  }
+
+  // Already consented mandates are locked from assistant questions
+  if (mandate.status === 'consented' || mandate.status === 'approved') {
+    return res.status(400).json({
+      success: false,
+      error: 'Mandate has already been consented and is locked for review.',
+    });
+  }
+
+  // Require unlocked session
+  const hasToken =
+    req.headers['x-unlock-token'] ||
+    req.headers['x-mandate-unlock-token'] ||
+    req.headers['x-client-unlock-token'] ||
+    req.headers.authorization ||
+    req.body?.unlockToken;
+  if (!hasToken) {
+    return res.status(401).json({
+      success: false,
+      error: 'Mandate password unlock required to use the assistant',
+    });
+  }
+
+  if (!isClientUnlocked(req, mandate.id)) {
+    return res.status(403).json({
+      success: false,
+      error: 'Invalid unlock token or mandate mismatch',
+    });
+  }
+
+  // Rate limiting (10 questions per 10 minutes per token)
+  if (!checkRateLimit(req.params.token)) {
+    return res.status(429).json({
+      success: false,
+      error: 'Rate limit exceeded: maximum 10 assistant queries per 10 minutes.',
+    });
+  }
+
+  const { question } = req.body;
+  if (!question || typeof question !== 'string' || question.trim().length === 0) {
+    return res.status(400).json({ success: false, error: 'Question cannot be empty' });
+  }
+
+  if (question.length > 500) {
+    return res.status(400).json({ success: false, error: 'Question exceeds 500 characters limit' });
+  }
+
+  const sanitized = sanitizeHtml(question.trim());
+  const client = dbStore.findClientById(mandate.clientId);
+
+  // Post client question into human chat trail
+  const clientMsg = dbStore.addMandateChatMessage(mandate.id, {
+    sender: 'client',
+    senderRole: 'client',
+    senderName: client?.name || 'Client',
+    message: sanitized,
+  });
+
+  // Decrypt proposal for assistant context
+  const unlocked = unlockMandateWithServerKey(mandate);
+
+  // Query Consent Clarity Assistant
+  const result = await askConsentClarityAssistant({
+    mandate: unlocked,
+    question: sanitized,
+  });
+
+  if (!result.handoff && result.answerable) {
+    const assistantMsg = dbStore.addMandateChatMessage(mandate.id, {
+      sender: 'assistant',
+      senderRole: 'assistant',
+      senderName: 'Consent Clarity Assistant',
+      message: result.answer,
+      isAssistant: true,
+      metadata: {
+        reason: result.reason,
+        model: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+        relatedQuestionId: clientMsg?.id,
+        relatedQuestion: sanitized,
+      },
+    });
+
+    dbStore.createAuditLog({
+      mandateId: mandate.id,
+      eventType: 'ASSISTANT_QUERY',
+      action: 'CONSENT_CLARITY_ASSISTANT_QUERY',
+      performedBy: 'CLIENT_MOBILE_SESSION',
+      riaId: mandate.riaId,
+      clientId: mandate.clientId,
+      channel: 'IN_APP_AI_ASSISTANT',
+      metadata: {
+        questionSnippet: sanitized.substring(0, 100),
+        reason: result.reason,
+        answerable: true,
+        model: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      handoff: false,
+      data: assistantMsg,
+    });
+  } else {
+    // Handoff to human adviser
+    const handoffMsg = dbStore.addMandateChatMessage(mandate.id, {
+      sender: 'assistant',
+      senderRole: 'assistant',
+      senderName: 'Consent Clarity Assistant',
+      message: result.answer,
+      isAssistant: true,
+      handoff: true,
+      metadata: {
+        reason: result.reason,
+        handoff: true,
+        relatedQuestionId: clientMsg?.id,
+        relatedQuestion: sanitized,
+      },
+    });
+
+    dbStore.createAuditLog({
+      mandateId: mandate.id,
+      eventType: 'ASSISTANT_HANDOFF',
+      action: 'CONSENT_CLARITY_ASSISTANT_HANDOFF',
+      performedBy: 'CLIENT_MOBILE_SESSION',
+      riaId: mandate.riaId,
+      clientId: mandate.clientId,
+      channel: 'IN_APP_AI_ASSISTANT',
+      metadata: {
+        questionSnippet: sanitized.substring(0, 100),
+        reason: result.reason,
+        handoff: true,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      handoff: true,
+      data: handoffMsg,
+    });
+  }
+});
+
+// Client Chat: Escalate question to human adviser (idempotent per question)
+router.post('/mandates/:token/escalate', async (req, res) => {
+  const mandate = dbStore.findMandateByToken(req.params.token);
+  if (!mandate) {
+    return res.status(404).json({ success: false, error: 'Mandate not found' });
+  }
+
+  if (mandate.isRevoked) {
+    return res.status(410).json({
+      success: false,
+      revoked: true,
+      error: 'This trade mandate link has been revoked by the adviser.',
+    });
+  }
+
+  // Check expiry
+  const now = new Date();
+  const isCutoffExpired = mandate.cutoffTimestamp && new Date(mandate.cutoffTimestamp) < now;
+  const isTokenExpired = mandate.tokenExpiresAt && new Date(mandate.tokenExpiresAt) < now;
+  if (isCutoffExpired || isTokenExpired || mandate.status === 'expired') {
+    return res.status(410).json({
+      success: false,
+      expired: true,
+      error: 'This trade mandate link has expired. The market cutoff window has lapsed.',
+    });
+  }
+
+  // Already consented mandates are locked
+  if (mandate.status === 'consented' || mandate.status === 'approved') {
+    return res.status(400).json({
+      success: false,
+      error: 'Mandate has already been consented and is locked for review.',
+    });
+  }
+
+  // Require unlocked session
+  const hasToken =
+    req.headers['x-unlock-token'] ||
+    req.headers['x-mandate-unlock-token'] ||
+    req.headers['x-client-unlock-token'] ||
+    req.headers.authorization ||
+    req.body?.unlockToken;
+  if (!hasToken) {
+    return res.status(401).json({
+      success: false,
+      error: 'Mandate password unlock required to escalate question',
+    });
+  }
+
+  if (!isClientUnlocked(req, mandate.id)) {
+    return res.status(403).json({
+      success: false,
+      error: 'Invalid unlock token or mandate mismatch',
+    });
+  }
+
+  const { question, assistantReply, messageId } = req.body;
+  if (!question || typeof question !== 'string' || question.trim().length === 0) {
+    return res.status(400).json({ success: false, error: 'Question cannot be empty' });
+  }
+
+  if (question.length > 500) {
+    return res.status(400).json({ success: false, error: 'Question exceeds 500 characters limit' });
+  }
+
+  const sanitizedQuestion = sanitizeHtml(question.trim());
+  const sanitizedReply = assistantReply && typeof assistantReply === 'string'
+    ? sanitizeHtml(assistantReply.trim())
+    : null;
+
+  const client = dbStore.findClientById(mandate.clientId);
+  const ria = dbStore.findUserById(mandate.riaId);
+  const existingChat = dbStore.getMandateChat(mandate.id);
+
+  // Check if this question was already escalated or exists in chat
+  let targetMsg = null;
+  if (messageId) {
+    targetMsg = existingChat.find((m) => m.id === messageId);
+  }
+  if (!targetMsg) {
+    // Find latest client message matching the question text
+    for (let i = existingChat.length - 1; i >= 0; i--) {
+      const m = existingChat[i];
+      if (m.sender === 'client' && m.message === sanitizedQuestion) {
+        targetMsg = m;
+        break;
+      }
+    }
+  }
+
+  // Idempotency check: If already escalated, do not duplicate message or audit event
+  if (targetMsg && (targetMsg.isEscalated || targetMsg.escalated)) {
+    return res.status(200).json({
+      success: true,
+      alreadyEscalated: true,
+      data: targetMsg,
+      message: `Sent to ${ria?.name || 'your adviser'}. They will reply here`,
+    });
+  }
+
+  let finalMsg;
+  if (targetMsg) {
+    // Update existing client message with escalation metadata
+    targetMsg.isEscalated = true;
+    targetMsg.escalated = true;
+    targetMsg.tag = 'Escalated from assistant';
+    if (sanitizedReply) targetMsg.relatedReply = sanitizedReply;
+    finalMsg = targetMsg;
+  } else {
+    // Post new client message tagged as escalated
+    finalMsg = dbStore.addMandateChatMessage(mandate.id, {
+      sender: 'client',
+      senderRole: 'client',
+      senderName: client?.name || 'Client',
+      message: sanitizedQuestion,
+      isEscalated: true,
+      escalated: true,
+      tag: 'Escalated from assistant',
+      relatedReply: sanitizedReply || null,
+    });
+  }
+
+  // Record audit trail event CHAT_ESCALATED (append-only, zero PII)
+  dbStore.createAuditLog({
+    mandateId: mandate.id,
+    eventType: 'CHAT_ESCALATED',
+    action: 'CLIENT_CHAT_ESCALATED_TO_ADVISER',
+    performedBy: 'CLIENT_MOBILE_SESSION',
+    riaId: mandate.riaId,
+    clientId: mandate.clientId,
+    channel: 'IN_APP_CHAT',
+    metadata: {
+      questionSnippet: sanitizedQuestion.substring(0, 100),
+      escalatedFrom: 'assistant',
+      relatedReplySnippet: sanitizedReply ? sanitizedReply.substring(0, 100) : undefined,
+    },
+  });
+
+  return res.status(200).json({
+    success: true,
+    data: finalMsg,
+    message: `Sent to ${ria?.name || 'your adviser'}. They will reply here`,
+  });
 });
 
 // Request 6-digit OTP (requires unlocked session)

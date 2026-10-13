@@ -219,6 +219,7 @@ router.get('/:id', (req, res) => {
       clientPassword: clientPassword || undefined,
       client,
       ria: {
+        name: ria?.name || 'Investment Adviser',
         firmName: ria?.firmName || 'Registered Investment Adviser',
         sebiRegNumber: ria?.sebiRegNumber || 'INA000088921',
         complianceEmail: ria?.complianceEmail || 'compliance@advisor.in',

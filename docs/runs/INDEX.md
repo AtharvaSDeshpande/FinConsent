@@ -26,4 +26,4 @@
 20261013-095500-content-alignment-and-literature-review | Repository-wide content alignment, authoritative literature review, and source-of-truth matrix | shipped
 20261013-105500-replace-outdated-visual-audit-diagrams | Delete outdated visual-audit files and generate fresh high-resolution architecture and workflow diagrams | shipped
 20261013-113000-ui-content-feedback-remediation | Remediate UI content discrepancies, unverified metrics, mock disclosures, and positioning | shipped
-
+20261013-125146-consent-clarity-assistant | Implement Consent Clarity Assistant AI feature in client review chat | shipped

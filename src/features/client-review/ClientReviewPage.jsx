@@ -422,7 +422,7 @@ export const ClientReviewPage = () => {
                 {t('client_review.ria_label')}
               </Typography>
               <Typography variant="body2" fontWeight={750} color="#0F172A">
-                {ria.firmName} <code style={{ fontSize: '0.8rem', background: '#F1F5F9', padding: '2px 6px', borderRadius: 4 }}>{ria.sebiRegNumber}</code>
+                {ria?.name ? `${ria.name} (${ria.firmName})` : ria?.firmName} <code style={{ fontSize: '0.8rem', background: '#F1F5F9', padding: '2px 6px', borderRadius: 4 }}>{ria?.sebiRegNumber}</code>
               </Typography>
             </Box>
 
@@ -709,9 +709,13 @@ export const ClientReviewPage = () => {
         mode="client"
         token={token}
         unlockToken={unlockToken}
-        advisorName={ria.name}
-        clientName={client.name}
-        firmName={ria.firmName}
+        advisorName={ria?.name || 'Investment Adviser'}
+        clientName={client?.name || 'Investor'}
+        firmName={ria?.firmName || 'Advisory Practice'}
+        status={mandate?.status}
+        isExpired={isExpired}
+        isRevoked={mandate?.isRevoked}
+        isConsented={isApproved}
       />
 
       {/* 6. QUESTION 5: APPROVE & AUTHORIZE */}

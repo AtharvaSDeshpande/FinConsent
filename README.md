@@ -769,3 +769,25 @@ The operational pain points and workflow turnaround metrics addressed by FinCons
 2. **WhatsApp Channel Delivery:** Marked as roadmap; currently simulated/delivered via email magic links.
 3. **External Time Stamping Authority (TSA):** Audit records currently use synchronized server IST timestamps. Anchoring SHA-256 ledger roots to an RFC 3161 compliant external Time Stamping Authority is planned for institutional deployments.
 4. **Direct Broker Execution:** FinConsent is an advisory record-keeping and consent platform; it intentionally does not execute securities trades directly on broker order terminals.
+
+---
+
+## Consent Clarity Assistant (AI Prototype)
+
+The Consent Clarity Assistant is a server-side AI feature integrated into the client review clarification chat for rebalancing proposals.
+
+### Capabilities and Safeguards
+- **Proposal-Grounded Answers:** Uses only the unlocked mandate payload (title, adviser rationale, target asset allocations, sell and buy baskets with security names, quantities, values, realized gains, STCG, LTCG, cess, total estimated tax, advance tax alert, cutoff, and proposal status). Never invents figures, dates, or securities.
+- **Strict Scope Boundaries:** Declines general financial queries, price speculation, and questions outside the proposal, immediately routing them to the adviser.
+- **Non-Advisory Guardrail:** Never gives investment advice, never recommends buying, selling, accepting, or rejecting, and terminates decision-related replies with a neutral notice that chat is not consent and does not approve the proposal.
+- **Tax Transparency:** Treats tax amounts as estimates excluding external gains or losses, reminding the client that their RIA can confirm the exact calculation.
+- **Privacy and PII Shielding:** Strips all PAN, phone, email, client name, and token data from model prompts. Refuses any attempt to reveal or solicit credentials or confidential details.
+- **Integrity and Auditability:** Accessible only for unlocked, unexpired, unrevoked, and unapproved client links. Every assistant reply is labelled clearly and logged in the tamper-evident SHA-256 audit ledger (`ASSISTANT_QUERY` and `ASSISTANT_HANDOFF`).
+
+### Environment Variables
+- `GEMINI_API_KEY`: Google Gemini API key used by the official `@google/genai` Node.js SDK on the backend server. Must be kept server-side only; never committed, logged, or sent to the browser.
+- `GEMINI_MODEL`: Gemini model identifier. Defaults in application code to `gemini-3.8-flash`.
+
+### Fallback Behaviour
+When `GEMINI_API_KEY` is not configured, or if the model call times out, encounters rate limits, returns blocked content, or fails server-side grounding checks (such as hallucinated numbers or prohibited advice words), the assistant immediately falls back. It posts the query to the mandate chat with a clear notice that it has been passed to the human adviser, ensuring the review conversation never breaks.
+

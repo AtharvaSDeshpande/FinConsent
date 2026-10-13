@@ -524,22 +524,21 @@ export const LandingPage = () => {
         </Container>
       </Box>
 
-      {/* 5. CONSENT CLARITY ASSISTANT — BEHAVIOUR SPECIFICATION (PROPOSED FEATURE) */}
+      {/* 5. CONSENT CLARITY ASSISTANT: BEHAVIOUR SPECIFICATION (IMPLEMENTED IN PROTOTYPE) */}
       <Box sx={{ py: { xs: 8, md: 10 }, px: { xs: 2, sm: 4 }, bgcolor: '#F8FAFC', borderTop: 1, borderBottom: 1, borderColor: 'divider' }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: 6, maxWidth: 820, mx: 'auto' }}>
             <Chip
               icon={<SmartToyOutlinedIcon sx={{ fontSize: '16px !important' }} />}
-              label="PROPOSED FEATURE • NOT IMPLEMENTED IN PROTOTYPE V0"
+              label="AI FEATURE • IMPLEMENTED IN PROTOTYPE"
               size="small"
               sx={{ bgcolor: 'rgba(79, 70, 229, 0.1)', color: '#4F46E5', fontWeight: 800, mb: 2 }}
             />
             <Typography variant="h3" fontWeight={800} sx={{ color: '#0F172A', fontSize: { xs: '1.8rem', md: '2.4rem' } }}>
-              Consent Clarity Assistant — Behaviour Specification
+              Consent Clarity Assistant: Clarification Architecture
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mt: 1.5, lineHeight: 1.65 }}>
-              The Consent Clarity Assistant is a proposed feature designed to answer investor questions strictly grounded in their specific
-              rebalancing proposal. The specification below defines its intended behaviour boundaries for future implementation.
+              The Consent Clarity Assistant answers client questions using only data from their unlocked rebalancing proposal. When a question is outside the proposal or asks for advice, it hands over to the human adviser.
             </Typography>
           </Box>
 

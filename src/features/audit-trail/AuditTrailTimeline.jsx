@@ -16,6 +16,8 @@ import LinkOffOutlinedIcon from '@mui/icons-material/LinkOffOutlined';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
+import SupportAgentOutlinedIcon from '@mui/icons-material/SupportAgentOutlined';
 import { useAuth } from '../../security/AuthContext.jsx';
 
 const EVENT_DESCRIPTIONS = {
@@ -26,6 +28,9 @@ const EVENT_DESCRIPTIONS = {
   OTP_VERIFIED: 'Investor verified identity with 6-digit OTP per SEBI Regulation 19 standards.',
   APPROVED: 'Investor formally accepted statutory mandate terms and authorized trade rebalancing.',
   LINK_REVOKED: 'Statutory link invalidated by RIA to prevent out-of-order execution.',
+  ASSISTANT_QUERY: 'Investor queried the Consent Clarity Assistant for proposal-grounded clarifications.',
+  ASSISTANT_HANDOFF: 'Investor query redirected from Consent Clarity Assistant to human adviser.',
+  CHAT_ESCALATED: 'Investor escalated question from assistant directly to human adviser.',
 };
 
 export const AuditTrailTimeline = ({ logs = [] }) => {
@@ -46,6 +51,11 @@ export const AuditTrailTimeline = ({ logs = [] }) => {
         return <PhonelinkLockOutlinedIcon color="warning" />;
       case 'LINK_REVOKED':
         return <LinkOffOutlinedIcon color="error" />;
+      case 'ASSISTANT_QUERY':
+      case 'ASSISTANT_HANDOFF':
+        return <AutoAwesomeOutlinedIcon color="primary" />;
+      case 'CHAT_ESCALATED':
+        return <SupportAgentOutlinedIcon color="warning" />;
       default:
         return <LockOutlinedIcon color="action" />;
     }
@@ -60,6 +70,9 @@ export const AuditTrailTimeline = ({ logs = [] }) => {
       OTP_VERIFIED: 'warning',
       LINK_REVOKED: 'error',
       CREATED: 'default',
+      ASSISTANT_QUERY: 'primary',
+      ASSISTANT_HANDOFF: 'secondary',
+      CHAT_ESCALATED: 'warning',
     };
     return (
       <Chip

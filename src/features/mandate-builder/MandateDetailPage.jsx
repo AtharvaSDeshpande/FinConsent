@@ -555,9 +555,13 @@ export const MandateDetailPage = () => {
             <MandateChat
               mode="advisor"
               mandateId={mandate.id}
-              advisorName={user?.name || 'Investment Adviser'}
+              advisorName={mandate?.ria?.name || user?.name || 'Investment Adviser'}
               clientName={mandate?.client?.name || 'Client'}
               firmName={mandate?.ria?.firmName || user?.firmName || 'Advisory Practice'}
+              status={mandate?.status}
+              isExpired={mandate?.status === 'expired'}
+              isRevoked={mandate?.isRevoked}
+              isConsented={mandate?.status === 'consented' || mandate?.status === 'approved'}
             />
 
             <AuditTrailTimeline logs={mandate.auditLogs || []} />

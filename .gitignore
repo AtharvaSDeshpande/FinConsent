@@ -5,3 +5,15 @@ coverage/
 credentials.json
 end_users.csv
 ~$*.pptx
+
+# Video files and raw recording clips
+*.mp4
+*.webm
+*.mov
+*.mkv
+*.avi
+*.wmv
+*.flv
+raw-clips/
+
+demo-video/

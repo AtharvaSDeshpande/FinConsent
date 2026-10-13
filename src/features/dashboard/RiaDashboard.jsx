@@ -120,10 +120,10 @@ export const RiaDashboard = ({ user, mandates = [], loading = false, error = nul
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
             <Typography variant="h4" component="h1" fontWeight={800} letterSpacing="-0.025em" color="#0F172A" sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }}>
-              {user?.firmName || 'Prudent Wealth Advisory'}
+              {user?.firmName || 'Investment Advisory Practice'}
             </Typography>
             <Chip
-              label={user?.sebiRegNumber ? `SEBI: ${user.sebiRegNumber}` : 'INA000088921 (Active)'}
+              label={user?.sebiRegNumber ? `SEBI: ${user.sebiRegNumber}` : 'SEBI Registered (Active)'}
               size="small"
               sx={{
                 fontWeight: 700,
